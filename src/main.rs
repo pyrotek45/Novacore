@@ -19,7 +19,7 @@ fn main() {
     let matches = App::new("Novacore Parser")
         .version("0.1")
         .author("Pyrotek45 pyrotek45_gaming@yahoo.com")
-        .about("Manticore VM")
+        .about("Novacore VM")
         .arg(
             Arg::with_name("FILE")
                 .value_name("FILE")
@@ -40,7 +40,7 @@ fn main() {
                 .long("time")
                 .takes_value(false)
                 .short('t')
-                .help("displays how long manticore takes to run"),
+                .help("displays how long novacore takes to run"),
         )
         .get_matches();
 
