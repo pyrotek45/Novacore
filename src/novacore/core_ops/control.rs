@@ -1,11 +1,9 @@
-use std::thread::ScopedJoinHandle;
-
 use hashbrown::HashMap;
 
 use crate::novacore::{
     core::{Block, Token},
     evaluator::Evaluator,
-    state::{self, State},
+    state::{self},
 };
 
 pub fn user_block_call(
