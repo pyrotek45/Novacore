@@ -1,9 +1,11 @@
+use std::thread::ScopedJoinHandle;
+
 use hashbrown::HashMap;
 
 use crate::novacore::{
     core::{Block, Token},
     evaluator::Evaluator,
-    state,
+    state::{self, State},
 };
 
 pub fn user_block_call(
@@ -138,6 +140,36 @@ pub fn user_chain_call(mut state: Box<state::State>, eval: &mut Evaluator) -> Bo
             }
         } else {
             println!("Cant call this type");
+        }
+    }
+
+    state
+}
+
+pub fn get_access(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
+    match (state.execution_stack.pop(), state.get_from_heap_or_pop()) {
+        (Some(Token::Identifier(ident)), Some(Token::Block(Block::Literal(block)))) => {
+            match ident.as_str() {
+                "len" => state
+                    .execution_stack
+                    .push(Token::Integer(block.len() as i128)),
+                _ => {
+                    state.call_stack.push(HashMap::new());
+
+                    for t in block.iter() {
+                        state = eval.eval(state, t.clone())
+                    }
+
+                    if let Some(tok) = state.get_from_heap(&ident) {
+                        state.execution_stack.push(tok)
+                    }
+
+                    state.call_stack.pop();
+                }
+            }
+        }
+        _ => {
+            println!("Cant access this");
         }
     }
 

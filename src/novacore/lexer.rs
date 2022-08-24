@@ -93,11 +93,16 @@ impl Lexer {
 
     fn match_token(&self, token: &str) -> Token {
         match token {
+            "return" => Token::Op(Operator::Return),
+            "self" => Token::Op(Operator::SelfId),
             "break" => Token::Op(Operator::Break),
+            "continue" => Token::Op(Operator::Continue),
             "if" => Token::Op(Operator::If),
             "for" => Token::Op(Operator::For),
+            // keep for now
             "true" => Token::Bool(true),
             "false" => Token::Bool(false),
+            // change to && and ||
             "and" => Token::Op(Operator::And),
             "or" => Token::Op(Operator::Or),
             _ => {

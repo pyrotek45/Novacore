@@ -233,10 +233,10 @@ impl Parser {
                         self.operator_stack.push(token);
                         continue;
                     }
-                    Operator::FunctionVariableAssign => self.output_stack.push(token),
-                    Operator::StoreTemp | Operator::UserFunctionChain => {
-                        self.output_stack.push(token)
-                    }
+                    Operator::StoreTemp
+                    | Operator::UserFunctionChain
+                    | Operator::SelfId
+                    | Operator::FunctionVariableAssign => self.output_stack.push(token),
                     _ => self.operator_stack.push(token),
                 },
                 Token::Char(_) => self.output_stack.push(token),

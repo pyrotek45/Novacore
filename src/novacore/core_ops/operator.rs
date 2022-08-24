@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use modulo::Mod;
 
-use crate::novacore::{core::Token, state};
+use crate::novacore::{core::{Token, Operator, Block}, state};
 
 pub fn add(mut state: Box<state::State>) -> Box<state::State> {
     if let (Some(right), Some(left)) = (state.get_from_heap_or_pop(), state.get_from_heap_or_pop())
@@ -348,5 +348,29 @@ pub fn function_variable_assign(mut state: Box<state::State>) -> Box<state::Stat
         }
     }
 
+    state
+}
+
+pub fn get_self(mut state: Box<state::State>) -> Box<state::State> {
+    if let Some(scope) = state.call_stack.last_mut() {
+        let mut core_self = vec![];
+
+        for (ident, token) in scope {
+            core_self.push(Token::Identifier(ident.clone()));
+            core_self.push(token.clone());
+            core_self.push(Token::Op(Operator::VariableAssign))
+        }
+
+        state
+            .execution_stack
+            .push(Token::Block(Block::Literal(Rc::new(core_self))))
+    }
+    state
+}
+
+pub fn return_top(mut state: Box<state::State>) -> Box<state::State> {
+    if let Some(top) = state.get_from_heap_or_pop() { 
+        state.execution_stack.push(top)
+    }
     state
 }

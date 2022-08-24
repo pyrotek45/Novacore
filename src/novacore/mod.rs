@@ -53,17 +53,43 @@ impl Vm {
     }
 
     pub fn init(&mut self) {
-        // basic output
+        // io
         self.add_function("println", core_ops::io::println);
         self.add_function("print", core_ops::io::print);
 
-        // basic maths
+        // readline
+        // getch
+        // rawread
+        // clear
+
+        // math
         self.add_function("sqrt", core_ops::math::sqrt);
 
-        // basic functions
+        // pow
+
+        // create
         self.add_function("range", core_ops::create::range);
+
+        // random
         self.add_function("random", core_ops::random::random);
+
+        // time
         self.add_function("sleep", core_ops::time::sleep);
+
+        // list
+        // push
+        // last
+        // pop
+        // remove
+        // extract
+        // insert
+        // append
+
+        // modifier
+        self.add_function("proc", core_ops::modifier::proc);
+        self.add_function("let", core_ops::modifier::closure_let);
+        // proc
+        // rec
     }
 
     pub fn debug_file(&mut self, filename: &str) {

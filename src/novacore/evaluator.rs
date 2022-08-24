@@ -36,9 +36,11 @@ impl Evaluator {
                 state
             }
             Token::Op(operator) => match operator {
+                Operator::AccessCall => core_ops::control::get_access(state, self),
                 Operator::For => core_ops::control::for_loop(state, self),
                 Operator::If => core_ops::control::if_statement(state, self),
                 Operator::UserFunctionChain => core_ops::control::user_chain_call(state, self),
+                Operator::Return => core_ops::operator::return_top(state),
                 Operator::StoreTemp => core_ops::control::store_temp(state),
                 Operator::Break => core_ops::control::break_loop(state),
                 Operator::And => core_ops::logical::logical_and(state),
@@ -57,6 +59,7 @@ impl Evaluator {
                 Operator::FunctionVariableAssign => {
                     core_ops::operator::function_variable_assign(state)
                 }
+                Operator::SelfId => core_ops::operator::get_self(state),
                 _ => state,
             },
             _ => {
