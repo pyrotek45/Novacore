@@ -47,12 +47,12 @@ fn main() {
     // Repl or File
     if let Some(filename) = matches.value_of("FILE") {
         let start = Instant::now();
-        let mut manticore = novacore::new_from_file(filename);
+        let mut core = novacore::new_from_file(filename);
 
         if matches.is_present("DEBUG") {
-            manticore.debug_file(filename);
+            core.debug_file(filename);
         } else {
-            manticore.run();
+            core.run();
         }
 
         if matches.is_present("TIME") {
@@ -78,7 +78,7 @@ fn main() {
 
         let mut repl = String::new();
         let mut repl_debug: bool = false;
-        let mut manticore = novacore::new();
+        let mut core = novacore::new();
 
         loop {
             // Repl prompt
@@ -106,10 +106,10 @@ fn main() {
 
                     // Enable vm debug
                     if repl_debug {
-                        manticore.debug_string(&line)
+                        core.debug_string(&line)
                     } else {
-                        manticore = manticore.run_string(&line);
-                        if let Some(last) = manticore.get_last_in_state() {
+                        core = core.run_string(&line);
+                        if let Some(last) = core.get_last_in_state() {
                             println!("{}", last)
                         }
                     }

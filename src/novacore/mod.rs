@@ -67,56 +67,56 @@ impl Vm {
     }
 
     pub fn debug_file(&mut self, filename: &str) {
-        let mut novacore = Vm {
+        let mut core = Vm {
             lexer: lexer::Lexer::new_from_file(filename),
             evaluator: evaluator::Evaluator::new(),
             parser: parser::Parser::new(),
             state: state::new(),
         };
-        novacore.init();
+        core.init();
         println!("Lexer Debug");
-        debugger::debug_output(0, Rc::new(novacore.lexer.parse()));
+        debugger::debug_output(0, Rc::new(core.lexer.parse()));
         println!("Parser Debug");
-        novacore.lexer.clear();
-        novacore.parser.clear();
-        debugger::debug_output(0, Rc::new(novacore.parser.shunt(novacore.lexer.parse())));
+        core.lexer.clear();
+        core.parser.clear();
+        debugger::debug_output(0, Rc::new(core.parser.shunt(core.lexer.parse())));
     }
 
     pub fn debug_string(&mut self, filename: &str) {
-        let mut novacore = Vm {
+        let mut core = Vm {
             lexer: lexer::Lexer::new_from_string(filename),
             evaluator: evaluator::Evaluator::new(),
             parser: parser::Parser::new(),
             state: state::new(),
         };
-        novacore.init();
+        core.init();
         println!("Lexer Debug");
-        debugger::debug_output(0, Rc::new(novacore.lexer.parse()));
+        debugger::debug_output(0, Rc::new(core.lexer.parse()));
         println!("Parser Debug");
-        novacore.lexer.clear();
-        novacore.parser.clear();
-        debugger::debug_output(0, Rc::new(novacore.parser.shunt(novacore.lexer.parse())));
+        core.lexer.clear();
+        core.parser.clear();
+        debugger::debug_output(0, Rc::new(core.parser.shunt(core.lexer.parse())));
     }
 }
 
 pub fn new_from_file(filename: &str) -> Vm {
-    let mut novacore = Vm {
+    let mut core = Vm {
         lexer: lexer::Lexer::new_from_file(filename),
         evaluator: evaluator::Evaluator::new(),
         parser: parser::Parser::new(),
         state: state::new(),
     };
-    novacore.init();
-    novacore
+    core.init();
+    core
 }
 
 pub fn new() -> Vm {
-    let mut novacore = Vm {
+    let mut core = Vm {
         lexer: lexer::Lexer::new(),
         evaluator: evaluator::Evaluator::new(),
         parser: parser::Parser::new(),
         state: state::new(),
     };
-    novacore.init();
-    novacore
+    core.init();
+    core
 }
