@@ -40,6 +40,7 @@ impl Evaluator {
                 Operator::For => core_ops::control::for_loop(state, self),
                 Operator::If => core_ops::control::if_statement(state, self),
                 Operator::UserFunctionChain => core_ops::control::user_chain_call(state, self),
+                Operator::Continue => core_ops::control::continue_loop(state),
                 Operator::Return => core_ops::operator::return_top(state),
                 Operator::StoreTemp => core_ops::control::store_temp(state),
                 Operator::Break => core_ops::control::break_loop(state),

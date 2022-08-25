@@ -70,6 +70,12 @@ pub fn break_loop(mut state: Box<state::State>) -> Box<state::State> {
     state
 }
 
+pub fn continue_loop(mut state: Box<state::State>) -> Box<state::State> {
+    state.continue_loop = true;
+
+    state
+}
+
 pub fn for_loop(state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
     let mut state = state;
     if let (Some(block), Some(list), Some(variable)) = (
