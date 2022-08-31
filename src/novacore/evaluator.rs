@@ -11,7 +11,9 @@ pub struct Evaluator {
 
 impl Evaluator {
     pub fn new() -> Self {
-        Evaluator { functions: vec![] }
+        Evaluator {
+            functions: vec![]
+        }
     }
 
     pub fn add_function(&mut self, function: CallBack) -> usize {
@@ -21,9 +23,22 @@ impl Evaluator {
 
     pub fn eval(&mut self, mut state: Box<state::State>, expr: Token) -> Box<state::State> {
         match expr {
+            Token::Line(number) => {
+                state.line_number = number;
+                state
+            }
             Token::Function(index) => self.functions[index](state, self),
             Token::UserBlockCall(function) => {
-                core_ops::control::user_block_call(state, self, &function)
+                if state.debug {
+                    state.current_function = function.clone();
+                }
+                state = core_ops::control::user_block_call(state, self, &function);
+
+                if state.debug {
+                    state.current_function = "".to_string();
+                }
+
+                state
             }
             Token::Block(Block::Lambda(block)) => {
                 // Call with new scope
@@ -57,8 +72,8 @@ impl Evaluator {
                 Operator::Mul => core_ops::operator::mul(state),
                 Operator::Div => core_ops::operator::div(state),
                 Operator::VariableAssign => core_ops::operator::variable_assign(state),
-                Operator::FunctionVariableAssign => {
-                    core_ops::operator::function_variable_assign(state)
+                Operator::FunctionVariableAssign(_) => {
+                    core_ops::operator::function_variable_assign(state) // add inputs
                 }
                 Operator::SelfId => core_ops::operator::get_self(state),
                 _ => state,

@@ -3,7 +3,7 @@ use std::rc::Rc;
 use hashbrown::HashMap;
 
 use super::{
-    core::{Block, Operator, Token},
+    core::{Block, Operator, Token, Types, LT},
     utilities::is_string_number,
 };
 
@@ -22,6 +22,8 @@ pub struct Lexer {
     is_parsing_comment: bool,
     is_skip: bool,
     is_parsing_chain: bool,
+    linenumber: usize,
+    pub debug: bool,
 
     // Output
     pub block_stack: Vec<Vec<Token>>,
@@ -29,7 +31,7 @@ pub struct Lexer {
 
 impl Lexer {
     // Creates a lexer using the file as input
-    pub fn new_from_file(filename: &str) -> Self {
+    pub fn new_from_file(filename: &str, debug: bool) -> Self {
         if let Ok(content) = std::fs::read_to_string(filename) {
             Lexer {
                 source: content,
@@ -42,6 +44,8 @@ impl Lexer {
                 is_parsing_chain: false,
                 function_list: HashMap::new(),
                 is_parsing_list: false,
+                linenumber: 1,
+                debug,
             }
         } else {
             println!(
@@ -65,6 +69,8 @@ impl Lexer {
             is_parsing_chain: false,
             function_list: HashMap::new(),
             is_parsing_list: false,
+            linenumber: 1,
+            debug: false,
         }
     }
 
@@ -80,6 +86,8 @@ impl Lexer {
             is_parsing_chain: false,
             function_list: HashMap::new(),
             is_parsing_list: false,
+            linenumber: 1,
+            debug: false,
         }
     }
 
@@ -91,25 +99,31 @@ impl Lexer {
         self.function_list.insert(name.to_string(), index);
     }
 
-    fn match_token(&self, token: &str) -> Token {
+    fn match_token(&self, token: &str) -> Option<Token> {
         match token {
-            "return" => Token::Op(Operator::Return),
-            "self" => Token::Op(Operator::SelfId),
-            "break" => Token::Op(Operator::Break),
-            "continue" => Token::Op(Operator::Continue),
-            "if" => Token::Op(Operator::If),
-            "for" => Token::Op(Operator::For),
+            "return" => Some(Token::Op(Operator::Return)),
+            "self" => Some(Token::Op(Operator::SelfId)),
+            "break" => Some(Token::Op(Operator::Break)),
+            "continue" => Some(Token::Op(Operator::Continue)),
+            "if" => Some(Token::Op(Operator::If)),
+            "for" => Some(Token::Op(Operator::For)),
             // keep for now
-            "true" => Token::Bool(true),
-            "false" => Token::Bool(false),
+            "true" => Some(Token::Bool(true)),
+            "false" => Some(Token::Bool(false)),
             // change to && and ||
-            "and" => Token::Op(Operator::And),
-            "or" => Token::Op(Operator::Or),
+            "and" => Some(Token::Op(Operator::And)),
+            "or" => Some(Token::Op(Operator::Or)),
             _ => {
                 if let Some(index) = self.function_list.get(token) {
-                    Token::Function(*index)
+                    Some(Token::Function(*index))
+                } else if let Some(mut vec_last) = self.block_stack.last().cloned() {
+                    if let Some(Token::Symbol(':')) = vec_last.pop() {
+                        Some(Token::Type(self.buffer.to_lowercase()))
+                    } else {
+                        Some(Token::Identifier(self.buffer.to_lowercase(), Types::Any))
+                    }
                 } else {
-                    Token::Identifier(self.buffer.to_lowercase())
+                    Option::None
                 }
             }
         }
@@ -117,6 +131,7 @@ impl Lexer {
 
     pub fn clear(&mut self) {
         self.block_stack = vec![vec![]];
+        self.linenumber = 1;
     }
     // // This Op is used to check to see if the current
     // // buffer is either a (number,Op,bool,identifier)
@@ -135,8 +150,8 @@ impl Lexer {
                         return Some(Token::Integer(v));
                     }
                 }
-            } else {
-                return Some(self.match_token(&self.buffer.to_lowercase()));
+            } else if let Some(token) = self.match_token(self.buffer.as_str()) {
+                return Some(token);
             }
         }
         Option::None
@@ -145,6 +160,14 @@ impl Lexer {
     // // Going through each char in the file or string
     pub fn parse(&mut self) -> Vec<Token> {
         // Parsing strings double quote
+
+        if self.debug {
+            self.linenumber = 1;
+            if let Some(vec_last) = self.block_stack.last_mut() {
+                vec_last.push(Token::Line(self.linenumber))
+            }
+        }
+
         for c in self.source.chars() {
             if self.is_parsing_stringdq {
                 if c == '\\' {
@@ -210,6 +233,14 @@ impl Lexer {
                             }
                         }
                     }
+
+                    if self.debug {
+                        self.linenumber += 1;
+                        if let Some(vec_last) = self.block_stack.last_mut() {
+                            vec_last.push(Token::Line(self.linenumber))
+                        }
+                    }
+
                     continue;
                 }
 
@@ -276,7 +307,7 @@ impl Lexer {
                             '-' => {
                                 if let Some(last) = vec_last.pop() {
                                     match last {
-                                        Token::Identifier(_) => {
+                                        Token::Identifier(_, _) => {
                                             vec_last.push(last);
                                             vec_last.push(Token::Op(Operator::Sub));
                                             continue;
@@ -303,7 +334,7 @@ impl Lexer {
                             '(' => {
                                 if let Some(ref last) = vec_last.pop() {
                                     match &last {
-                                        Token::Identifier(ident) => {
+                                        Token::Identifier(ident, _) => {
                                             vec_last.push(Token::UserBlockCall(ident.clone()));
                                             vec_last.push(Token::Symbol(c));
                                             continue;
@@ -383,6 +414,7 @@ impl Lexer {
                                     }
                                 }
                             }
+                            ':' => vec_last.push(Token::Symbol(c)),
                             '!' => vec_last.push(Token::Op(Operator::Not)),
                             '%' => vec_last.push(Token::Op(Operator::Mod)),
                             '/' => vec_last.push(Token::Op(Operator::Div)),
@@ -394,7 +426,7 @@ impl Lexer {
                             // '$' => vec_last.push(Token {
                             //     Token: Token::Op(Operator::UserMacroCall),
                             // }),
-                            '~' => vec_last.push(Token::Op(Operator::FunctionVariableAssign)),
+                            '~' => vec_last.push(Token::Op(Operator::FunctionVariableAssign(0))), // TODO: add inputs from commas
                             // '?' => vec_last.push(Token {
                             //     Token: Token::Op(Operator::MacroVariableAssign),
                             // }),
@@ -460,6 +492,7 @@ impl Lexer {
                     };
 
                     if let Some(list) = self.block_stack.pop() {
+                        let list = self.add_types(&list);
                         if let Some(vec_last) = self.block_stack.last_mut() {
                             vec_last.push(Token::Block(Block::Literal(Rc::new(list))));
                         }
@@ -488,8 +521,9 @@ impl Lexer {
 
                     self.is_parsing_list = false;
                     if let Some(list) = self.block_stack.pop() {
+                        let list = self.add_types(&list);
                         if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(Token::List(Rc::new(list)))
+                            vec_last.push(Token::List(LT::Raw(Rc::new(list))))
                         }
                     }
                 }
@@ -506,6 +540,42 @@ impl Lexer {
             self.buffer.clear();
         };
 
-        self.block_stack[0].to_owned()
+        self.add_types(&self.block_stack[0])
+    }
+
+    fn add_types(&self, block: &Vec<Token>) -> Vec<Token> {
+        let mut newstack = vec![];
+
+        for t in block.iter() {
+            match t {
+                Token::Type(oftype) => {
+                    if let Some(Token::Identifier(id, _)) = newstack.pop() {
+                        match oftype.as_str() {
+                            "int" => newstack.push(Token::Identifier(id.to_string(), Types::Int)),
+                            "str" => newstack.push(Token::Identifier(id.to_string(), Types::Str)),
+                            "float" => {
+                                newstack.push(Token::Identifier(id.to_string(), Types::Float))
+                            }
+                            "char" => newstack.push(Token::Identifier(id.to_string(), Types::Char)),
+                            "bool" => newstack.push(Token::Identifier(id.to_string(), Types::Bool)),
+                            "block" => {
+                                newstack.push(Token::Identifier(id.to_string(), Types::Block))
+                            }
+                            "list" => newstack.push(Token::Identifier(id.to_string(), Types::List)),
+                            _ => newstack.push(Token::Identifier(
+                                id.to_string(),
+                                Types::Custom(oftype.clone()),
+                            )),
+                        }
+                    } else {
+                        println!("ERROR : {:?} needs an identifer", oftype)
+                    }
+                }
+                Token::Symbol(':') => {}
+                _ => newstack.push(t.clone()),
+            }
+        }
+
+        newstack
     }
 }

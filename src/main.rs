@@ -1,4 +1,5 @@
 mod novacore;
+use std::mem::{size_of, size_of_val};
 use std::time::Instant;
 
 use clap::{App, Arg};
@@ -32,7 +33,23 @@ fn main() {
                 .long("debug")
                 .takes_value(false)
                 .short('d')
-                .help("displays debug information"),
+                .help("displays error log"),
+        )
+        .arg(
+            Arg::with_name("OUTPUT")
+                .value_name("OUTPUT")
+                .long("output")
+                .takes_value(false)
+                .short('o')
+                .help("displays output from lexer/parser"),
+        )
+        .arg(
+            Arg::with_name("OUTPUTD")
+                .value_name("OUTPUTD")
+                .long("outputd")
+                .takes_value(false)
+                .short('O')
+                .help("displays output from lexer/parser with debug information"),
         )
         .arg(
             Arg::with_name("TIME")
@@ -49,6 +66,14 @@ fn main() {
         let start = Instant::now();
         let mut core = novacore::new_from_file(filename);
 
+        if matches.is_present("OUTPUT") {
+            core.output(filename)
+        }
+
+        if matches.is_present("OUTPUTD") {
+            core.outputd(filename)
+        }
+
         if matches.is_present("DEBUG") {
             core.debug_file(filename);
         } else {
@@ -63,6 +88,7 @@ fn main() {
         std::process::exit(0)
     } else {
         // Using Repl
+
         let h = InputValidator {
             brackets: MatchingBracketValidator::new(),
         };

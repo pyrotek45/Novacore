@@ -6,11 +6,11 @@ pub fn equals(mut state: Box<state::State>) -> Box<state::State> {
         state.execution_stack.push(Token::Bool(left == right));
     } else {
         // Log error
-        if state.debug {
-            state
-                .error_log
-                .push("Not enough arguments for ==".to_string());
-        }
+        // if state.debug {
+        //     state
+        //         .error_log
+        //         .push("Not enough arguments for ==".to_string());
+        // }
     }
 
     state
@@ -40,11 +40,11 @@ pub fn lss_comparison(mut state: Box<state::State>) -> Box<state::State> {
         }
     } else {
         // Log error
-        if state.debug {
-            state
-                .error_log
-                .push("Not enough arguments for <".to_string());
-        }
+        // if state.debug {
+        //     state
+        //         .error_log
+        //         .push("Not enough arguments for <".to_string());
+        // }
     }
 
     state
@@ -74,11 +74,11 @@ pub fn gtr_comparison(mut state: Box<state::State>) -> Box<state::State> {
         }
     } else {
         // Log error
-        if state.debug {
-            state
-                .error_log
-                .push("Not enough arguments for >".to_string());
-        }
+        // if state.debug {
+        //     state
+        //         .error_log
+        //         .push("Not enough arguments for >".to_string());
+        // }
     }
 
     state

@@ -14,25 +14,22 @@ pub enum Block {
 #[derive(PartialEq, Clone, Debug)]
 pub enum Operator {
     VariableAssign,
-    FunctionVariableAssign,
+    FunctionVariableAssign(usize),
+    UserFunctionCall,
+    AddType,
 
     SelfId,
     Include,
     Recursive,
-    AccessCall, // the dot Token::operator
+    AccessCall, // the dot Data::operator
 
     UserFunctionChain,
     StoreTemp,
-    UserFunctionCall,
-
-    Proc,
 
     Readln,
     Flush,
     Clear,
     Getch,
-
-    Range,
 
     And,
     Or,
@@ -44,8 +41,6 @@ pub enum Operator {
 
     Neg,
     Mod,
-    Pow,
-    Sqrt,
 
     Add,
     Sub,
@@ -58,17 +53,13 @@ pub enum Operator {
     Continue,
     If,
 
-    Let,
     Ret,
 
     PopStack,
 
     Dup,
 
-    Random,
-
     Command,
-    Sleep,
 
     Push,
     Pop,
@@ -86,12 +77,37 @@ pub enum Operator {
 }
 
 #[derive(PartialEq, Clone, Debug)]
+enum Input {
+    Number(usize),
+    Unknown,
+}
+
+#[derive(PartialEq, Clone, Debug)]
+pub enum Types {
+    Any,
+    Bool,
+    Block,
+    Float,
+    Char,
+    List,
+    Int,
+    Str,
+    Custom(String),
+}
+
+#[derive(PartialEq, Clone, Debug)]
+pub enum LT {
+    Raw(Rc<Vec<Token>>),
+    Packed(Rc<Vec<Token>>),
+}
+
+#[derive(PartialEq, Clone, Debug)]
 pub enum Token {
-    // Op
-    Identifier(String), // Variables
-    Function(usize),    // Built in Op
-    Op(Operator),
-    UserBlockCall(String), // Block calls
+    Type(String),
+    Identifier(String, Types), // Variables
+    Function(usize),           // Functions added with add_function
+    Op(Operator),              // Built in operators
+    UserBlockCall(String),     // user function calls
 
     // Basix Types
     Integer(i128),
@@ -101,7 +117,9 @@ pub enum Token {
     Symbol(char),
     Bool(bool),
     Block(Block),
-    List(Rc<Vec<Token>>),
+    List(LT),
+    Line(usize),
+    Break,
 }
 
 impl Token {
@@ -136,7 +154,7 @@ impl Token {
 
     pub fn to_str(&self) -> String {
         match self {
-            Token::Identifier(id) => format!("Identifier -> {}", &id),
+            Token::Identifier(id, oftype) => format!("Identifier -> {} : {:?}", &id, &oftype),
             Token::Function(index) => format!("Function -> {}", &index),
             Token::UserBlockCall(_) => "User Block Call".to_string(),
             Token::Integer(int) => format!("Integer -> {}", &int),
@@ -150,6 +168,9 @@ impl Token {
             Token::Op(operator) => {
                 format!("Op -> {:?}", operator)
             }
+            Token::Type(oftype) => format!("Type -> {}", &oftype),
+            Token::Line(line) => format!("Line Number -> {}", &line),
+            Token::Break => format!("Break"),
         }
     }
 }

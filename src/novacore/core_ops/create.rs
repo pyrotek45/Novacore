@@ -1,6 +1,10 @@
 use std::rc::Rc;
 
-use crate::novacore::{core::Token, evaluator::Evaluator, state};
+use crate::novacore::{
+    core::{Token, LT},
+    evaluator::Evaluator,
+    state,
+};
 
 pub fn range(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
     if let (Some(end), Some(start)) = (state.get_from_heap_or_pop(), state.get_from_heap_or_pop()) {
@@ -12,7 +16,7 @@ pub fn range(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::S
                 }
                 state
                     .execution_stack
-                    .push(Token::List(Rc::new(new_list.to_vec())));
+                    .push(Token::List(LT::Packed(Rc::new(new_list.to_vec()))));
             }
             _ => {
                 println!("cant make a range from these types");

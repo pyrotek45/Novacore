@@ -1,7 +1,7 @@
 use hashbrown::HashMap;
 
 use crate::novacore::{
-    core::{Block, Token},
+    core::{Block, Token, LT},
     evaluator::Evaluator,
     state::{self},
 };
@@ -86,8 +86,8 @@ pub fn for_loop(state: Box<state::State>, eval: &mut Evaluator) -> Box<state::St
         match (block, list, variable) {
             (
                 Token::Block(Block::Literal(block)),
-                Token::List(ref list),
-                Token::Identifier(variable_name),
+                Token::List(LT::Packed(ref list)),
+                Token::Identifier(variable_name, oftype),
             ) => {
                 'outer1: for variable in list.iter() {
                     if variable_name != "_" {
@@ -152,7 +152,7 @@ pub fn user_chain_call(mut state: Box<state::State>, eval: &mut Evaluator) -> Bo
 
 pub fn get_access(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
     match (state.execution_stack.pop(), state.get_from_heap_or_pop()) {
-        (Some(Token::Identifier(ident)), Some(Token::Block(Block::Literal(block)))) => {
+        (Some(Token::Identifier(ident, _)), Some(Token::Block(Block::Literal(block)))) => {
             match ident.as_str() {
                 "len" => state
                     .execution_stack

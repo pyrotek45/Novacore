@@ -13,6 +13,7 @@ modulo = "0.1.2"
 hashbrown = "0.12"
 rustyline-derive = "0.7.0"
 crossterm = "0.25.0"
+itertools = "0.10.3"
 
 [profile.dev]
 opt-level = 3

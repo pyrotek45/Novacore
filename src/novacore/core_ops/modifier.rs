@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::novacore::{
-    core::{Block, Operator, Token},
+    core::{Block, Operator, Token, Types},
     evaluator::Evaluator,
     state,
 };
@@ -21,7 +21,7 @@ pub fn closure_let(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<st
             let mut core_self = vec![];
 
             for (ident, token) in scope {
-                core_self.push(Token::Identifier(ident.clone()));
+                core_self.push(Token::Identifier(ident.clone(), Types::Any));
                 core_self.push(token.clone());
                 core_self.push(Token::Op(Operator::VariableAssign))
             }

@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use colored::Colorize;
 
-use crate::novacore::core::{Block, Token};
+use crate::novacore::core::{Block, Token, LT};
 
 pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
     for t in block.iter() {
@@ -39,7 +39,7 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                 //Block::Struct(_) => todo!(),
             }
         }
-        if let Token::List(block) = &t {
+        if let Token::List(LT::Raw(block)) = &t {
             println!(
                 "{}{}{}",
                 sdep.bright_cyan(),

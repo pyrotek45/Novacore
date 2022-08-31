@@ -1,8 +1,12 @@
+use core::num;
 use std::rc::Rc;
 
 use crate::novacore::core::Block;
 
-use super::core::{Operator, Token};
+use super::{
+    core::{Operator, Token, Types},
+    debugger,
+};
 
 pub struct Parser {
     pub operator_stack: Vec<Token>,
@@ -11,11 +15,11 @@ pub struct Parser {
 }
 
 impl Parser {
-    pub fn new() -> Self {
+    pub fn new(debug: bool) -> Self {
         Parser {
             operator_stack: Vec::new(),
             output_stack: Vec::new(),
-            debug: false,
+            debug,
         }
     }
 
@@ -44,7 +48,7 @@ impl Parser {
                     match &block {
                         Block::Literal(shunted) => {
                             // Shunt blocks first time
-                            let mut np = Parser::new();
+                            let mut np = Parser::new(self.debug);
                             if self.debug {
                                 np.debug = true;
                             }
@@ -55,7 +59,7 @@ impl Parser {
                         }
                         Block::Lambda(shunted) => {
                             // Shunt blocks first time
-                            let mut np = Parser::new();
+                            let mut np = Parser::new(self.debug);
                             if self.debug {
                                 np.debug = true;
                             }
@@ -157,7 +161,7 @@ impl Parser {
                         _ => self.operator_stack.push(token),
                     }
                 }
-                Token::Identifier(_) => {
+                Token::Identifier(_, _) => {
                     self.output_stack.push(token);
                     if let Some(last) = self.operator_stack.last().cloned() {
                         if let Token::Op(function) = last.clone() {
@@ -234,14 +238,28 @@ impl Parser {
                         continue;
                     }
                     Operator::StoreTemp
+                    | Operator::AddType
                     | Operator::UserFunctionChain
                     | Operator::SelfId
-                    | Operator::FunctionVariableAssign => self.output_stack.push(token),
+                    | Operator::FunctionVariableAssign(_) => self.output_stack.push(token),
                     _ => self.operator_stack.push(token),
                 },
                 Token::Char(_) => self.output_stack.push(token),
-                Token::UserBlockCall(_) => self.operator_stack.push(token),
-                Token::Function(_) => self.operator_stack.push(token),
+                Token::UserBlockCall(_) => {
+                    if self.debug {
+                        self.output_stack.push(Token::Break);
+                    };
+                    self.operator_stack.push(token)
+                }
+                Token::Function(_) => {
+                    if self.debug {
+                        self.output_stack.push(Token::Break);
+                    }
+                    self.operator_stack.push(token)
+                }
+                Token::Type(_) => self.operator_stack.push(token),
+                Token::Line(_) => self.output_stack.push(token),
+                Token::Break => self.output_stack.push(token),
             }
         }
 

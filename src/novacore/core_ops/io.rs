@@ -3,8 +3,8 @@ use crate::novacore::{core::Token, evaluator::Evaluator, state};
 pub fn println(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
     if let Some(token) = state.get_from_heap_or_pop() {
         match token {
-            Token::Identifier(token) => {
-                print!("{}\r\n", &token)
+            Token::Identifier(token, oftype) => {
+                print!("{}:{:?}\r\n", &token, &oftype)
             }
             Token::Function(index) => {
                 print!("{}\r\n", index)
@@ -39,6 +39,7 @@ pub fn println(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state:
             Token::Op(_) => {
                 print!("Op\r\n")
             }
+            _ => {}
         }
     }
 
@@ -48,8 +49,8 @@ pub fn println(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state:
 pub fn print(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
     if let Some(token) = state.get_from_heap_or_pop() {
         match token {
-            Token::Identifier(token) => {
-                print!("{}", &token)
+            Token::Identifier(token, oftype) => {
+                print!("{}:{:?}", &token, &oftype)
             }
             Token::Function(index) => {
                 print!("{}", index)
@@ -84,6 +85,7 @@ pub fn print(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::S
             Token::Op(_) => {
                 print!("Op")
             }
+            _ => {}
         }
     }
 
