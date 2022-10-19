@@ -105,13 +105,7 @@ impl Lexer {
             // change to && and ||
             "and" => Token::Op(Operator::And),
             "or" => Token::Op(Operator::Or),
-            _ => {
-                if let Some(index) = self.function_list.get(token) {
-                    Token::Function(*index)
-                } else {
-                    Token::Identifier(self.buffer.to_lowercase())
-                }
-            }
+            _ => Token::Identifier(self.buffer.to_lowercase()),
         }
     }
 
@@ -304,9 +298,14 @@ impl Lexer {
                                 if let Some(ref last) = vec_last.pop() {
                                     match &last {
                                         Token::Identifier(ident) => {
-                                            vec_last.push(Token::UserBlockCall(ident.clone()));
-                                            vec_last.push(Token::Symbol(c));
-                                            continue;
+                                            if let Some(index) = self.function_list.get(ident) {
+                                                vec_last.push(Token::Function(*index));
+                                                continue;
+                                            } else {
+                                                vec_last.push(Token::UserBlockCall(ident.clone()));
+                                                vec_last.push(Token::Symbol(c));
+                                                continue;
+                                            }
                                         }
                                         Token::Symbol(')') => {
                                             vec_last.push(last.clone());
