@@ -90,6 +90,8 @@ impl Vm {
         self.add_function("let", core_ops::modifier::closure_let);
         // proc
         // rec
+        self.add_function("if", core_ops::control::if_statement);
+        self.add_function("for", core_ops::control::for_loop);
     }
 
     pub fn debug_file(&mut self, filename: &str) {

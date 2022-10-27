@@ -252,7 +252,6 @@ impl Parser {
             if t != Token::Symbol(':') {
                 self.output_stack.push(t);
             }
-
         }
 
         self.output_stack.to_owned()

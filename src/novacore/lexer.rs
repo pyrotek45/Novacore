@@ -97,8 +97,8 @@ impl Lexer {
             "self" => Token::Op(Operator::SelfId),
             "break" => Token::Op(Operator::Break),
             "continue" => Token::Op(Operator::Continue),
-            "if" => Token::Op(Operator::If),
-            "for" => Token::Op(Operator::For),
+            // "if" => Token::Op(Operator::If),
+            // "for" => Token::Op(Operator::For),
             // keep for now
             "true" => Token::Bool(true),
             "false" => Token::Bool(false),
