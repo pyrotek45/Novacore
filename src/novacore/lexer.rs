@@ -264,11 +264,10 @@ impl Lexer {
                                     match &last {
                                         Token::Identifier(ident) => {
                                             if let Some(index) = self.function_list.get(ident) {
-                                                vec_last.push(Token::Function(*index));
+                                                vec_last.push(Token::FlowFunction(*index));
                                                 continue;
                                             } else {
-                                                vec_last.push(Token::UserBlockCall(ident.clone()));
-                                                vec_last.push(Token::Symbol(c));
+                                                vec_last.push(Token::FlowUserBlockCall(ident.clone()));
                                                 continue;
                                             }
                                         }
@@ -322,6 +321,7 @@ impl Lexer {
                                         Token::Identifier(ident) => {
                                             if let Some(index) = self.function_list.get(ident) {
                                                 vec_last.push(Token::Function(*index));
+                                                vec_last.push(Token::Symbol(c));
                                                 continue;
                                             } else {
                                                 vec_last.push(Token::UserBlockCall(ident.clone()));

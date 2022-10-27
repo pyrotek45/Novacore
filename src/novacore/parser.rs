@@ -117,9 +117,6 @@ impl Parser {
                                     Token::Block(Block::Lambda(_)) => {
                                         self.output_stack.push(last.clone())
                                     }
-                                    Token::Symbol(':') => {
-
-                                    }
                                     Token::Function(_) => self.output_stack.push(last.clone()),
                                     _ => self.operator_stack.push(last.clone()),
                                 }
@@ -245,6 +242,8 @@ impl Parser {
                 Token::Char(_) => self.output_stack.push(token),
                 Token::UserBlockCall(_) => self.operator_stack.push(token),
                 Token::Function(_) => self.operator_stack.push(token),
+                Token::FlowFunction(_) => self.operator_stack.push(token),
+                Token::FlowUserBlockCall(_) => self.operator_stack.push(token),
             }
         }
 
@@ -254,6 +253,8 @@ impl Parser {
             }
         }
 
+
+        
         self.output_stack.to_owned()
     }
 }

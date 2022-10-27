@@ -22,7 +22,11 @@ impl Evaluator {
     pub fn eval(&mut self, mut state: Box<state::State>, expr: Token) -> Box<state::State> {
         match expr {
             Token::Function(index) => self.functions[index](state, self),
+            Token::FlowFunction(index) => self.functions[index](state, self),
             Token::UserBlockCall(function) => {
+                core_ops::control::user_block_call(state, self, &function)
+            }
+            Token::FlowUserBlockCall(function) => {
                 core_ops::control::user_block_call(state, self, &function)
             }
             Token::Block(Block::Lambda(block)) => {

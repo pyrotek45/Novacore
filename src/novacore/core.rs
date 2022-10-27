@@ -90,8 +90,10 @@ pub enum Token {
     // Op
     Identifier(String), // Variables
     Function(usize),    // Built in Op
+    FlowFunction(usize),
     Op(Operator),
-    UserBlockCall(String), // Block calls
+    UserBlockCall(String),
+    FlowUserBlockCall(String), // Block calls
 
     // Basix Types
     Integer(i128),
@@ -150,6 +152,8 @@ impl Token {
             Token::Op(operator) => {
                 format!("Op -> {:?}", operator)
             }
+            Token::FlowFunction(index) => format!("FlowFunction -> {}", &index),
+            Token::FlowUserBlockCall(_) => "Flow User Block Call".to_string(),
         }
     }
 }

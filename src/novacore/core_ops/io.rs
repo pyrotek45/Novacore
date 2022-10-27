@@ -39,6 +39,8 @@ pub fn println(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state:
             Token::Op(_) => {
                 print!("Op\r\n")
             }
+            Token::FlowFunction(_) => todo!(),
+            Token::FlowUserBlockCall(_) => todo!(),
         }
     }
 
@@ -84,6 +86,8 @@ pub fn print(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::S
             Token::Op(_) => {
                 print!("Op")
             }
+            Token::FlowFunction(_) => todo!(),
+            Token::FlowUserBlockCall(_) => todo!(),
         }
     }
 
