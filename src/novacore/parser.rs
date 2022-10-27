@@ -107,8 +107,8 @@ impl Parser {
                             if let Some(ref last) = self.operator_stack.pop() {
                                 match &last {
                                     Token::Op(fun) => match fun {
-                                        Operator::If => self.operator_stack.push(last.clone()),
-                                        Operator::For => self.operator_stack.push(last.clone()),
+                                        // Operator::If => self.operator_stack.push(last.clone()),
+                                        // Operator::For => self.operator_stack.push(last.clone()),
                                         _ => {
                                             self.output_stack.push(last.clone());
                                         }
@@ -116,6 +116,9 @@ impl Parser {
                                     Token::UserBlockCall(_) => self.output_stack.push(last.clone()),
                                     Token::Block(Block::Lambda(_)) => {
                                         self.output_stack.push(last.clone())
+                                    }
+                                    Token::Symbol(':') => {
+
                                     }
                                     Token::Function(_) => self.output_stack.push(last.clone()),
                                     _ => self.operator_stack.push(last.clone()),
@@ -246,7 +249,10 @@ impl Parser {
         }
 
         while let Some(t) = self.operator_stack.pop() {
-            self.output_stack.push(t);
+            if t != Token::Symbol(':') {
+                self.output_stack.push(t);
+            }
+
         }
 
         self.output_stack.to_owned()

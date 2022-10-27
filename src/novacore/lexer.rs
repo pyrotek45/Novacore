@@ -259,6 +259,28 @@ impl Lexer {
 
                     if let Some(vec_last) = self.block_stack.last_mut() {
                         match c {
+                            ':' => {
+                                if let Some(ref last) = vec_last.pop() {
+                                    match &last {
+                                        Token::Identifier(ident) => {
+                                            if let Some(index) = self.function_list.get(ident) {
+                                                vec_last.push(Token::Function(*index));
+                                                continue;
+                                            } else {
+                                                vec_last.push(Token::UserBlockCall(ident.clone()));
+                                                vec_last.push(Token::Symbol(c));
+                                                continue;
+                                            }
+                                        }
+                                        _ => {
+                                            vec_last.push(last.clone());
+                                            vec_last.push(Token::Symbol(c))
+                                        }
+                                    }
+                                } else {
+                                    vec_last.push(Token::Symbol(c))
+                                }
+                            }
                             ')' => {
                                 if self.is_parsing_chain {
                                     vec_last.push(Token::Op(Operator::UserFunctionChain));
