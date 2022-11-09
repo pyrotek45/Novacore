@@ -271,6 +271,10 @@ impl Lexer {
                                                 continue;
                                             }
                                         }
+                                        Token::Block(Block::Literal(block)) => {
+                                            vec_last.push(Token::Block(Block::Lambda(block.clone())));
+                                            continue;
+                                        }
                                         _ => {
                                             vec_last.push(last.clone());
                                             vec_last.push(Token::Symbol(c))
