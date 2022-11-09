@@ -26,13 +26,12 @@ impl Vm {
     }
 
     pub fn run_string(&mut self, input: &str) {
-        
         self.lexer = lexer::Lexer::new();
         self.lexer.insert_string(input);
         self.parser = parser::Parser::new();
         self.init();
-        self.evaluator.evaluate(self.parser.shunt(self.lexer.parse()))
-
+        self.evaluator
+            .evaluate(self.parser.shunt(self.lexer.parse()))
     }
 
     pub fn get_last_in_state(&mut self) -> Option<String> {
