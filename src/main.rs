@@ -108,10 +108,10 @@ fn main() {
                     if repl_debug {
                         core.debug_string(&line)
                     } else {
-                        core = core.run_string(&line);
-                        // if let Some(last) = core.get_last_in_state() {
-                        //     println!("{}", last)
-                        // }
+                        core.run_string(&line);
+                        if let Some(last) = core.get_last_in_state() {
+                            println!("{}", last)
+                        }
                     }
                 }
                 Err(ReadlineError::Interrupted) => {

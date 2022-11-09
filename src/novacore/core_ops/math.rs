@@ -1,4 +1,4 @@
-use crate::novacore::{core::Token, evaluator::Evaluator, state};
+use crate::novacore::{core::Token, evaluator::Evaluator};
 
 pub fn sqrt(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {

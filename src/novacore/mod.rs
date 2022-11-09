@@ -25,26 +25,22 @@ impl Vm {
             .evaluate(self.parser.shunt(self.lexer.parse()));
     }
 
-    pub fn run_string(mut self, input: &str) -> Vm {
+    pub fn run_string(&mut self, input: &str) {
+        
         self.lexer = lexer::Lexer::new();
         self.lexer.insert_string(input);
         self.parser = parser::Parser::new();
         self.init();
-        Vm {
-            // state: self
-            //     .evaluator
-            //     .evaluate(self.parser.shunt(self.lexer.parse())),
-            lexer: self.lexer,
-            parser: self.parser,
-            evaluator: self.evaluator,
-        }
+        self.evaluator.evaluate(self.parser.shunt(self.lexer.parse()))
+
     }
 
-    // pub fn get_last_in_state(&mut self) -> Option<String> {
-    //     self.state
-    //         .get_from_heap_or_pop()
-    //         .map(|tok| format!(" ---> [{}]", tok.to_str()))
-    // }
+    pub fn get_last_in_state(&mut self) -> Option<String> {
+        self.evaluator
+            .state
+            .get_from_heap_or_pop()
+            .map(|tok| format!(" ---> [{}]", tok.to_str()))
+    }
 
     pub fn add_function(&mut self, name: &str, function: CallBack) {
         self.lexer
@@ -67,13 +63,13 @@ impl Vm {
         // pow
 
         // create
-        //self.add_function("range", core_ops::create::range);
+        self.add_function("range", core_ops::create::range);
 
         // random
-        //self.add_function("random", core_ops::random::random);
+        self.add_function("random", core_ops::random::random);
 
         // time
-        //self.add_function("sleep", core_ops::time::sleep);
+        self.add_function("sleep", core_ops::time::sleep);
 
         // list
         // push
@@ -85,12 +81,12 @@ impl Vm {
         // append
 
         // modifier
-        //self.add_function("proc", core_ops::modifier::proc);
-        //self.add_function("let", core_ops::modifier::closure_let);
+        self.add_function("proc", core_ops::modifier::proc);
+        self.add_function("let", core_ops::modifier::closure_let);
         // proc
         // rec
-        //self.add_function("if", core_ops::control::if_statement);
-        //self.add_function("for", core_ops::control::for_loop);
+        self.add_function("if", core_ops::control::if_statement);
+        self.add_function("for", core_ops::control::for_loop);
     }
 
     pub fn debug_file(&mut self, filename: &str) {

@@ -1,4 +1,4 @@
-use crate::novacore::{core::Token, evaluator::Evaluator, state};
+use crate::novacore::{core::Token, evaluator::Evaluator};
 
 pub fn println(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {

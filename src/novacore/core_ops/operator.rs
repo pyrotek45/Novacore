@@ -5,7 +5,6 @@ use modulo::Mod;
 use crate::novacore::{
     core::{Block, Operator, Token},
     evaluator::Evaluator,
-    state,
 };
 
 pub fn add(eval: &mut Evaluator) {
@@ -72,9 +71,9 @@ pub fn add(eval: &mut Evaluator) {
             }
             (Token::List(left), Token::List(right)) => {
                 let mut newlist = vec![];
-                newlist.clone_from(&*left);
+                newlist.clone_from(left);
                 let mut secondlist = vec![];
-                secondlist.clone_from(&*right);
+                secondlist.clone_from(right);
 
                 newlist.append(&mut secondlist);
                 eval.state

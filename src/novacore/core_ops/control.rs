@@ -3,7 +3,6 @@ use hashbrown::HashMap;
 use crate::novacore::{
     core::{Block, Token},
     evaluator::Evaluator,
-    state::{self},
 };
 
 pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {

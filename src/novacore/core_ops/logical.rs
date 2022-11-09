@@ -1,4 +1,4 @@
-use crate::novacore::{core::Token, evaluator::Evaluator, state};
+use crate::novacore::{core::Token, evaluator::Evaluator};
 
 pub fn logical_and(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (

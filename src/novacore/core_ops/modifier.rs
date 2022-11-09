@@ -3,21 +3,19 @@ use std::rc::Rc;
 use crate::novacore::{
     core::{Block, Operator, Token},
     evaluator::Evaluator,
-    state,
 };
 
-pub fn proc(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
-    if let Some(Token::Block(Block::Literal(block))) = state.get_from_heap_or_pop() {
-        state
+pub fn proc(eval: &mut Evaluator) {
+    if let Some(Token::Block(Block::Literal(block))) = eval.state.get_from_heap_or_pop() {
+        eval.state
             .execution_stack
             .push(Token::Block(Block::Procedure(block)));
     }
-    state
 }
 
-pub fn closure_let(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
-    if let Some(Token::Block(Block::Literal(block))) = state.get_from_heap_or_pop() {
-        if let Some(scope) = state.call_stack.last_mut() {
+pub fn closure_let(eval: &mut Evaluator) {
+    if let Some(Token::Block(Block::Literal(block))) = eval.state.get_from_heap_or_pop() {
+        if let Some(scope) = eval.state.call_stack.last_mut() {
             let mut core_self = vec![];
 
             for (ident, token) in scope {
@@ -30,10 +28,9 @@ pub fn closure_let(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<st
                 core_self.push(t.clone())
             }
 
-            state
+            eval.state
                 .execution_stack
                 .push(Token::Block(Block::Literal(Rc::new(core_self))))
         }
     }
-    state
 }
