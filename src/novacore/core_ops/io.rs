@@ -1,7 +1,7 @@
 use crate::novacore::{core::Token, evaluator::Evaluator, state};
 
-pub fn println(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
-    if let Some(token) = state.get_from_heap_or_pop() {
+pub fn println(eval: &mut Evaluator) {
+    if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
             Token::Identifier(token) => {
                 print!("{}\r\n", &token)
@@ -43,12 +43,10 @@ pub fn println(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state:
             Token::FlowUserBlockCall(_) => todo!(),
         }
     }
-
-    state
 }
 
-pub fn print(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
-    if let Some(token) = state.get_from_heap_or_pop() {
+pub fn print(eval: &mut Evaluator) {
+    if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
             Token::Identifier(token) => {
                 print!("{}", &token)
@@ -90,6 +88,4 @@ pub fn print(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::S
             Token::FlowUserBlockCall(_) => todo!(),
         }
     }
-
-    state
 }

@@ -253,8 +253,6 @@ impl Parser {
             }
         }
 
-
-        
         self.output_stack.to_owned()
     }
 }

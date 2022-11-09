@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use super::{evaluator::Evaluator, state};
 
-pub type CallBack = fn(state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State>;
+pub type CallBack = fn(eval: &mut Evaluator);
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Block {

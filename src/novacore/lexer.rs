@@ -267,12 +267,14 @@ impl Lexer {
                                                 vec_last.push(Token::FlowFunction(*index));
                                                 continue;
                                             } else {
-                                                vec_last.push(Token::FlowUserBlockCall(ident.clone()));
+                                                vec_last
+                                                    .push(Token::FlowUserBlockCall(ident.clone()));
                                                 continue;
                                             }
                                         }
                                         Token::Block(Block::Literal(block)) => {
-                                            vec_last.push(Token::Block(Block::Lambda(block.clone())));
+                                            vec_last
+                                                .push(Token::Block(Block::Lambda(block.clone())));
                                             continue;
                                         }
                                         _ => {

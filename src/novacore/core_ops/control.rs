@@ -6,28 +6,24 @@ use crate::novacore::{
     state::{self},
 };
 
-pub fn user_block_call(
-    mut state: Box<state::State>,
-    eval: &mut Evaluator,
-    function_name: &str,
-) -> Box<state::State> {
-    if let Some(token) = state.get_from_heap(function_name) {
+pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
+    if let Some(token) = eval.state.get_from_heap(function_name) {
         if let Token::Block(block) = token {
             match block {
                 Block::Literal(block) => {
                     // Call with new scope
-                    state.call_stack.push(HashMap::new());
+                    eval.state.call_stack.push(HashMap::new());
 
-                    state = eval.evaluate(block.to_vec(), state);
+                    eval.evaluate(block.to_vec());
 
-                    if let Some(token) = state.get_from_heap_or_pop() {
-                        state.execution_stack.push(token)
+                    if let Some(token) = eval.state.get_from_heap_or_pop() {
+                        eval.state.execution_stack.push(token)
                     }
-                    state.call_stack.pop();
+                    eval.state.call_stack.pop();
                 }
                 Block::Procedure(block) => {
                     // call in same scope
-                    state = eval.evaluate(block.to_vec(), state)
+                    eval.evaluate(block.to_vec())
                 }
                 Block::Lambda(_) => todo!(),
             }
@@ -35,47 +31,41 @@ pub fn user_block_call(
             println!("Cant call this type");
         }
     }
-
-    state
 }
 
-pub fn if_statement(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
-    if let (Some(block), Some(boolmaybe)) =
-        (state.get_from_heap_or_pop(), state.get_from_heap_or_pop())
-    {
+pub fn if_statement(eval: &mut Evaluator) {
+    if let (Some(block), Some(boolmaybe)) = (
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
         //if true single if statement
         if let Token::Bool(bool) = boolmaybe {
             if bool {
                 if let Token::Block(Block::Literal(block)) = block {
-                    state = eval.evaluate(block.to_vec(), state)
+                    eval.evaluate(block.to_vec())
                 }
             }
-        } else if let Some(Token::Bool(bool)) = state.get_from_heap_or_pop() {
+        } else if let Some(Token::Bool(bool)) = eval.state.get_from_heap_or_pop() {
             if bool {
                 if let Token::Block(Block::Literal(block)) = boolmaybe {
-                    state = eval.evaluate(block.to_vec(), state)
+                    eval.evaluate(block.to_vec())
                 }
             } else if let Token::Block(Block::Literal(block)) = block {
-                state = eval.evaluate(block.to_vec(), state)
+                eval.evaluate(block.to_vec())
             }
         }
     }
-
-    state
 }
 
-pub fn break_loop(mut state: Box<state::State>) -> Box<state::State> {
-    state.exit_loop = true;
-
-    state
+pub fn break_loop(eval: &mut Evaluator) {
+    eval.state.exit_loop = true;
 }
 
-pub fn for_loop(state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
-    let mut state = state;
+pub fn for_loop(eval: &mut Evaluator) {
     if let (Some(block), Some(list), Some(variable)) = (
-        state.get_from_heap_or_pop(),
-        state.get_from_heap_or_pop(),
-        state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
+        eval.state.execution_stack.pop(),
     ) {
         match (block, list, variable) {
             (
@@ -85,54 +75,52 @@ pub fn for_loop(state: Box<state::State>, eval: &mut Evaluator) -> Box<state::St
             ) => {
                 'outer1: for variable in list.iter() {
                     if variable_name != "_" {
-                        if let Some(scope) = state.call_stack.last_mut() {
+                        if let Some(scope) = eval.state.call_stack.last_mut() {
                             scope.insert(variable_name.to_string(), variable.clone());
                         }
                     }
                     for t in block.iter() {
-                        state = eval.eval(state, t.clone());
+                        eval.eval(t.clone());
 
-                        if state.exit_loop {
+                        if eval.state.exit_loop {
                             break 'outer1;
                         }
-                        if state.continue_loop {
-                            state.continue_loop = false;
+                        if eval.state.continue_loop {
+                            eval.state.continue_loop = false;
                             continue 'outer1;
                         }
                     }
                 }
-                if let Some(scope) = state.call_stack.last_mut() {
+                if let Some(scope) = eval.state.call_stack.last_mut() {
                     scope.remove(&variable_name);
                 }
-                state.exit_loop = false;
+                eval.state.exit_loop = false;
             }
             _ => {
                 println!("cant make a iterate from these types");
             }
         }
     }
-
-    state
 }
 
-pub fn user_chain_call(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
-    if let Some(token) = &state.temp {
+pub fn user_chain_call(eval: &mut Evaluator) {
+    if let Some(token) = &eval.state.temp {
         if let Token::Block(block) = token {
             match block {
                 Block::Literal(block) => {
                     // Call with new scope
-                    state.call_stack.push(HashMap::new());
+                    eval.state.call_stack.push(HashMap::new());
 
-                    state = eval.evaluate(block.to_vec(), state);
+                    eval.evaluate(block.to_vec());
 
-                    if let Some(token) = state.get_from_heap_or_pop() {
-                        state.execution_stack.push(token)
+                    if let Some(token) = eval.state.get_from_heap_or_pop() {
+                        eval.state.execution_stack.push(token)
                     }
-                    state.call_stack.pop();
+                    eval.state.call_stack.pop();
                 }
                 Block::Procedure(block) => {
                     // call in same scope
-                    state = eval.evaluate(block.to_vec(), state)
+                    eval.evaluate(block.to_vec())
                 }
                 Block::Lambda(_) => todo!(),
             }
@@ -140,29 +128,31 @@ pub fn user_chain_call(mut state: Box<state::State>, eval: &mut Evaluator) -> Bo
             println!("Cant call this type");
         }
     }
-
-    state
 }
 
-pub fn get_access(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
-    match (state.execution_stack.pop(), state.get_from_heap_or_pop()) {
+pub fn get_access(eval: &mut Evaluator) {
+    match (
+        eval.state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
         (Some(Token::Identifier(ident)), Some(Token::Block(Block::Literal(block)))) => {
             match ident.as_str() {
-                "len" => state
+                "len" => eval
+                    .state
                     .execution_stack
                     .push(Token::Integer(block.len() as i128)),
                 _ => {
-                    state.call_stack.push(HashMap::new());
+                    eval.state.call_stack.push(HashMap::new());
 
                     for t in block.iter() {
-                        state = eval.eval(state, t.clone())
+                        eval.eval(t.clone())
                     }
 
-                    if let Some(tok) = state.get_from_heap(&ident) {
-                        state.execution_stack.push(tok)
+                    if let Some(tok) = eval.state.get_from_heap(&ident) {
+                        eval.state.execution_stack.push(tok)
                     }
 
-                    state.call_stack.pop();
+                    eval.state.call_stack.pop();
                 }
             }
         }
@@ -170,16 +160,10 @@ pub fn get_access(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<sta
             println!("Cant access this");
         }
     }
-
-    state
 }
 
-pub fn store_temp(mut state: Box<state::State>) -> Box<state::State> {
-    match state.get_from_heap_or_pop() {
-        Some(token) => {
-            state.temp = Some(token);
-            state
-        }
-        None => state,
+pub fn store_temp(eval: &mut Evaluator) {
+    if let Some(token) = eval.state.get_from_heap_or_pop() {
+        eval.state.temp = Some(token);
     }
 }
