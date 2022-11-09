@@ -62,7 +62,7 @@ impl Vm {
         // clear
 
         // math
-        //self.add_function("sqrt", core_ops::math::sqrt);
+        self.add_function("sqrt", core_ops::math::sqrt);
 
         // pow
 

@@ -1,21 +1,21 @@
 use crate::novacore::{core::Token, evaluator::Evaluator, state};
 
-pub fn sqrt(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::State> {
-    match state.get_from_heap_or_pop() {
+pub fn sqrt(eval: &mut Evaluator) {
+    match eval.state.get_from_heap_or_pop() {
         Some(left) => {
             match &left {
                 Token::Integer(left) => {
-                    state
+                    eval.state
                         .execution_stack
                         .push(Token::Float((*left as f64).sqrt()));
                 }
                 Token::Float(left) => {
-                    state.execution_stack.push(Token::Float(left.sqrt()));
+                    eval.state.execution_stack.push(Token::Float(left.sqrt()));
                 }
                 _ => {
                     // Log error
-                    if state.debug {
-                        state
+                    if eval.state.debug {
+                        eval.state
                             .error_log
                             .push(format!("can not sqrt this type {:?} ", left));
                     }
@@ -24,13 +24,11 @@ pub fn sqrt(mut state: Box<state::State>, eval: &mut Evaluator) -> Box<state::St
         }
         None => {
             // Log error
-            if state.debug {
-                state
+            if eval.state.debug {
+                eval.state
                     .error_log
                     .push("Not enough arguments for ! not".to_string());
             }
         }
     }
-
-    state
 }
