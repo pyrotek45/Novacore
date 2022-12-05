@@ -82,6 +82,7 @@ impl Vm {
         // modifier
         self.add_function("proc", core_ops::modifier::proc);
         self.add_function("let", core_ops::modifier::closure_let);
+        self.add_function("rec", core_ops::modifier::closure_rec);
         // proc
         // rec
         self.add_function("if", core_ops::control::if_statement);

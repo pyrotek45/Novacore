@@ -49,6 +49,26 @@ pub fn add(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::String(left.to_string() + &right.to_string()));
             }
+            (Token::String(left), Token::Float(right)) => {
+                eval.state
+                    .execution_stack
+                    .push(Token::String(left.to_string() + &right.to_string()));
+            }
+            (Token::Float(left), Token::String(right)) => {
+                eval.state
+                    .execution_stack
+                    .push(Token::String(left.to_string() + &right.to_string()));
+            }
+            (Token::String(left), Token::Bool(right)) => {
+                eval.state
+                    .execution_stack
+                    .push(Token::String(left.to_string() + &right.to_string()));
+            }
+            (Token::Bool(left), Token::String(right)) => {
+                eval.state
+                    .execution_stack
+                    .push(Token::String(left.to_string() + &right.to_string()));
+            }
             (Token::String(left), Token::Integer(right)) => {
                 eval.state
                     .execution_stack
@@ -80,6 +100,7 @@ pub fn add(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::List(Rc::new(newlist)));
             }
+
             _ => {
                 // Log error
                 if eval.state.debug {

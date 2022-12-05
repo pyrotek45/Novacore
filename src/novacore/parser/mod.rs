@@ -144,16 +144,6 @@ impl Parser {
                         //     }
                         // }
                         // Functions
-                        // ':' => {
-                        //     if let Some(token) = self.output_stack.pop() {
-                        //         match token.Token {
-                        //             Token::Identifier(ident) => self.operator_stack.push(Token {
-                        //                 Token: Token::UserFunction(ident),
-                        //             }),
-                        //             _ => self.operator_stack.push(token),
-                        //         }
-                        //     }
-                        // }
                         _ => self.operator_stack.push(token),
                     }
                 }
@@ -232,6 +222,11 @@ impl Parser {
                         // push token onto operator stack
                         self.operator_stack.push(token);
                         continue;
+                    }
+                    Operator::Pass => {
+                        if let Some(token) = self.operator_stack.pop() {
+                            self.output_stack.push(token)
+                        }
                     }
                     Operator::StoreTemp
                     | Operator::UserFunctionChain

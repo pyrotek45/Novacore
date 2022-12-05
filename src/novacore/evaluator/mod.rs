@@ -25,8 +25,14 @@ impl Evaluator {
 
     pub fn eval(&mut self, expr: Token) {
         match expr {
-            Token::Function(index) => self.functions[index](self),
-            Token::FlowFunction(index) => self.functions[index](self),
+            Token::Function(index) => {
+                self.state.current_function_index = index;
+                self.functions[index](self);
+            }
+            Token::FlowFunction(index) => {
+                self.state.current_function_index = index;
+                self.functions[index](self);
+            }
             Token::UserBlockCall(function) => core_ops::control::user_block_call(self, &function),
             Token::FlowUserBlockCall(function) => {
                 core_ops::control::user_block_call(self, &function)
@@ -41,6 +47,10 @@ impl Evaluator {
                 self.state.call_stack.pop();
             }
             Token::Op(operator) => match operator {
+                Operator::Continue => {
+                    self.state.continue_loop = true;
+                }
+                Operator::BlockCall => core_ops::control::block_call(self),
                 Operator::AccessCall => core_ops::control::get_access(self),
                 Operator::For => core_ops::control::for_loop(self),
                 Operator::If => core_ops::control::if_statement(self),

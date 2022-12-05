@@ -2,6 +2,8 @@ use std::rc::Rc;
 
 use hashbrown::HashMap;
 
+use crate::novacore::core_ops::time::sleep;
+
 use super::{
     core::{Block, Operator, Token},
     utilities::is_string_number,
@@ -244,6 +246,8 @@ impl Lexer {
                             vec_last.push(Token::Op(Operator::AccessCall))
                         }
                         self.buffer.clear();
+                    } else if let Some(vec_last) = self.block_stack.last_mut() {
+                        vec_last.push(Token::Op(Operator::AccessCall))
                     }
                 }
 
@@ -330,6 +334,17 @@ impl Lexer {
                                                 vec_last.push(Token::Symbol(c));
                                                 continue;
                                             } else {
+                                                // check if accesscall is
+                                                if let Some(Token::Op(Operator::AccessCall)) =
+                                                    vec_last.last()
+                                                {
+                                                    vec_last.push(Token::Identifier(ident.clone()));
+                                                    self.is_parsing_chain = true;
+                                                    //vec_last.push(Token::Op(Operator::Pass));
+                                                    vec_last.push(Token::Op(Operator::StoreTemp));
+                                                    vec_last.push(Token::Symbol(c));
+                                                    continue;
+                                                }
                                                 vec_last.push(Token::UserBlockCall(ident.clone()));
                                                 vec_last.push(Token::Symbol(c));
                                                 continue;

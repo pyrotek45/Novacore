@@ -23,6 +23,9 @@ pub fn trim_newline(s: &mut String) -> String {
 
 pub fn is_string_number(data: &str) -> bool {
     let mut deci: bool = false;
+    if data.is_empty() {
+        return false;
+    }
     if data.starts_with('.') {
         return false;
     }

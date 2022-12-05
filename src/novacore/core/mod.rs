@@ -25,8 +25,10 @@ pub enum Operator {
     StoreTemp,
     UserFunctionCall,
 
+    BlockCall,
     Proc,
 
+    Pass,
     Readln,
     Flush,
     Clear,
@@ -83,6 +85,8 @@ pub enum Operator {
     //terminal stuff
     EnableRawMode,
     RawRead,
+
+    Rec,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -152,7 +156,9 @@ impl Token {
             Token::Op(operator) => {
                 format!("Op -> {:?}", operator)
             }
-            Token::FlowFunction(index) => format!("FlowFunction -> {}", &index),
+            Token::FlowFunction(index) => {
+                format!("FlowFunction -> {}", &index)
+            }
             Token::FlowUserBlockCall(_) => "Flow User Block Call".to_string(),
         }
     }

@@ -9,6 +9,7 @@ pub struct State {
     pub call_stack: Vec<HashMap<String, Token>>,
     pub error_log: Vec<String>,
     pub continue_loop: bool,
+    pub current_function_index: usize,
 }
 
 impl State {
@@ -56,5 +57,6 @@ pub fn new() -> Box<State> {
         error_log: vec![],
         exit_loop: false,
         continue_loop: false,
+        current_function_index: 0,
     })
 }

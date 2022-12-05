@@ -36,8 +36,8 @@ pub fn println(eval: &mut Evaluator) {
             Token::UserBlockCall(_) => {
                 print!("Block Call\r\n")
             }
-            Token::Op(_) => {
-                print!("Op\r\n")
+            Token::Op(optype) => {
+                print!("Operator -> {:?}\r\n", optype)
             }
             Token::FlowFunction(_) => todo!(),
             Token::FlowUserBlockCall(_) => todo!(),
