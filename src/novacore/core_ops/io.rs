@@ -1,4 +1,4 @@
-use crate::novacore::{core::Token, evaluator::Evaluator};
+use crate::novacore::{core::Token, evaluator::Evaluator, utilities::{is_string_number, trim_newline}};
 
 pub fn println(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
@@ -88,4 +88,31 @@ pub fn print(eval: &mut Evaluator) {
             Token::FlowUserBlockCall(_) => todo!(),
         }
     }
+}
+
+
+pub fn readln(eval: &mut Evaluator) {
+    let mut line = String::new();
+        std::io::stdin().read_line(&mut line).unwrap();
+        let line = trim_newline(&mut line);
+
+        if is_string_number(&line) {
+            // Float
+            if line.contains('.') {
+                if let Ok(v) = line.parse() {
+                    eval.state.execution_stack.push(Token::Float(v));
+                }
+            } else {
+                // Int
+                if let Ok(v) = line.parse() {
+                    eval.state.execution_stack.push(Token::Integer(v));
+                }
+            }
+        } else if line.chars().count() == 1 {
+            if let Some(char) = line.chars().next() {
+                eval.state.execution_stack.push(Token::Char(char));
+            }
+        } else {
+            eval.state.execution_stack.push(Token::String(line));
+        }
 }

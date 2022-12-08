@@ -95,7 +95,7 @@ impl Lexer {
 
     fn match_token(&self, token: &str) -> Token {
         match token {
-            "return" => Token::Op(Operator::Return),
+            //"return" => Token::Op(Operator::Return),
             "self" => Token::Op(Operator::SelfId),
             "break" => Token::Op(Operator::Break),
             "continue" => Token::Op(Operator::Continue),

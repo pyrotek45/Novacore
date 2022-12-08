@@ -50,6 +50,7 @@ impl Vm {
         // io
         self.add_function("println", core_ops::io::println);
         self.add_function("print", core_ops::io::print);
+        self.add_function("readln", core_ops::io::readln);
 
         // readline
         // getch
@@ -66,11 +67,12 @@ impl Vm {
 
         // random
         self.add_function("random", core_ops::random::random);
+        self.add_function("return", core_ops::operator::return_top);
 
         // time
         self.add_function("sleep", core_ops::time::sleep);
 
-        // list
+        // // list
         // push
         // last
         // pop
@@ -79,12 +81,16 @@ impl Vm {
         // insert
         // append
 
-        // modifier
+        // //modifier
         self.add_function("proc", core_ops::modifier::proc);
         self.add_function("let", core_ops::modifier::closure_let);
         self.add_function("rec", core_ops::modifier::closure_rec);
-        // proc
-        // rec
+        self.add_function("auto", core_ops::modifier::closure_auto);
+        self.add_function("auto", core_ops::modifier::closure_auto);
+        self.add_function("method", core_ops::modifier::method);
+        self.add_function("object", core_ops::modifier::object);
+
+        // //control flow
         self.add_function("if", core_ops::control::if_statement);
         self.add_function("for", core_ops::control::for_loop);
     }

@@ -36,6 +36,9 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                     continue;
                 }
                 Block::Procedure(_) => todo!(),
+                Block::Auto(_, _) => todo!(),
+                Block::Object(_) => todo!(),
+                Block::Method(_) => todo!(),
                 //Block::Struct(_) => todo!(),
             }
         }

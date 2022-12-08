@@ -10,6 +10,7 @@ pub struct State {
     pub error_log: Vec<String>,
     pub continue_loop: bool,
     pub current_function_index: usize,
+    pub current_object_name: String,
 }
 
 impl State {
@@ -34,8 +35,8 @@ impl State {
         }
     }
 
-    pub fn get_from_heap(&mut self, ident: &str) -> Option<Token> {
-        if let Some(scope) = self.call_stack.last_mut() {
+    pub fn get_from_heap(&self, ident: &str) -> Option<Token> {
+        if let Some(scope) = self.call_stack.last() {
             if let Some(token) = scope.get(ident) {
                 Some(token.clone())
             } else {
@@ -58,5 +59,6 @@ pub fn new() -> Box<State> {
         exit_loop: false,
         continue_loop: false,
         current_function_index: 0,
+        current_object_name: "".to_string(),
     })
 }

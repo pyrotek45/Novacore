@@ -50,10 +50,10 @@ impl Evaluator {
                 Operator::Continue => {
                     self.state.continue_loop = true;
                 }
-                Operator::BlockCall => core_ops::control::block_call(self),
+                //Operator::BlockCall => core_ops::control::block_call(self),
                 Operator::AccessCall => core_ops::control::get_access(self),
-                Operator::For => core_ops::control::for_loop(self),
-                Operator::If => core_ops::control::if_statement(self),
+                //Operator::For => core_ops::control::for_loop(self),
+                //Operator::If => core_ops::control::if_statement(self),
                 Operator::UserFunctionChain => core_ops::control::user_chain_call(self),
                 Operator::Return => core_ops::operator::return_top(self),
                 Operator::StoreTemp => core_ops::control::store_temp(self),

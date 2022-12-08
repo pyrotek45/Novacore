@@ -9,6 +9,9 @@ pub enum Block {
     Literal(Rc<Vec<Token>>),
     Lambda(Rc<Vec<Token>>),
     Procedure(Rc<Vec<Token>>),
+    Auto(Rc<Vec<Token>>, Rc<Vec<Token>>),
+    Object(Rc<Vec<Token>>),
+    Method(Rc<Vec<Token>>),
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -25,7 +28,7 @@ pub enum Operator {
     StoreTemp,
     UserFunctionCall,
 
-    BlockCall,
+    //BlockCall,
     Proc,
 
     Pass,
