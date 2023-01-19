@@ -7,4 +7,5 @@ pub mod math;
 pub mod modifier;
 pub mod operator;
 pub mod random;
+pub mod shuffle;
 pub mod time;

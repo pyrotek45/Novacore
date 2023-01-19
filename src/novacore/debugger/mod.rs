@@ -15,44 +15,54 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
 
         if let Token::Block(block) = &t {
             match block {
-                Block::Literal(block) => {
+                Block::Parsed(block) => {
                     println!(
                         "{}{}{}",
                         sdep.bright_cyan(),
                         "|--".bright_cyan(),
-                        "BLOCK Literal:".bright_cyan()
+                        "Parsed:".bright_cyan()
                     );
                     debug_output(depth + 1, block.clone());
                     continue;
                 }
-                Block::Lambda(block) => {
+                Block::ParsedLambda(block) => {
                     println!(
                         "{}{}{}",
                         sdep.bright_cyan(),
                         "|--".bright_cyan(),
-                        "BLOCK Lambda:".bright_cyan()
+                        "Parsed Lambda:".bright_cyan()
+                    );
+                    debug_output(depth + 1, block.clone());
+                    continue;
+                }
+                Block::RawLambda(block) => {
+                    println!(
+                        "{}{}{}",
+                        sdep.bright_cyan(),
+                        "|--".bright_cyan(),
+                        "Raw Lambda:".bright_cyan()
                     );
                     debug_output(depth + 1, block.clone());
                     continue;
                 }
                 Block::Procedure(_) => todo!(),
                 Block::Auto(_, _) => todo!(),
-                Block::Object(_) => todo!(),
-                Block::Method(_) => todo!(),
-                //Block::Struct(_) => todo!(),
+                Block::Modifier(_, _) => todo!(),
+                Block::Function(_) => todo!(),
+                Block::List(_) => todo!(),
+                Block::Raw(block) => {
+                    println!(
+                        "{}{}{}",
+                        sdep.bright_cyan(),
+                        "|--".bright_cyan(),
+                        "Raw:".bright_cyan()
+                    );
+                    debug_output(depth + 1, block.clone());
+                    continue;
+                }
             }
         }
-        if let Token::List(block) = &t {
-            println!(
-                "{}{}{}",
-                sdep.bright_cyan(),
-                "|--".bright_cyan(),
-                "LIST:".bright_cyan()
-            );
-            debug_output(depth + 1, block.clone());
-            continue;
-        }
-        println!("{} -> [{}]", sdep.bright_cyan(), t.to_str().bright_blue());
+        println!("{}[{}]", sdep.bright_cyan(), t.to_str().bright_blue());
 
         //printstack.push_str(&("[".to_owned() + &t.get_Token_as_string() + "]"));
         //printstack.push(' ');

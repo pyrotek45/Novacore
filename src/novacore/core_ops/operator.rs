@@ -89,17 +89,6 @@ pub fn add(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::String(left.to_string() + &right.to_string()));
             }
-            (Token::List(left), Token::List(right)) => {
-                let mut newlist = vec![];
-                newlist.clone_from(left);
-                let mut secondlist = vec![];
-                secondlist.clone_from(right);
-
-                newlist.append(&mut secondlist);
-                eval.state
-                    .execution_stack
-                    .push(Token::List(Rc::new(newlist)));
-            }
 
             _ => {
                 // Log error
@@ -353,7 +342,7 @@ pub fn variable_assign(eval: &mut Evaluator) {
 
 pub fn function_variable_assign(eval: &mut Evaluator) {
     let mut variable_stack: Vec<String> = Vec::with_capacity(10);
-    if let Some(Token::List(identifiers)) = eval.state.get_from_heap_or_pop() {
+    if let Some(Token::Block(Block::Raw(identifiers))) = eval.state.get_from_heap_or_pop() {
         for toks in identifiers.iter().rev() {
             if let Token::Identifier(ident) = &toks {
                 variable_stack.push(ident.clone())
@@ -392,12 +381,6 @@ pub fn get_self(eval: &mut Evaluator) {
 
         eval.state
             .execution_stack
-            .push(Token::Block(Block::Literal(Rc::new(core_self))))
-    }
-}
-
-pub fn return_top(eval: &mut Evaluator) {
-    if let Some(top) = eval.state.get_from_heap_or_pop() {
-        eval.state.execution_stack.push(top)
+            .push(Token::Block(Block::Parsed(Rc::new(core_self))))
     }
 }

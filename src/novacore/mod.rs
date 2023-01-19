@@ -16,7 +16,6 @@ pub struct Vm {
     lexer: lexer::Lexer,
     parser: parser::Parser,
     evaluator: Evaluator,
-    //instructions: Vec<Token>,
 }
 
 impl Vm {
@@ -41,6 +40,22 @@ impl Vm {
             .map(|tok| format!(" ---> [{}]", tok.to_str()))
     }
 
+    pub fn get_stack_output(&mut self) -> Option<String> {
+        let mut output_string = String::new();
+        output_string.push('[');
+        for stack_output in self.evaluator.state.execution_stack.iter() {
+            output_string.push_str(&stack_output.to_str_compact());
+            output_string.push(',')
+        }
+        output_string.pop();
+        if !output_string.is_empty() {
+            output_string.push(']');
+            Some(output_string)
+        } else {
+            None
+        }
+    }
+
     pub fn add_function(&mut self, name: &str, function: CallBack) {
         self.lexer
             .add_function(name, self.evaluator.add_function(function));
@@ -49,8 +64,10 @@ impl Vm {
     pub fn init(&mut self) {
         // io
         self.add_function("println", core_ops::io::println);
+        self.add_function("echo", core_ops::io::println);
         self.add_function("print", core_ops::io::print);
         self.add_function("readln", core_ops::io::readln);
+        self.add_function("dump", core_ops::io::dump);
 
         // readline
         // getch
@@ -67,10 +84,20 @@ impl Vm {
 
         // random
         self.add_function("random", core_ops::random::random);
-        self.add_function("return", core_ops::operator::return_top);
+
+        // stack operations
+        self.add_function("return", core_ops::shuffle::return_top);
+        self.add_function("dup", core_ops::shuffle::dup);
+        self.add_function("swap", core_ops::shuffle::swap);
+        self.add_function("drop", core_ops::shuffle::drop);
+        self.add_function("nip", core_ops::shuffle::nip);
+        self.add_function("over", core_ops::shuffle::over);
+        self.add_function("rot", core_ops::shuffle::rot);
+        self.add_function("wipe", core_ops::shuffle::wipe);
 
         // time
         self.add_function("sleep", core_ops::time::sleep);
+        self.add_function("time", core_ops::time::time);
 
         // // list
         // push
@@ -86,13 +113,17 @@ impl Vm {
         self.add_function("let", core_ops::modifier::closure_let);
         self.add_function("rec", core_ops::modifier::closure_rec);
         self.add_function("auto", core_ops::modifier::closure_auto);
-        self.add_function("auto", core_ops::modifier::closure_auto);
-        self.add_function("method", core_ops::modifier::method);
-        self.add_function("object", core_ops::modifier::object);
+        self.add_function("mod", core_ops::modifier::modifier);
+        self.add_function("func", core_ops::modifier::func);
+        self.add_function("list", core_ops::modifier::list);
 
         // //control flow
         self.add_function("if", core_ops::control::if_statement);
         self.add_function("for", core_ops::control::for_loop);
+        self.add_function("call", core_ops::control::block_call);
+        self.add_function("each", core_ops::control::each);
+        self.add_function("times", core_ops::control::times);
+        self.add_function("while", core_ops::control::while_loop);
     }
 
     pub fn debug_file(&mut self, filename: &str) {

@@ -3,41 +3,33 @@ use std::rc::Rc;
 use super::{evaluator::Evaluator, state};
 
 pub type CallBack = fn(eval: &mut Evaluator);
+pub type Instructions = Rc<Vec<Token>>;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Block {
-    Literal(Rc<Vec<Token>>),
-    Lambda(Rc<Vec<Token>>),
-    Procedure(Rc<Vec<Token>>),
-    Auto(Rc<Vec<Token>>, Rc<Vec<Token>>),
-    Object(Rc<Vec<Token>>),
-    Method(Rc<Vec<Token>>),
+    Raw(Instructions),
+    Parsed(Instructions),
+    ParsedLambda(Instructions),
+    RawLambda(Instructions),
+    Procedure(Instructions),
+    Function(Instructions),
+    Auto(Instructions, Instructions),
+    Modifier(Option<String>, Instructions),
+    List(Instructions),
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Operator {
     VariableAssign,
     FunctionVariableAssign,
 
     SelfId,
     Include,
-    Recursive,
     AccessCall, // the dot Token::operator
 
     UserFunctionChain,
     StoreTemp,
     UserFunctionCall,
-
-    //BlockCall,
-    Proc,
-
-    Pass,
-    Readln,
-    Flush,
-    Clear,
-    Getch,
-
-    Range,
 
     And,
     Or,
@@ -49,68 +41,51 @@ pub enum Operator {
 
     Neg,
     Mod,
-    Pow,
-    Sqrt,
 
     Add,
     Sub,
     Mul,
     Div,
 
-    For,
-    Match,
     Break,
     Continue,
-    If,
-
-    Let,
-    Ret,
 
     PopStack,
 
     Dup,
-
-    Random,
-
-    Command,
-    Sleep,
-
-    Push,
-    Pop,
-    Insert,
-    Remove,
-    Append,
-
-    Return,
-
-    Exit,
+    Pass,
 
     //terminal stuff
     EnableRawMode,
     RawRead,
-
-    Rec,
 }
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Token {
-    // Op
-    Identifier(String), // Variables
-    Function(usize),    // Built in Op
+    // Variables
+    Identifier(String),
+
+    // built in functions
+    Function(usize),
     FlowFunction(usize),
+
+    // symbols
     Op(Operator),
+
+    // user defined functions
     UserBlockCall(String),
     FlowUserBlockCall(String), // Block calls
 
-    // Basix Types
+    // Basic Types
     Integer(i128),
     Float(f64),
     String(String),
     Char(char),
     Symbol(char),
     Bool(bool),
+
+    // Raw type
     Block(Block),
-    List(Rc<Vec<Token>>),
 }
 
 impl Token {
@@ -154,8 +129,17 @@ impl Token {
             Token::Char(ch) => format!("Char -> {}", &ch),
             Token::Symbol(s) => format!("Symbol -> {}", &s),
             Token::Bool(b) => format!("Bool -> {}", &b),
-            Token::Block(_) => "Block".to_string(),
-            Token::List(_) => "List".to_string(),
+            Token::Block(block) => match block {
+                Block::Raw(_) => "Raw Block".to_string(),
+                Block::Parsed(_) => "Parsed Block".to_string(),
+                Block::ParsedLambda(_) => "Parsed Lambda".to_string(),
+                Block::Procedure(_) => "Procedure".to_string(),
+                Block::Function(_) => "Function".to_string(),
+                Block::Auto(_, _) => "Auto".to_string(),
+                Block::Modifier(_, _) => "Modifier".to_string(),
+                Block::List(_) => "List".to_string(),
+                Block::RawLambda(_) => "Raw Lambda".to_string(),
+            },
             Token::Op(operator) => {
                 format!("Op -> {:?}", operator)
             }
@@ -163,6 +147,38 @@ impl Token {
                 format!("FlowFunction -> {}", &index)
             }
             Token::FlowUserBlockCall(_) => "Flow User Block Call".to_string(),
+        }
+    }
+
+    pub fn to_str_compact(&self) -> String {
+        match self {
+            Token::Identifier(id) => format!("ID[{}]", &id),
+            Token::Function(index) => format!("F[{}]", &index),
+            Token::UserBlockCall(_) => "UBC".to_string(),
+            Token::Integer(int) => format!("{}", &int),
+            Token::Float(float) => format!("{}", &float),
+            Token::String(str) => format!("{}", &str),
+            Token::Char(ch) => format!("{}", &ch),
+            Token::Symbol(s) => format!("{}", &s),
+            Token::Bool(b) => format!("{}", &b),
+            Token::Block(block) => match block {
+                Block::Raw(_) => "RB".to_string(),
+                Block::Parsed(_) => "PB".to_string(),
+                Block::ParsedLambda(_) => "PL".to_string(),
+                Block::Procedure(_) => "PR".to_string(),
+                Block::Function(_) => "F".to_string(),
+                Block::Auto(_, _) => "A".to_string(),
+                Block::Modifier(_, _) => "MD".to_string(),
+                Block::List(_) => "L".to_string(),
+                Block::RawLambda(_) => "RL".to_string(),
+            },
+            Token::Op(operator) => {
+                format!("O[{:?}]", operator)
+            }
+            Token::FlowFunction(index) => {
+                format!("FLF[{}]", &index)
+            }
+            Token::FlowUserBlockCall(_) => "FUBC".to_string(),
         }
     }
 }

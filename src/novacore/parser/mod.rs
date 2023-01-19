@@ -42,37 +42,44 @@ impl Parser {
 
                 Token::Block(block) => {
                     match &block {
-                        Block::Literal(shunted) => {
+                        Block::Raw(raw) => {
+                            // leaves unparsed
+                            self.output_stack
+                                .push(Token::Block(Block::Raw(raw.clone())));
+                        }
+                        Block::RawLambda(raw) => {
+                            // leaves unparsed
+                            self.output_stack
+                                .push(Token::Block(Block::RawLambda(raw.clone())));
+                        }
+                        Block::Parsed(shunted) => {
                             // Shunt blocks first time
                             let mut np = Parser::new();
                             if self.debug {
                                 np.debug = true;
                             }
 
-                            self.output_stack.push(Token::Block(Block::Literal(Rc::new(
+                            self.output_stack.push(Token::Block(Block::Parsed(Rc::new(
                                 np.shunt(shunted.to_vec()),
                             ))));
                         }
-                        Block::Lambda(shunted) => {
+                        Block::ParsedLambda(shunted) => {
                             // Shunt blocks first time
                             let mut np = Parser::new();
                             if self.debug {
                                 np.debug = true;
                             }
 
-                            self.operator_stack.push(Token::Block(Block::Lambda(Rc::new(
-                                np.shunt(shunted.to_vec()),
-                            ))));
+                            self.operator_stack
+                                .push(Token::Block(Block::ParsedLambda(Rc::new(
+                                    np.shunt(shunted.to_vec()),
+                                ))));
                         }
                         _ => {
                             todo!()
                         }
                     }
                 }
-                Token::List(_) => {
-                    self.output_stack.push(token);
-                }
-
                 Token::Symbol(symbol) => {
                     match symbol {
                         ',' => {
@@ -114,7 +121,10 @@ impl Parser {
                                         }
                                     },
                                     Token::UserBlockCall(_) => self.output_stack.push(last.clone()),
-                                    Token::Block(Block::Lambda(_)) => {
+                                    Token::Block(Block::ParsedLambda(_)) => {
+                                        self.output_stack.push(last.clone())
+                                    }
+                                    Token::Block(Block::RawLambda(_)) => {
                                         self.output_stack.push(last.clone())
                                     }
                                     Token::Function(_) => self.output_stack.push(last.clone()),

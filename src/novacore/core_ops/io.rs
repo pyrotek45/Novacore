@@ -1,4 +1,10 @@
-use crate::novacore::{core::Token, evaluator::Evaluator, utilities::{is_string_number, trim_newline}};
+use crossterm::event::Event;
+
+use crate::novacore::{
+    core::Token,
+    evaluator::Evaluator,
+    utilities::{is_string_number, trim_newline},
+};
 
 pub fn println(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
@@ -29,9 +35,6 @@ pub fn println(eval: &mut Evaluator) {
             }
             Token::Block(_) => {
                 print!("BLOCK\r\n")
-            }
-            Token::List(_) => {
-                print!("LIST\r\n")
             }
             Token::UserBlockCall(_) => {
                 print!("Block Call\r\n")
@@ -75,9 +78,6 @@ pub fn print(eval: &mut Evaluator) {
             Token::Block(_) => {
                 print!("BLOCK")
             }
-            Token::List(_) => {
-                print!("LIST")
-            }
             Token::UserBlockCall(_) => {
                 print!("Block Call")
             }
@@ -90,29 +90,42 @@ pub fn print(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn readln(eval: &mut Evaluator) {
     let mut line = String::new();
-        std::io::stdin().read_line(&mut line).unwrap();
-        let line = trim_newline(&mut line);
+    std::io::stdin().read_line(&mut line).unwrap();
+    let line = trim_newline(&mut line);
 
-        if is_string_number(&line) {
-            // Float
-            if line.contains('.') {
-                if let Ok(v) = line.parse() {
-                    eval.state.execution_stack.push(Token::Float(v));
-                }
-            } else {
-                // Int
-                if let Ok(v) = line.parse() {
-                    eval.state.execution_stack.push(Token::Integer(v));
-                }
-            }
-        } else if line.chars().count() == 1 {
-            if let Some(char) = line.chars().next() {
-                eval.state.execution_stack.push(Token::Char(char));
+    if is_string_number(&line) {
+        // Float
+        if line.contains('.') {
+            if let Ok(v) = line.parse() {
+                eval.state.execution_stack.push(Token::Float(v));
             }
         } else {
-            eval.state.execution_stack.push(Token::String(line));
+            // Int
+            if let Ok(v) = line.parse() {
+                eval.state.execution_stack.push(Token::Integer(v));
+            }
         }
+    } else if line.chars().count() == 1 {
+        if let Some(char) = line.chars().next() {
+            eval.state.execution_stack.push(Token::Char(char));
+        }
+    } else {
+        eval.state.execution_stack.push(Token::String(line));
+    }
+}
+
+pub fn dump(eval: &mut Evaluator) {
+    let mut output_string = String::new();
+    output_string.push('[');
+    for stack_output in eval.state.execution_stack.iter() {
+        output_string.push_str(&stack_output.to_str_compact());
+        output_string.push(',')
+    }
+    output_string.pop();
+    if !output_string.is_empty() {
+        output_string.push(']');
+        println!("{}", output_string);
+    }
 }

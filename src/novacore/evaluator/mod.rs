@@ -26,18 +26,29 @@ impl Evaluator {
     pub fn eval(&mut self, expr: Token) {
         match expr {
             Token::Function(index) => {
-                self.state.current_function_index = index;
+                self.state.current_function_index.push(index);
                 self.functions[index](self);
+                self.state.current_function_index.pop();
             }
             Token::FlowFunction(index) => {
-                self.state.current_function_index = index;
+                self.state.current_function_index.push(index);
                 self.functions[index](self);
+                self.state.current_function_index.pop();
             }
             Token::UserBlockCall(function) => core_ops::control::user_block_call(self, &function),
             Token::FlowUserBlockCall(function) => {
                 core_ops::control::user_block_call(self, &function)
             }
-            Token::Block(Block::Lambda(block)) => {
+            Token::Block(Block::ParsedLambda(block)) => {
+                // Call with new scope
+                self.state.call_stack.push(HashMap::new());
+                self.evaluate(block.to_vec());
+                if let Some(token) = self.state.get_from_heap_or_pop() {
+                    self.state.execution_stack.push(token)
+                }
+                self.state.call_stack.pop();
+            }
+            Token::Block(Block::RawLambda(block)) => {
                 // Call with new scope
                 self.state.call_stack.push(HashMap::new());
                 self.evaluate(block.to_vec());
@@ -48,14 +59,12 @@ impl Evaluator {
             }
             Token::Op(operator) => match operator {
                 Operator::Continue => {
-                    self.state.continue_loop = true;
+                    self.state.continue_loop.push(true);
                 }
                 //Operator::BlockCall => core_ops::control::block_call(self),
                 Operator::AccessCall => core_ops::control::get_access(self),
-                //Operator::For => core_ops::control::for_loop(self),
-                //Operator::If => core_ops::control::if_statement(self),
                 Operator::UserFunctionChain => core_ops::control::user_chain_call(self),
-                Operator::Return => core_ops::operator::return_top(self),
+                //Operator::Return => core_ops::operator::return_top(self),
                 Operator::StoreTemp => core_ops::control::store_temp(self),
                 Operator::Break => core_ops::control::break_loop(self),
                 Operator::And => core_ops::logical::logical_and(self),
@@ -77,6 +86,7 @@ impl Evaluator {
                 Operator::SelfId => core_ops::operator::get_self(self),
                 _ => {}
             },
+            Token::Symbol(_) => {}
             _ => {
                 self.state.execution_stack.push(expr);
             }

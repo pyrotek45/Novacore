@@ -3,14 +3,13 @@ use hashbrown::HashMap;
 
 pub struct State {
     pub debug: bool,
-    pub exit_loop: bool,
+    pub break_loop: Vec<bool>,
     pub execution_stack: Vec<Token>,
-    pub temp: Option<Token>,
+    pub temp: Vec<Token>,
     pub call_stack: Vec<HashMap<String, Token>>,
     pub error_log: Vec<String>,
-    pub continue_loop: bool,
-    pub current_function_index: usize,
-    pub current_object_name: String,
+    pub continue_loop: Vec<bool>,
+    pub current_function_index: Vec<usize>,
 }
 
 impl State {
@@ -53,12 +52,11 @@ pub fn new() -> Box<State> {
     Box::new(State {
         execution_stack: Vec::with_capacity(1024),
         call_stack: vec![HashMap::new()],
-        temp: None,
+        temp: vec![],
         debug: false,
         error_log: vec![],
-        exit_loop: false,
-        continue_loop: false,
-        current_function_index: 0,
-        current_object_name: "".to_string(),
+        break_loop: vec![],
+        continue_loop: vec![],
+        current_function_index: vec![],
     })
 }

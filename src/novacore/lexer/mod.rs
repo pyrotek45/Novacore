@@ -18,7 +18,7 @@ pub struct Lexer {
     function_list: HashMap<String, usize>,
 
     // State
-    is_parsing_list: bool,
+    is_parsing_raw: Vec<bool>,
     is_parsing_stringdq: bool,
     is_parsing_stringsq: bool,
     is_parsing_comment: bool,
@@ -43,7 +43,7 @@ impl Lexer {
                 is_skip: false,
                 is_parsing_chain: false,
                 function_list: HashMap::new(),
-                is_parsing_list: false,
+                is_parsing_raw: vec![false],
             }
         } else {
             println!(
@@ -66,7 +66,7 @@ impl Lexer {
             is_skip: false,
             is_parsing_chain: false,
             function_list: HashMap::new(),
-            is_parsing_list: false,
+            is_parsing_raw: vec![false],
         }
     }
 
@@ -81,7 +81,7 @@ impl Lexer {
             is_skip: false,
             is_parsing_chain: false,
             function_list: HashMap::new(),
-            is_parsing_list: false,
+            is_parsing_raw: vec![false],
         }
     }
 
@@ -178,7 +178,11 @@ impl Lexer {
                     if let Some(vec_last) = self.block_stack.last_mut() {
                         if let Some(last) = vec_last.last() {
                             if &Token::Symbol(';') != last {
-                                vec_last.push(Token::Symbol(';'))
+                                if let Some(bool) = self.is_parsing_raw.last() {
+                                    if !*bool {
+                                        vec_last.push(Token::Symbol(';'))
+                                    }
+                                }
                             }
                         }
                     }
@@ -197,11 +201,17 @@ impl Lexer {
                         }
                         self.buffer.clear();
                     }
-                    if !self.is_parsing_list {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            if let Some(last) = vec_last.last() {
-                                if &Token::Symbol(';') != last {
-                                    vec_last.push(Token::Symbol(';'))
+                    if let Some(bool) = self.is_parsing_raw.last() {
+                        if !*bool {
+                            if let Some(vec_last) = self.block_stack.last_mut() {
+                                if let Some(last) = vec_last.last() {
+                                    if &Token::Symbol(';') != last {
+                                        if let Some(bool) = self.is_parsing_raw.last() {
+                                            if !*bool {
+                                                vec_last.push(Token::Symbol(';'))
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -276,9 +286,16 @@ impl Lexer {
                                                 continue;
                                             }
                                         }
-                                        Token::Block(Block::Literal(block)) => {
-                                            vec_last
-                                                .push(Token::Block(Block::Lambda(block.clone())));
+                                        Token::Block(Block::Parsed(block)) => {
+                                            vec_last.push(Token::Block(Block::ParsedLambda(
+                                                block.clone(),
+                                            )));
+                                            continue;
+                                        }
+                                        Token::Block(Block::Raw(block)) => {
+                                            vec_last.push(Token::Block(Block::RawLambda(
+                                                block.clone(),
+                                            )));
                                             continue;
                                         }
                                         _ => {
@@ -299,6 +316,12 @@ impl Lexer {
                                 vec_last.push(Token::Symbol(c));
                             }
                             '-' => {
+                                if let Some(bool) = self.is_parsing_raw.last() {
+                                    if *bool {
+                                        vec_last.push(Token::Op(Operator::Sub));
+                                        continue;
+                                    }
+                                }
                                 if let Some(last) = vec_last.pop() {
                                     match last {
                                         Token::Identifier(_) => {
@@ -358,9 +381,17 @@ impl Lexer {
 
                                             continue;
                                         }
-                                        Token::Block(Block::Literal(block)) => {
-                                            vec_last
-                                                .push(Token::Block(Block::Lambda(block.clone())));
+                                        Token::Block(Block::Parsed(block)) => {
+                                            vec_last.push(Token::Block(Block::ParsedLambda(
+                                                block.clone(),
+                                            )));
+                                            vec_last.push(Token::Symbol(c));
+                                            continue;
+                                        }
+                                        Token::Block(Block::Raw(block)) => {
+                                            vec_last.push(Token::Block(Block::RawLambda(
+                                                block.clone(),
+                                            )));
                                             vec_last.push(Token::Symbol(c));
                                             continue;
                                         }
@@ -408,12 +439,11 @@ impl Lexer {
                             '>' => {
                                 if let Some(last) = vec_last.pop() {
                                     match last {
-                                        // Token::Op(Operator::Neg) => {
-                                        //     vec_last.push(Token {
-                                        //         Token: Token::Op(Operator::UserOpCall),
-                                        //     });
-                                        //     continue;
-                                        // }
+                                        Token::Op(Operator::Neg) => {
+                                            vec_last
+                                                .push(Token::Op(Operator::FunctionVariableAssign));
+                                            continue;
+                                        }
                                         Token::Op(Operator::Gtr) => {
                                             vec_last.push(Token::Op(Operator::Dup));
                                             continue;
@@ -436,7 +466,7 @@ impl Lexer {
                             // '$' => vec_last.push(Token {
                             //     Token: Token::Op(Operator::UserMacroCall),
                             // }),
-                            '~' => vec_last.push(Token::Op(Operator::FunctionVariableAssign)),
+                            // '~' => vec_last.push(Token::Op(Operator::FunctionVariableAssign)),
                             // '?' => vec_last.push(Token {
                             //     Token: Token::Op(Operator::MacroVariableAssign),
                             // }),
@@ -452,6 +482,8 @@ impl Lexer {
                                             vec_last.push(Token::Op(Operator::VariableAssign))
                                         }
                                     }
+                                } else {
+                                    vec_last.push(Token::Op(Operator::VariableAssign))
                                 }
                             }
                             _ => vec_last.push(Token::Symbol(c)),
@@ -489,7 +521,7 @@ impl Lexer {
                         }
                         self.buffer.clear();
                     }
-
+                    self.is_parsing_raw.push(false);
                     self.block_stack.push(vec![]);
                 }
 
@@ -501,14 +533,15 @@ impl Lexer {
                         self.buffer.clear();
                     };
 
+                    self.is_parsing_raw.pop();
                     if let Some(list) = self.block_stack.pop() {
                         if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(Token::Block(Block::Literal(Rc::new(list))));
+                            vec_last.push(Token::Block(Block::Parsed(Rc::new(list))));
                         }
                     }
                 }
 
-                //Parsing blocks
+                //Parsing raw blocks
                 '[' => {
                     if let Some(t) = self.check_token() {
                         if let Some(vec_last) = self.block_stack.last_mut() {
@@ -516,7 +549,7 @@ impl Lexer {
                         }
                         self.buffer.clear();
                     }
-                    self.is_parsing_list = true;
+                    self.is_parsing_raw.push(true);
                     self.block_stack.push(vec![]);
                 }
 
@@ -528,15 +561,15 @@ impl Lexer {
                         self.buffer.clear();
                     };
 
-                    self.is_parsing_list = false;
+                    self.is_parsing_raw.pop();
                     if let Some(list) = self.block_stack.pop() {
                         if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(Token::List(Rc::new(list)))
+                            vec_last.push(Token::Block(Block::Raw(Rc::new(list))));
                         }
                     }
                 }
 
-                _ => println!("what the"),
+                _ => println!("what the FRICK"),
             }
         }
 

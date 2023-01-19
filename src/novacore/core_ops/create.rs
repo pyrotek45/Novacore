@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::novacore::{core::Token, evaluator::Evaluator};
+use crate::novacore::{
+    core::{Block, Token},
+    evaluator::Evaluator,
+};
 
 pub fn range(eval: &mut Evaluator) {
     if let (Some(end), Some(start)) = (
@@ -15,7 +18,7 @@ pub fn range(eval: &mut Evaluator) {
                 }
                 eval.state
                     .execution_stack
-                    .push(Token::List(Rc::new(new_list.to_vec())));
+                    .push(Token::Block(Block::Raw(Rc::new(new_list.to_vec()))));
             }
             _ => {
                 println!("cant make a range from these types");
