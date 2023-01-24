@@ -1,9 +1,7 @@
-use crossterm::event::Event;
-
 use crate::novacore::{
     core::Token,
     evaluator::Evaluator,
-    utilities::{is_string_number, trim_newline},
+    utilities::{is_string_number, print_error, trim_newline},
 };
 
 pub fn println(eval: &mut Evaluator) {
@@ -11,9 +9,6 @@ pub fn println(eval: &mut Evaluator) {
         match token {
             Token::Identifier(token) => {
                 print!("{}\r\n", &token)
-            }
-            Token::Function(index) => {
-                print!("{}\r\n", index)
             }
             Token::Integer(token) => {
                 print!("{}\r\n", &token);
@@ -34,17 +29,14 @@ pub fn println(eval: &mut Evaluator) {
                 print!("{}\r\n", token)
             }
             Token::Block(_) => {
-                print!("BLOCK\r\n")
+                print!("{}\r\n", token.to_str_long())
             }
-            Token::UserBlockCall(_) => {
-                print!("Block Call\r\n")
-            }
-            Token::Op(optype) => {
-                print!("Operator -> {:?}\r\n", optype)
-            }
-            Token::FlowFunction(_) => todo!(),
-            Token::FlowUserBlockCall(_) => todo!(),
+            _ => print_error(&format!("Cannot println {:?}", token)),
         }
+    } else {
+        eval.state
+            .error_log
+            .push("Not enough arguments for println".to_string());
     }
 }
 
@@ -53,9 +45,6 @@ pub fn print(eval: &mut Evaluator) {
         match token {
             Token::Identifier(token) => {
                 print!("{}", &token)
-            }
-            Token::Function(index) => {
-                print!("{}", index)
             }
             Token::Integer(token) => {
                 print!("{}", &token);
@@ -76,17 +65,14 @@ pub fn print(eval: &mut Evaluator) {
                 print!("{}", token)
             }
             Token::Block(_) => {
-                print!("BLOCK")
+                print!("{}", token.to_str_long())
             }
-            Token::UserBlockCall(_) => {
-                print!("Block Call")
-            }
-            Token::Op(_) => {
-                print!("Op")
-            }
-            Token::FlowFunction(_) => todo!(),
-            Token::FlowUserBlockCall(_) => todo!(),
+            _ => print_error(&format!("Cannot print {:?}", token)),
         }
+    } else {
+        eval.state
+            .error_log
+            .push("Not enough arguments for print".to_string());
     }
 }
 
@@ -94,7 +80,6 @@ pub fn readln(eval: &mut Evaluator) {
     let mut line = String::new();
     std::io::stdin().read_line(&mut line).unwrap();
     let line = trim_newline(&mut line);
-
     if is_string_number(&line) {
         // Float
         if line.contains('.') {

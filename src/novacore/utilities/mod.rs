@@ -46,41 +46,6 @@ pub fn is_string_number(data: &str) -> bool {
     true
 }
 
-pub fn print_error(er: &str, line: usize, r: usize, file: &str, last: &str) {
-    println!(
-        "{}: on line {}, {}",
-        "ERROR".red(),
-        line,
-        &er.bright_yellow()
-    );
-    if let Ok(lines) = read_lines(file) {
-        // Consumes the iterator, returns an (Optional) String
-        let mut linenumber = 0;
-        for l in lines {
-            linenumber += 1;
-            if linenumber == line {
-                if let Ok(ip) = l {
-                    println!("  {}  ", ip.bright_blue());
-                    for _n in 0..r {
-                        print!(" ");
-                    }
-                    println!("{}", "  ^".bright_yellow())
-                }
-            }
-        }
-    } else {
-        println!("  {}", file.bright_blue());
-        for _n in 0..r {
-            print!(" ");
-        }
-        println!("{}", "  ^".bright_yellow());
-    }
-
-    if !last.is_empty() {
-        println!(
-            "  NOTE: Previous function call {}",
-            last.yellow().underline()
-        )
-    }
-    exit(1)
+pub fn print_error(err: &str) {
+    println!("{}: {}", "ERROR".red(), &err.bright_yellow());
 }

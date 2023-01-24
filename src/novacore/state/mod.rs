@@ -1,3 +1,5 @@
+use crate::novacore::utilities::print_error;
+
 use super::core::Token;
 use hashbrown::HashMap;
 
@@ -14,36 +16,32 @@ pub struct State {
 
 impl State {
     pub fn get_from_heap_or_pop(&mut self) -> Option<Token> {
-        if let Some(tok) = self.execution_stack.pop() {
-            if let Token::Identifier(ident) = tok {
-                if let Some(scope) = self.call_stack.last_mut() {
-                    if let Some(token) = scope.get(&ident) {
-                        Some(token.clone())
-                    } else {
-                        println!("unknown identifier {}", ident);
+        match self.execution_stack.pop() {
+            Some(Token::Identifier(ident)) => match self.call_stack.last_mut() {
+                Some(scope) => match scope.get(&ident) {
+                    Some(token) => Some(token.clone()),
+                    None => {
+                        print_error(&format!("Unknown identifier {}", ident));
                         None
                     }
-                } else {
-                    None
-                }
-            } else {
-                Some(tok)
-            }
-        } else {
-            None
+                },
+                None => None,
+            },
+            Some(tok) => Some(tok),
+            None => None,
         }
     }
 
     pub fn get_from_heap(&self, ident: &str) -> Option<Token> {
-        if let Some(scope) = self.call_stack.last() {
-            if let Some(token) = scope.get(ident) {
-                Some(token.clone())
-            } else {
-                println!("unknown identifier {}", ident);
-                None
-            }
-        } else {
-            None
+        match self.call_stack.last() {
+            Some(scope) => match scope.get(ident) {
+                Some(token) => Some(token.clone()),
+                None => {
+                    println!("unknown identifier {}", ident);
+                    None
+                }
+            },
+            None => None,
         }
     }
 }

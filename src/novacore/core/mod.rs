@@ -1,5 +1,7 @@
 use std::rc::Rc;
 
+use hashbrown::HashMap;
+
 use super::{evaluator::Evaluator, state};
 
 pub type CallBack = fn(eval: &mut Evaluator);
@@ -7,15 +9,14 @@ pub type Instructions = Rc<Vec<Token>>;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Block {
-    Raw(Instructions),
-    Parsed(Instructions),
-    ParsedLambda(Instructions),
-    RawLambda(Instructions),
-    Procedure(Instructions),
+    Literal(Instructions),
+    Lambda(Instructions),
     Function(Instructions),
     Auto(Instructions, Instructions),
     Modifier(Option<String>, Instructions),
     List(Instructions),
+    ListLambda(Instructions),
+    Struct(HashMap<String, Token>),
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -86,9 +87,33 @@ pub enum Token {
 
     // Raw type
     Block(Block),
+
+    // Registor code
+    Reg(Vec<usize>),
 }
 
 impl Token {
+    pub fn get_int(&self) -> i128 {
+        match self {
+            Token::Integer(num) => return *num,
+            _ => 0,
+        }
+    }
+
+    pub fn get_string(&self) -> &str {
+        match self {
+            Token::String(value) => return value,
+            _ => "",
+        }
+    }
+
+    pub fn get_float(&self) -> f64 {
+        match self {
+            Token::Float(num) => return *num,
+            _ => 0.0,
+        }
+    }
+
     pub fn precedence(&self) -> usize {
         match self {
             Token::Op(Operator::VariableAssign) => 2,
@@ -118,7 +143,7 @@ impl Token {
         }
     }
 
-    pub fn to_str(&self) -> String {
+    pub fn to_str_long(&self) -> String {
         match self {
             Token::Identifier(id) => format!("Identifier -> {}", &id),
             Token::Function(index) => format!("Function -> {}", &index),
@@ -130,15 +155,14 @@ impl Token {
             Token::Symbol(s) => format!("Symbol -> {}", &s),
             Token::Bool(b) => format!("Bool -> {}", &b),
             Token::Block(block) => match block {
-                Block::Raw(_) => "Raw Block".to_string(),
-                Block::Parsed(_) => "Parsed Block".to_string(),
-                Block::ParsedLambda(_) => "Parsed Lambda".to_string(),
-                Block::Procedure(_) => "Procedure".to_string(),
+                Block::Literal(list) => format!("LBlock[{}]", list.len()),
+                Block::Lambda(_) => "Lambda".to_string(),
                 Block::Function(_) => "Function".to_string(),
                 Block::Auto(_, _) => "Auto".to_string(),
                 Block::Modifier(_, _) => "Modifier".to_string(),
                 Block::List(_) => "List".to_string(),
-                Block::RawLambda(_) => "Raw Lambda".to_string(),
+                Block::ListLambda(_) => "ListLambda".to_string(),
+                Block::Struct(_) => "Struct".to_string(),
             },
             Token::Op(operator) => {
                 format!("Op -> {:?}", operator)
@@ -147,6 +171,7 @@ impl Token {
                 format!("FlowFunction -> {}", &index)
             }
             Token::FlowUserBlockCall(_) => "Flow User Block Call".to_string(),
+            Token::Reg(opcodes) => format!("Register Operations({:?})", &opcodes),
         }
     }
 
@@ -155,22 +180,21 @@ impl Token {
             Token::Identifier(id) => format!("ID[{}]", &id),
             Token::Function(index) => format!("F[{}]", &index),
             Token::UserBlockCall(_) => "UBC".to_string(),
-            Token::Integer(int) => format!("{}", &int),
-            Token::Float(float) => format!("{}", &float),
-            Token::String(str) => format!("{}", &str),
-            Token::Char(ch) => format!("{}", &ch),
-            Token::Symbol(s) => format!("{}", &s),
-            Token::Bool(b) => format!("{}", &b),
+            Token::Integer(int) => format!("INT[{}]", &int),
+            Token::Float(float) => format!("FL[{}]", &float),
+            Token::String(str) => format!("STR[{}]", &str),
+            Token::Char(ch) => format!("CHAR[{}]", &ch),
+            Token::Symbol(s) => format!("SYM[{}]", &s),
+            Token::Bool(b) => format!("BOOL[{}]", &b),
             Token::Block(block) => match block {
-                Block::Raw(_) => "RB".to_string(),
-                Block::Parsed(_) => "PB".to_string(),
-                Block::ParsedLambda(_) => "PL".to_string(),
-                Block::Procedure(_) => "PR".to_string(),
+                Block::Literal(_) => "LB".to_string(),
+                Block::Lambda(_) => "PL".to_string(),
                 Block::Function(_) => "F".to_string(),
                 Block::Auto(_, _) => "A".to_string(),
                 Block::Modifier(_, _) => "MD".to_string(),
                 Block::List(_) => "L".to_string(),
-                Block::RawLambda(_) => "RL".to_string(),
+                Block::ListLambda(_) => "LL".to_string(),
+                Block::Struct(_) => "S".to_string(),
             },
             Token::Op(operator) => {
                 format!("O[{:?}]", operator)
@@ -179,6 +203,7 @@ impl Token {
                 format!("FLF[{}]", &index)
             }
             Token::FlowUserBlockCall(_) => "FUBC".to_string(),
+            Token::Reg(opcodes) => format!("ROP({:?})", &opcodes),
         }
     }
 }

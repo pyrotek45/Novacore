@@ -25,6 +25,7 @@ impl Evaluator {
 
     pub fn eval(&mut self, expr: Token) {
         match expr {
+            Token::Reg(opcodes) => core_ops::reg::register_operation(self, opcodes),
             Token::Function(index) => {
                 self.state.current_function_index.push(index);
                 self.functions[index](self);
@@ -39,16 +40,7 @@ impl Evaluator {
             Token::FlowUserBlockCall(function) => {
                 core_ops::control::user_block_call(self, &function)
             }
-            Token::Block(Block::ParsedLambda(block)) => {
-                // Call with new scope
-                self.state.call_stack.push(HashMap::new());
-                self.evaluate(block.to_vec());
-                if let Some(token) = self.state.get_from_heap_or_pop() {
-                    self.state.execution_stack.push(token)
-                }
-                self.state.call_stack.pop();
-            }
-            Token::Block(Block::RawLambda(block)) => {
+            Token::Block(Block::Lambda(block)) => {
                 // Call with new scope
                 self.state.call_stack.push(HashMap::new());
                 self.evaluate(block.to_vec());
@@ -70,9 +62,9 @@ impl Evaluator {
                 Operator::And => core_ops::logical::logical_and(self),
                 Operator::Or => core_ops::logical::logical_or(self),
                 Operator::Not => core_ops::logical::logical_not(self),
-                Operator::Equals => core_ops::comparison::equals(self),
-                Operator::Gtr => core_ops::comparison::gtr_comparison(self),
-                Operator::Lss => core_ops::comparison::lss_comparison(self),
+                Operator::Equals => core_ops::comparison::equality_comparison(self),
+                Operator::Gtr => core_ops::comparison::greater_than_comparison(self),
+                Operator::Lss => core_ops::comparison::less_than_comparison(self),
                 Operator::Neg => core_ops::operator::neg(self),
                 Operator::Mod => core_ops::operator::modulo(self),
                 Operator::Add => core_ops::operator::add(self),
@@ -94,8 +86,11 @@ impl Evaluator {
     }
 
     pub fn evaluate(&mut self, expr: Vec<Token>) {
-        for token in &expr {
-            self.eval(token.clone());
+        for t in expr {
+            self.eval(t);
+            if self.state.break_loop.pop().is_some() {
+                break;
+            }
         }
     }
 }

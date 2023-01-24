@@ -342,7 +342,7 @@ pub fn variable_assign(eval: &mut Evaluator) {
 
 pub fn function_variable_assign(eval: &mut Evaluator) {
     let mut variable_stack: Vec<String> = Vec::with_capacity(10);
-    if let Some(Token::Block(Block::Raw(identifiers))) = eval.state.get_from_heap_or_pop() {
+    if let Some(Token::Block(Block::List(identifiers))) = eval.state.get_from_heap_or_pop() {
         for toks in identifiers.iter().rev() {
             if let Token::Identifier(ident) = &toks {
                 variable_stack.push(ident.clone())
@@ -381,6 +381,16 @@ pub fn get_self(eval: &mut Evaluator) {
 
         eval.state
             .execution_stack
-            .push(Token::Block(Block::Parsed(Rc::new(core_self))))
+            .push(Token::Block(Block::Function(Rc::new(core_self))))
+    }
+}
+
+pub fn free(eval: &mut Evaluator) {
+    if let Some(token) = eval.state.execution_stack.pop() {
+        if let Token::Identifier(ident) = token {
+            if let Some(scope) = eval.state.call_stack.last_mut() {
+                scope.remove(&ident);
+            }
+        }
     }
 }

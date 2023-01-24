@@ -3,7 +3,7 @@ mod utilities;
 mod core;
 use std::rc::Rc;
 
-use self::{core::CallBack, evaluator::Evaluator};
+use self::{core::CallBack, evaluator::Evaluator, utilities::print_error};
 
 mod core_ops;
 mod debugger;
@@ -22,6 +22,11 @@ impl Vm {
     pub fn run(&mut self) {
         self.evaluator
             .evaluate(self.parser.shunt(self.lexer.parse()));
+        if !self.evaluator.state.error_log.is_empty() {
+            for err in self.evaluator.state.error_log.iter() {
+                print_error(err)
+            }
+        }
     }
 
     pub fn run_string(&mut self, input: &str) {
@@ -37,7 +42,7 @@ impl Vm {
         self.evaluator
             .state
             .get_from_heap_or_pop()
-            .map(|tok| format!(" ---> [{}]", tok.to_str()))
+            .map(|tok| format!(" ---> [{}]", tok.to_str_long()))
     }
 
     pub fn get_stack_output(&mut self) -> Option<String> {
@@ -69,6 +74,8 @@ impl Vm {
         self.add_function("readln", core_ops::io::readln);
         self.add_function("dump", core_ops::io::dump);
 
+        // Operations
+        self.add_function("free", core_ops::operator::free);
         // readline
         // getch
         // rawread
@@ -80,7 +87,9 @@ impl Vm {
         // pow
 
         // create
-        self.add_function("range", core_ops::create::range);
+        self.add_function("range", core_ops::create::create_range);
+        self.add_function("collect", core_ops::create::collect);
+        self.add_function("iota", core_ops::create::iota);
 
         // random
         self.add_function("random", core_ops::random::random);
@@ -88,11 +97,14 @@ impl Vm {
         // stack operations
         self.add_function("return", core_ops::shuffle::return_top);
         self.add_function("dup", core_ops::shuffle::dup);
+        self.add_function("ddup", core_ops::shuffle::ddup);
         self.add_function("swap", core_ops::shuffle::swap);
         self.add_function("drop", core_ops::shuffle::drop);
         self.add_function("nip", core_ops::shuffle::nip);
         self.add_function("over", core_ops::shuffle::over);
+        self.add_function("dover", core_ops::shuffle::dover);
         self.add_function("rot", core_ops::shuffle::rot);
+        self.add_function("drot", core_ops::shuffle::drot);
         self.add_function("wipe", core_ops::shuffle::wipe);
 
         // time
@@ -109,13 +121,15 @@ impl Vm {
         // append
 
         // //modifier
-        self.add_function("proc", core_ops::modifier::proc);
         self.add_function("let", core_ops::modifier::closure_let);
         self.add_function("rec", core_ops::modifier::closure_rec);
         self.add_function("auto", core_ops::modifier::closure_auto);
         self.add_function("mod", core_ops::modifier::modifier);
         self.add_function("func", core_ops::modifier::func);
         self.add_function("list", core_ops::modifier::list);
+        self.add_function("struct", core_ops::modifier::create_struct);
+        self.add_function("block", core_ops::modifier::block);
+        self.add_function("include", core_ops::modifier::include);
 
         // //control flow
         self.add_function("if", core_ops::control::if_statement);
@@ -124,6 +138,7 @@ impl Vm {
         self.add_function("each", core_ops::control::each);
         self.add_function("times", core_ops::control::times);
         self.add_function("while", core_ops::control::while_loop);
+        self.add_function("eval", core_ops::control::eval_top);
     }
 
     pub fn debug_file(&mut self, filename: &str) {
