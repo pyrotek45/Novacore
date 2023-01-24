@@ -1,5 +1,3 @@
-use std::process::exit;
-
 use colored::Colorize;
 
 pub fn read_lines<P>(

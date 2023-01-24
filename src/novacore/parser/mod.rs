@@ -289,8 +289,7 @@ impl Parser {
                     | Operator::Or
                     | Operator::Gtr
                     | Operator::Lss
-                    | Operator::Neg
-                    | Operator::UserFunctionCall => {
+                    | Operator::Neg => {
                         //Pop off higher precedence before adding
 
                         // if last item in operator stack is not a "("
@@ -327,11 +326,6 @@ impl Parser {
                         // push token onto operator stack
                         self.operator_stack.push(token);
                         continue;
-                    }
-                    Operator::Pass => {
-                        if let Some(token) = self.operator_stack.pop() {
-                            self.output_stack.push(token)
-                        }
                     }
                     Operator::StoreTemp
                     | Operator::UserFunctionChain

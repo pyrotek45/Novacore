@@ -37,7 +37,7 @@ impl State {
             Some(scope) => match scope.get(ident) {
                 Some(token) => Some(token.clone()),
                 None => {
-                    println!("unknown identifier {}", ident);
+                    print_error(&format!("unknown identifier {}", ident));
                     None
                 }
             },

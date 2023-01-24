@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use hashbrown::HashMap;
 
-use super::{evaluator::Evaluator, state};
+use super::evaluator::Evaluator;
 
 pub type CallBack = fn(eval: &mut Evaluator);
 pub type Instructions = Rc<Vec<Token>>;
@@ -23,42 +23,25 @@ pub enum Block {
 pub enum Operator {
     VariableAssign,
     FunctionVariableAssign,
-
     SelfId,
-    Include,
     AccessCall, // the dot Token::operator
-
     UserFunctionChain,
     StoreTemp,
-    UserFunctionCall,
-
     And,
     Or,
     Not,
-
     Equals,
     Gtr,
     Lss,
-
     Neg,
     Mod,
-
     Add,
     Sub,
     Mul,
     Div,
-
     Break,
     Continue,
-
     PopStack,
-
-    Dup,
-    Pass,
-
-    //terminal stuff
-    EnableRawMode,
-    RawRead,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -100,7 +83,7 @@ impl Token {
         }
     }
 
-    pub fn get_string(&self) -> &str {
+    pub fn _get_string(&self) -> &str {
         match self {
             Token::String(value) => return value,
             _ => "",
@@ -124,14 +107,12 @@ impl Token {
             Token::Op(Operator::Add) | Token::Op(Operator::Sub) => 12,
             Token::Op(Operator::Mul) | Token::Op(Operator::Div) | Token::Op(Operator::Mod) => 13,
             Token::Op(Operator::Neg) => 15,
-            Token::Op(Operator::UserFunctionCall) => 14,
             _ => 0,
         }
     }
 
     pub fn is_left_associative(&self) -> bool {
         match self {
-            Token::Op(Operator::UserFunctionCall) => false,
             Token::Op(Operator::Neg) => false,
             Token::Op(Operator::Or) => true,
             Token::Op(Operator::And) => true,
