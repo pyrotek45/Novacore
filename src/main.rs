@@ -82,7 +82,7 @@ fn main() {
 
         loop {
             // Repl prompt
-            let readline = rl.readline("Novacore REPL :: $ ");
+            let readline = rl.readline("Nova :: $ ");
             match readline {
                 Ok(line) => {
                     // Rustlyline History support
@@ -109,8 +109,8 @@ fn main() {
                         core.debug_string(&line)
                     } else {
                         core.run_string(&line);
-                        if let Some(last) = core.get_last_in_state() {
-                            println!("{}", last)
+                        if let Some(last) = core.get_stack_output() {
+                            println!(" {}", last)
                         }
                     }
                 }

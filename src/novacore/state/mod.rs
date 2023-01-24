@@ -1,50 +1,47 @@
+use crate::novacore::utilities::print_error;
+
 use super::core::Token;
 use hashbrown::HashMap;
 
 pub struct State {
     pub debug: bool,
-    pub exit_loop: bool,
+    pub break_loop: Vec<bool>,
     pub execution_stack: Vec<Token>,
-    pub temp: Option<Token>,
+    pub temp: Vec<Token>,
     pub call_stack: Vec<HashMap<String, Token>>,
     pub error_log: Vec<String>,
-    pub continue_loop: bool,
-    pub current_function_index: usize,
-    pub current_object_name: String,
+    pub continue_loop: Vec<bool>,
+    pub current_function_index: Vec<usize>,
 }
 
 impl State {
     pub fn get_from_heap_or_pop(&mut self) -> Option<Token> {
-        if let Some(tok) = self.execution_stack.pop() {
-            if let Token::Identifier(ident) = tok {
-                if let Some(scope) = self.call_stack.last_mut() {
-                    if let Some(token) = scope.get(&ident) {
-                        Some(token.clone())
-                    } else {
-                        println!("unknown identifier {}", ident);
+        match self.execution_stack.pop() {
+            Some(Token::Identifier(ident)) => match self.call_stack.last_mut() {
+                Some(scope) => match scope.get(&ident) {
+                    Some(token) => Some(token.clone()),
+                    None => {
+                        print_error(&format!("Unknown identifier {}", ident));
                         None
                     }
-                } else {
-                    None
-                }
-            } else {
-                Some(tok)
-            }
-        } else {
-            None
+                },
+                None => None,
+            },
+            Some(tok) => Some(tok),
+            None => None,
         }
     }
 
     pub fn get_from_heap(&self, ident: &str) -> Option<Token> {
-        if let Some(scope) = self.call_stack.last() {
-            if let Some(token) = scope.get(ident) {
-                Some(token.clone())
-            } else {
-                println!("unknown identifier {}", ident);
-                None
-            }
-        } else {
-            None
+        match self.call_stack.last() {
+            Some(scope) => match scope.get(ident) {
+                Some(token) => Some(token.clone()),
+                None => {
+                    print_error(&format!("unknown identifier {}", ident));
+                    None
+                }
+            },
+            None => None,
         }
     }
 }
@@ -53,12 +50,11 @@ pub fn new() -> Box<State> {
     Box::new(State {
         execution_stack: Vec::with_capacity(1024),
         call_stack: vec![HashMap::new()],
-        temp: None,
+        temp: vec![],
         debug: false,
         error_log: vec![],
-        exit_loop: false,
-        continue_loop: false,
-        current_function_index: 0,
-        current_object_name: "".to_string(),
+        break_loop: vec![],
+        continue_loop: vec![],
+        current_function_index: vec![],
     })
 }

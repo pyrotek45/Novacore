@@ -1,22 +1,18 @@
-use crate::novacore::{core::Token, evaluator::Evaluator};
+use crate::novacore::{core::Token, evaluator::Evaluator, utilities::print_error};
+use colored::Colorize;
 
-pub fn equals(eval: &mut Evaluator) {
+pub fn equality_comparison(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
         eval.state.get_from_heap_or_pop(),
     ) {
         eval.state.execution_stack.push(Token::Bool(left == right));
     } else {
-        // Log error
-        if eval.state.debug {
-            eval.state
-                .error_log
-                .push("Not enough arguments for ==".to_string());
-        }
+        print_error("Not enough arguments for equality_comparison");
     }
 }
 
-pub fn lss_comparison(eval: &mut Evaluator) {
+pub fn less_than_comparison(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
         eval.state.get_from_heap_or_pop(),
@@ -36,21 +32,17 @@ pub fn lss_comparison(eval: &mut Evaluator) {
                 let right = *right as f64;
                 eval.state.execution_stack.push(Token::Bool(left < &right));
             }
-            _ => {
-                println!("cant lss these two types");
-            }
+            _ => print_error(&format!(
+                "Incorrect arguments for < , got [{:?},{:?}]",
+                left, right
+            )),
         }
     } else {
-        // Log error
-        if eval.state.debug {
-            eval.state
-                .error_log
-                .push("Not enough arguments for <".to_string());
-        }
+        print_error("Not enough arguments for less_than_comparison");
     }
 }
 
-pub fn gtr_comparison(eval: &mut Evaluator) {
+pub fn greater_than_comparison(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
         eval.state.get_from_heap_or_pop(),
@@ -70,16 +62,33 @@ pub fn gtr_comparison(eval: &mut Evaluator) {
                 let right = *right as f64;
                 eval.state.execution_stack.push(Token::Bool(left > &right));
             }
-            _ => {
-                println!("cant lss these two types");
-            }
+            _ => print_error(&format!(
+                "Incorrect arguments for > , got [{:?},{:?}]",
+                left, right
+            )),
         }
     } else {
-        // Log error
-        if eval.state.debug {
-            eval.state
-                .error_log
-                .push("Not enough arguments for >".to_string());
+        print_error("Not enough arguments for greater_than_comparison");
+    }
+}
+
+pub fn assert_stack_test(eval: &mut Evaluator) {
+    if let (Some(right), Some(left)) = (
+        eval.state.execution_stack.pop(),
+        eval.state.execution_stack.pop(),
+    ) {
+        if left == right {
+            println!(
+                "{}",
+                format!("{}: [{:?} = {:?}]", "SUCCESS".bright_green(), left, right)
+            )
+        } else {
+            println!(
+                "{}",
+                format!("{}: [{:?} = {:?}]", "FAIL".red(), left, right)
+            )
         }
+    } else {
+        print_error("Not enough arguments for ttos");
     }
 }

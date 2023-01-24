@@ -1,4 +1,4 @@
-use crate::novacore::{core::Token, evaluator::Evaluator};
+use crate::novacore::{core::Token, evaluator::Evaluator, utilities::print_error};
 
 pub fn logical_and(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
@@ -11,23 +11,13 @@ pub fn logical_and(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Bool(*left && *right));
             }
-            _ => {
-                // Log error
-                if eval.state.debug {
-                    eval.state.error_log.push(format!(
-                        "can not and these two types {:?} :: {:?}",
-                        left, right
-                    ));
-                }
-            }
+            _ => print_error(&format!(
+                "Incorrect argument for and, got [{:?},{:?}]",
+                left, right
+            )),
         }
     } else {
-        // Log error
-        if eval.state.debug {
-            eval.state
-                .error_log
-                .push("Not enough arguments for and".to_string());
-        }
+        print_error("Not enough arguments for and");
     }
 }
 
@@ -42,23 +32,13 @@ pub fn logical_or(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Bool(*left || *right));
             }
-            _ => {
-                // Log error
-                if eval.state.debug {
-                    eval.state.error_log.push(format!(
-                        "can not or these two types {:?} :: {:?}",
-                        left, right
-                    ));
-                }
-            }
+            _ => print_error(&format!(
+                "Incorrect argument for or, got [{:?},{:?}]",
+                left, right
+            )),
         }
     } else {
-        // Log error
-        if eval.state.debug {
-            eval.state
-                .error_log
-                .push("Not enough arguments for or".to_string());
-        }
+        print_error("Not enough arguments for or");
     }
 }
 
@@ -67,19 +47,9 @@ pub fn logical_not(eval: &mut Evaluator) {
         if let Token::Bool(bool) = token {
             eval.state.execution_stack.push(Token::Bool(!bool));
         } else {
-            // Log error
-            if eval.state.debug {
-                eval.state
-                    .error_log
-                    .push(format!("can not ! NOT this type {:?} ", token));
-            }
+            print_error(&format!("Incorrect argument for not, got [{:?}]", token))
         }
     } else {
-        // Log error
-        if eval.state.debug {
-            eval.state
-                .error_log
-                .push("Not enough arguments for ! not".to_string());
-        }
+        print_error("Not enough arguments for not");
     }
 }
