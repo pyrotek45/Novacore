@@ -21,9 +21,9 @@ pub fn random(eval: &mut Evaluator) {
                         .push(Token::Integer(rng.gen_range(*right..=*left)));
                 }
             }
-            _ => print_error(&format!(
-                "Cannot apply function random to {:?} and {:?}",
-                start, end
+            (a, b) => print_error(&format!(
+                "Incorrect arguments for random, got [{:?},{:?}]",
+                a, b
             )),
         }
     } else {

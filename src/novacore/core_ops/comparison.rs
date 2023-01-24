@@ -1,4 +1,5 @@
 use crate::novacore::{core::Token, evaluator::Evaluator, utilities::print_error};
+use colored::Colorize;
 
 pub fn equality_comparison(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
@@ -7,9 +8,7 @@ pub fn equality_comparison(eval: &mut Evaluator) {
     ) {
         eval.state.execution_stack.push(Token::Bool(left == right));
     } else {
-        eval.state
-            .error_log
-            .push("Not enough arguments for equality_comparison".to_string());
+        print_error("Not enough arguments for equality_comparison");
     }
 }
 
@@ -34,14 +33,12 @@ pub fn less_than_comparison(eval: &mut Evaluator) {
                 eval.state.execution_stack.push(Token::Bool(left < &right));
             }
             _ => print_error(&format!(
-                "Cannot check if {:?} is less than {:?}",
+                "Incorrect arguments for < , got [{:?},{:?}]",
                 left, right
             )),
         }
     } else {
-        eval.state
-            .error_log
-            .push("Not enough arguments for less_than_comparison".to_string());
+        print_error("Not enough arguments for less_than_comparison");
     }
 }
 
@@ -66,13 +63,32 @@ pub fn greater_than_comparison(eval: &mut Evaluator) {
                 eval.state.execution_stack.push(Token::Bool(left > &right));
             }
             _ => print_error(&format!(
-                "Cannot check if {:?} is greater than {:?}",
+                "Incorrect arguments for > , got [{:?},{:?}]",
                 left, right
             )),
         }
     } else {
-        eval.state
-            .error_log
-            .push("Not enough arguments for greater_than_comparison".to_string());
+        print_error("Not enough arguments for greater_than_comparison");
+    }
+}
+
+pub fn assert_stack_test(eval: &mut Evaluator) {
+    if let (Some(right), Some(left)) = (
+        eval.state.execution_stack.pop(),
+        eval.state.execution_stack.pop(),
+    ) {
+        if left == right {
+            println!(
+                "{}",
+                format!("{}: [{:?} = {:?}]", "SUCCESS".bright_green(), left, right)
+            )
+        } else {
+            println!(
+                "{}",
+                format!("{}: [{:?} = {:?}]", "FAIL".red(), left, right)
+            )
+        }
+    } else {
+        print_error("Not enough arguments for ttos");
     }
 }

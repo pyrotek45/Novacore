@@ -11,12 +11,10 @@ pub fn sqrt(eval: &mut Evaluator) {
             Token::Float(left) => {
                 eval.state.execution_stack.push(Token::Float(left.sqrt()));
             }
-            _ => print_error(&format!("Cannot apply function sqrt to {:?}", left)),
+            _ => print_error(&format!("Incorrect argument for sqrt, got [{:?}]", left)),
         },
         None => {
-            eval.state
-                .error_log
-                .push("Not enough arguments for sqrt".to_string());
+            print_error("Not enough arguments for sqrt");
         }
     }
 }

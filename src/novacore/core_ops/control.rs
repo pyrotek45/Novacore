@@ -37,11 +37,11 @@ pub fn block_call(eval: &mut Evaluator) {
                     }
                 }
                 _ => {
-                    print_error(&format!("Cant call this type {:?}", block));
+                    print_error(&format!("Cant call this type [{:?}]", block));
                 }
             }
         } else {
-            print_error(&format!("Cant call this type {:?}", token));
+            print_error(&format!("Cant call this type [{:?}]", token));
         }
     } else {
         print_error("Not enough arguments for call");
@@ -134,10 +134,10 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                 }
             }
         } else {
-            print_error(&format!("Cant call this type {:?}", token));
+            print_error(&format!("Cant call this type [{:?}]", token));
         }
     } else {
-        print_error(&format!("Not enough arguments for user_block_call"));
+        print_error("Not enough arguments for user_block_call");
     }
 }
 
@@ -152,7 +152,7 @@ pub fn if_statement(eval: &mut Evaluator) {
                 match block {
                     Token::Block(Block::Literal(block)) => eval.evaluate(block.to_vec()),
                     Token::Block(Block::List(block)) => eval.evaluate(block.to_vec()),
-                    _ => print_error(&format!("Incorrect arguments for if, got {:?}", block)),
+                    _ => print_error(&format!("Incorrect arguments for if, got [{:?}]", block)),
                 }
             }
         } else if let Some(Token::Bool(bool)) = eval.state.get_from_heap_or_pop() {
@@ -160,18 +160,21 @@ pub fn if_statement(eval: &mut Evaluator) {
                 match boolmaybe {
                     Token::Block(Block::Literal(block)) => eval.evaluate(block.to_vec()),
                     Token::Block(Block::List(block)) => eval.evaluate(block.to_vec()),
-                    _ => print_error(&format!("Incorrect arguments for if, got {:?}", boolmaybe)),
+                    _ => print_error(&format!(
+                        "Incorrect arguments for if, got [{:?}]",
+                        boolmaybe
+                    )),
                 }
             } else {
                 match block {
                     Token::Block(Block::Literal(block)) => eval.evaluate(block.to_vec()),
                     Token::Block(Block::List(block)) => eval.evaluate(block.to_vec()),
-                    _ => print_error(&format!("Incorrect arguments for if, got {:?}", block)),
+                    _ => print_error(&format!("Incorrect arguments for if, got [{:?}]", block)),
                 }
             }
         }
     } else {
-        print_error(&format!("Not enough arguments for if"));
+        print_error("Not enough arguments for if");
     }
 }
 
@@ -228,12 +231,12 @@ pub fn while_loop(eval: &mut Evaluator) {
                 while_compute(eval, test, logic)
             }
             (testing, logic) => print_error(&format!(
-                "Incorrect arguments for while, got {:?} and {:?}",
+                "Incorrect arguments for while, got [{:?},{:?}]",
                 testing, logic
             )),
         }
     } else {
-        print_error(&format!("Not enough arguments for while"));
+        print_error("Not enough arguments for while");
     }
 }
 
@@ -262,17 +265,17 @@ pub fn times(eval: &mut Evaluator) {
                 Block::Function(logic) => times_compute(eval, logic, times as usize),
                 Block::List(logic) => times_compute(eval, logic, times as usize),
                 _ => print_error(&format!(
-                    "Incorrect arguments for times, got {:?} and {:?}",
+                    "Incorrect arguments for times, got [{:?},{:?}]",
                     logic, times
                 )),
             },
             (logic, times) => print_error(&format!(
-                "Incorrect arguments for times, got {:?} and {:?}",
+                "Incorrect arguments for times, got [{:?},{:?}]",
                 logic, times
             )),
         }
     } else {
-        print_error(&format!("Not enough arguments for times"));
+        print_error("Not enough arguments for times");
     }
 }
 
@@ -302,17 +305,17 @@ pub fn each(eval: &mut Evaluator) {
                 (Block::Literal(items), Block::Function(logic)) => each_compute(eval, items, logic),
                 (Block::List(items), Block::Function(logic)) => each_compute(eval, items, logic),
                 (items, logic) => print_error(&format!(
-                    "Incorrect arguments for each, got {:?} and {:?}",
+                    "Incorrect arguments for each, got [{:?},{:?}]",
                     items, logic
                 )),
             },
             (items, logic) => print_error(&format!(
-                "Incorrect arguments for each, got {:?} and {:?}",
+                "Incorrect arguments for each, got [{:?},{:?}]",
                 items, logic
             )),
         }
     } else {
-        print_error(&format!("Not enough arguments for each"));
+        print_error("Not enough arguments for each");
     }
 }
 
@@ -441,12 +444,12 @@ pub fn for_loop(eval: &mut Evaluator) {
                 }
             }
             (a, b, c) => print_error(&format!(
-                "Incorrect arguments for iteration[for], got {:?} , {:?} and {:?}",
+                "Incorrect arguments for iteration[for], got [{:?},{:?},{:?}]",
                 a, b, c
             )),
         }
     } else {
-        print_error(&format!("Not enough arguments for iteration[for]"));
+        print_error("Not enough arguments for iteration[for]");
     }
 }
 
@@ -504,18 +507,18 @@ pub fn user_chain_call(eval: &mut Evaluator) {
                     }
                 }
                 _ => print_error(&format!(
-                    "Incorrect arguments for chain_call, got {:?}",
+                    "Incorrect arguments for chain_call, got [{:?}]",
                     block
                 )),
             }
         } else {
             print_error(&format!(
-                "Incorrect type for chain_call, got {:?}",
+                "Incorrect type for chain_call, got [{:?}]",
                 eval.state.temp.last()
             ));
         }
     } else {
-        print_error(&format!("Not enough arguments for chain_call"));
+        print_error("Not enough arguments for chain_call");
     }
     eval.state.temp.pop();
 }
@@ -567,11 +570,14 @@ pub fn get_access(eval: &mut Evaluator) {
                 }
             }
             token => {
-                print_error(&format!("Cant access this type, got  {:?}", token));
+                print_error(&format!(
+                    "Incorrect arguments for access, got [{:?}]",
+                    token
+                ));
             }
         }
     } else {
-        print_error(&format!("Not enough arguments for access"));
+        print_error("Not enough arguments for access");
     }
 }
 
@@ -587,6 +593,6 @@ pub fn eval_top(eval: &mut Evaluator) {
     if let Some(token) = eval.state.execution_stack.pop() {
         eval.eval(token)
     } else {
-        print_error(&format!("Not enough arguments for eval"));
+        print_error("Not enough arguments for eval");
     }
 }

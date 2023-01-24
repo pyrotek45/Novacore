@@ -5,7 +5,6 @@ use hashbrown::HashMap;
 use crate::novacore::{
     core::{Block, Instructions, Operator, Token},
     evaluator::Evaluator,
-    new,
     utilities::print_error,
 };
 
@@ -13,18 +12,17 @@ pub fn create_struct(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(Token::Block(Block::Literal(block))) => {
             eval.state.call_stack.push(HashMap::new());
-
             eval.evaluate(block.to_vec());
-
             if let Some(new_struct) = eval.state.call_stack.pop() {
                 eval.state
                     .execution_stack
                     .push(Token::Block(Block::Struct(new_struct)));
             }
         }
-        _ => {
-            todo!()
-        }
+        a => print_error(&format!(
+            "Incorrect argument for struct. Expected Type [Block], but got [{:?}]",
+            a
+        )),
     }
 }
 pub fn block(eval: &mut Evaluator) {
@@ -34,9 +32,10 @@ pub fn block(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::Literal(block)));
         }
-        _ => {
-            todo!()
-        }
+        a => print_error(&format!(
+            "Incorrect argument for block. Expected Type [List], but got [{:?}]",
+            a
+        )),
     }
 }
 
@@ -47,9 +46,10 @@ pub fn list(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::List(block)));
         }
-        _ => {
-            todo!()
-        }
+        a => print_error(&format!(
+            "Incorrect argument for list. Expected Type [Block], but got [{:?}]",
+            a
+        )),
     }
 }
 
@@ -65,19 +65,12 @@ pub fn func(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::Function(block)));
         }
-        _ => {
-            todo!()
-        }
+        a => print_error(&format!(
+            "Incorrect argument for func. Expected Type [Block | List], but got [{:?}]",
+            a
+        )),
     }
 }
-
-// pub fn object(eval: &mut Evaluator) {
-//     if let Some(Token::Block(Block::Parsed(block))) = eval.state.get_from_heap_or_pop() {
-//         eval.state
-//             .execution_stack
-//             .push(Token::Block(Block::Object(block)));
-//     }
-// }
 
 pub fn modifier(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
@@ -86,9 +79,10 @@ pub fn modifier(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::Modifier(None, block)));
         }
-        _ => {
-            todo!()
-        }
+        a => print_error(&format!(
+            "Incorrect argument for mod. Expected Type [Block], but got [{:?}]",
+            a
+        )),
     }
 }
 
@@ -113,9 +107,10 @@ pub fn closure_let(eval: &mut Evaluator) {
                     .push(Token::Block(Block::Function(Rc::new(core_self))))
             }
         }
-        _ => {
-            todo!()
-        }
+        a => print_error(&format!(
+            "Incorrect argument for let. Expected Type [Block], but got [{:?}]",
+            a
+        )),
     }
 }
 
@@ -142,9 +137,10 @@ pub fn closure_rec(eval: &mut Evaluator) {
                     .push(Token::Block(Block::Function(Rc::new(core_self))))
             }
         }
-        _ => {
-            todo!()
-        }
+        (a, b) => print_error(&format!(
+            "Incorrect argument for rec. Expected Types [Identifier , Block], but got [{:?},{:?}]",
+            a, b
+        )),
     }
 }
 
@@ -159,14 +155,15 @@ pub fn closure_auto(eval: &mut Evaluator) {
                 Rc::new(logic.to_vec()),
             )))
         }
-        _ => {
-            todo!()
-        }
+        (a, b) => print_error(&format!(
+            "Incorrect argument for auto. Expected Types [Block , Block], but got [{:?},{:?}]",
+            a, b
+        )),
     }
 }
 
 pub fn include(eval: &mut Evaluator) {
-    fn into(eval: &mut Evaluator, block: Instructions, list: Instructions) {
+    fn include_compute(eval: &mut Evaluator, block: Instructions, list: Instructions) {
         let mut newlist = vec![];
         if let Some(scope) = eval.state.call_stack.last_mut() {
             for item in list.iter() {
@@ -197,13 +194,13 @@ pub fn include(eval: &mut Evaluator) {
         eval.state.get_from_heap_or_pop(),
     ) {
         (Some(Token::Block(Block::Literal(block))), Some(Token::Block(Block::List(list)))) => {
-            into(eval, block, list)
+            include_compute(eval, block, list)
         }
         (Some(Token::Block(Block::Function(block))), Some(Token::Block(Block::List(list)))) => {
-            into(eval, block, list)
+            include_compute(eval, block, list)
         }
-        _ => {
-            todo!()
+        (a,b) => {
+            print_error(&format!("Incorrect argument for auto. Expected Types [[Block | List] , [Block | List]], but got [{:?},{:?}]", a,b))
         }
     }
 }

@@ -1,6 +1,6 @@
 use colored::Colorize;
 
-pub fn read_lines<P>(
+pub fn _read_lines<P>(
     filename: P,
 ) -> std::io::Result<std::io::Lines<std::io::BufReader<std::fs::File>>>
 where

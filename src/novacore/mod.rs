@@ -38,7 +38,7 @@ impl Vm {
             .evaluate(self.parser.shunt(self.lexer.parse()))
     }
 
-    pub fn get_last_in_state(&mut self) -> Option<String> {
+    pub fn _get_last_in_state(&mut self) -> Option<String> {
         self.evaluator
             .state
             .get_from_heap_or_pop()
@@ -76,6 +76,7 @@ impl Vm {
 
         // Operations
         self.add_function("free", core_ops::operator::free);
+        self.add_function("ttos", core_ops::comparison::assert_stack_test);
         // readline
         // getch
         // rawread

@@ -12,14 +12,12 @@ pub fn logical_and(eval: &mut Evaluator) {
                     .push(Token::Bool(*left && *right));
             }
             _ => print_error(&format!(
-                "Cannot compare these {:?} {:?} using logical AND",
+                "Incorrect argument for and, got [{:?},{:?}]",
                 left, right
             )),
         }
     } else {
-        eval.state
-            .error_log
-            .push("Not enough arguments for logical_and".to_string());
+        print_error("Not enough arguments for and");
     }
 }
 
@@ -35,14 +33,12 @@ pub fn logical_or(eval: &mut Evaluator) {
                     .push(Token::Bool(*left || *right));
             }
             _ => print_error(&format!(
-                "Cannot compare these {:?} {:?} using logical OR",
+                "Incorrect argument for or, got [{:?},{:?}]",
                 left, right
             )),
         }
     } else {
-        eval.state
-            .error_log
-            .push("Not enough arguments for logical_or".to_string());
+        print_error("Not enough arguments for or");
     }
 }
 
@@ -51,11 +47,9 @@ pub fn logical_not(eval: &mut Evaluator) {
         if let Token::Bool(bool) = token {
             eval.state.execution_stack.push(Token::Bool(!bool));
         } else {
-            print_error(&format!("Cannot apply logical NOT to {:?}", token))
+            print_error(&format!("Incorrect argument for not, got [{:?}]", token))
         }
     } else {
-        eval.state
-            .error_log
-            .push("Not enough arguments for logical_not".to_string());
+        print_error("Not enough arguments for not");
     }
 }
