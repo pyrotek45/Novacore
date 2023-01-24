@@ -171,9 +171,10 @@ impl Parser {
                             np.debug = true;
                         }
 
-                        self.operator_stack.push(Token::Block(Block::ListLambda(Rc::new(
-                            np.shunt_list(shunted.to_vec()),
-                        ))));
+                        self.operator_stack
+                            .push(Token::Block(Block::ListLambda(Rc::new(
+                                np.shunt_list(shunted.to_vec()),
+                            ))));
                     }
                     Block::List(shunted) => {
                         let mut np = Parser::new();

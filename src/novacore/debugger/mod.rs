@@ -46,7 +46,7 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                     );
                     debug_output(depth + 1, block.clone());
                     continue;
-                },
+                }
                 Block::List(block) => {
                     println!(
                         "{}{}{}",
@@ -66,7 +66,7 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                     );
                     debug_output(depth + 1, block.clone());
                     continue;
-                },
+                }
                 Block::Struct(_) => {
                     println!(
                         "{}{}{}",
@@ -75,7 +75,7 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                         "Struct:".bright_cyan()
                     );
                     continue;
-                },
+                }
             }
         }
         println!("{}[{}]", sdep.bright_cyan(), t.to_str_long().bright_blue());
