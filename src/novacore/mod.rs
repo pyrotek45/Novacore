@@ -76,7 +76,7 @@ impl Vm {
 
         // Operations
         self.add_function("free", core_ops::operator::free);
-        self.add_function("resolve", core_ops::operator::resolve);
+        self.add_function("get", core_ops::operator::resolve);
         // self.add_function("exit", core_ops::operator::exit);
 
         // Test
@@ -118,7 +118,11 @@ impl Vm {
         self.add_function("time", core_ops::time::time);
 
         // // list
-        // push
+        self.add_function("push", core_ops::list::list_push);
+        self.add_function("pop", core_ops::list::list_pop);
+        self.add_function("last", core_ops::list::list_last);
+        self.add_function("insert", core_ops::list::list_insert);
+        self.add_function("remove", core_ops::list::list_remove);
         // last
         // pop
         // remove

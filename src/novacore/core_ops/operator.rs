@@ -245,21 +245,9 @@ pub fn variable_assign(eval: &mut Evaluator) {
     ) {
         match (&token, &ident) {
             (Token::Identifier(moved), Token::Identifier(identifier)) => {
-                if let Some(scope) = eval.state.call_stack.last_mut() {
-                    if identifier != "_" {
-                        if let Some(item) = scope.remove(moved) {
-                            scope.insert(identifier.to_string(), item);
-                        }
-                    }
-                }
+                eval.state.move_varaible(moved, identifier)
             }
-            (_, Token::Identifier(identifier)) => {
-                if let Some(scope) = eval.state.call_stack.last_mut() {
-                    if identifier != "_" {
-                        scope.insert(identifier.to_string(), token);
-                    }
-                }
-            }
+            (_, Token::Identifier(identifier)) => eval.state.add_varaible(identifier, token),
             _ => {
                 print_error(&format!(
                     "Can not assign these two types [{:?},{:?}]",
@@ -280,19 +268,19 @@ pub fn function_variable_assign(eval: &mut Evaluator) {
                 variable_stack.push(ident.clone())
             }
         }
+    } else {
+        print_error("Not enough arguments for function variable assign");
     }
 
     // Tie each Token into the call_stack using the tokens poped
-
-    if let Some(mut newscope) = eval.state.call_stack.pop() {
-        for tokens in variable_stack {
-            if let Some(tok) = eval.state.get_from_heap_or_pop() {
-                newscope.insert(tokens, tok.clone());
+    for tokens in variable_stack {
+        if let Some(tok) = eval.state.execution_stack.pop() {
+            if let Token::Identifier(ident) = tok {
+                eval.state.move_varaible(&ident, &tokens)
+            } else {
+                eval.state.add_varaible(&tokens, tok.clone());
             }
         }
-        eval.state.call_stack.push(newscope);
-    } else {
-        print_error("Not enough arguments for function variable assign");
     }
 }
 
@@ -315,9 +303,7 @@ pub fn get_self(eval: &mut Evaluator) {
 pub fn free(eval: &mut Evaluator) {
     if let Some(token) = eval.state.execution_stack.pop() {
         if let Token::Identifier(ident) = token {
-            if let Some(scope) = eval.state.call_stack.last_mut() {
-                scope.remove(&ident);
-            }
+            eval.state.remove_varaible(&ident)
         }
     } else {
         print_error("Not enough arguments for free");

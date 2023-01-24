@@ -132,7 +132,7 @@ impl Token {
             Token::String(block) => format!("{:?}", block),
             Token::Char(block) => format!("{:?}", block),
             Token::Symbol(block) => format!("{:?}", block),
-            Token::Bool(block) => format!("{:?}", block),
+            Token::Bool(_) => format!("{:?}", self),
             Token::Block(block) => match block {
                 Block::Literal(block) => {
                     let mut list = String::new();

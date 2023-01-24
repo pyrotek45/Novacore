@@ -13,20 +13,45 @@ pub struct State {
 }
 
 impl State {
+    pub fn add_varaible(&mut self, ident: &str, item: Token) {
+        if ident != "_" {
+            if let Some(scope) = self.call_stack.last_mut() {
+                scope.insert(ident.to_string(), item);
+            }
+        }
+    }
+
+    pub fn remove_varaible(&mut self, ident: &str) {
+        if let Some(scope) = self.call_stack.last_mut() {
+            scope.remove(ident);
+        }
+    }
+    pub fn move_varaible(&mut self, ident: &str, newident: &str) {
+        if let Some(scope) = self.call_stack.last_mut() {
+            if let Some(moved) = scope.remove(ident) {
+                scope.insert(newident.to_string(), moved);
+            }
+        }
+    }
+
     pub fn get_from_heap_or_pop(&mut self) -> Option<Token> {
-        match self.execution_stack.pop() {
-            Some(Token::Identifier(ident)) => match self.call_stack.last_mut() {
-                Some(scope) => match scope.get(&ident) {
-                    Some(token) => Some(token.clone()),
-                    None => {
+        if let Some(tok) = self.execution_stack.pop() {
+            if let Token::Identifier(ident) = tok {
+                if let Some(scope) = self.call_stack.last_mut() {
+                    if let Some(token) = scope.get(&ident) {
+                        Some(token.clone())
+                    } else {
                         print_error(&format!("Unknown identifier {}", ident));
                         None
                     }
-                },
-                None => None,
-            },
-            Some(tok) => Some(tok),
-            None => None,
+                } else {
+                    None
+                }
+            } else {
+                Some(tok)
+            }
+        } else {
+            None
         }
     }
 
