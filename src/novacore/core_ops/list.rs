@@ -78,7 +78,7 @@ pub fn list_insert(eval: &mut Evaluator) {
         match (list, index, item) {
             (Token::Block(Block::List(list)), Token::Integer(index), item) => {
                 let mut newlist = list.to_vec();
-                if index as usize <= list.len()  {
+                if index as usize <= list.len() {
                     newlist.insert(index as usize, item);
                     eval.state
                         .execution_stack
@@ -108,7 +108,7 @@ pub fn list_remove(eval: &mut Evaluator) {
         match (list, index) {
             (Token::Block(Block::List(list)), Token::Integer(index)) => {
                 let mut newlist = list.to_vec();
-                if index as usize <= list.len()  {
+                if index as usize <= list.len() {
                     newlist.remove(index as usize);
                     eval.state
                         .execution_stack

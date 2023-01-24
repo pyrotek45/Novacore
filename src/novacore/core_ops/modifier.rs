@@ -163,7 +163,11 @@ pub fn closure_auto(eval: &mut Evaluator) {
 }
 
 pub fn include(eval: &mut Evaluator) {
-    fn include_compute(eval: &mut Evaluator, block: Instructions, list: Instructions) {
+    fn include_compute(
+        eval: &mut Evaluator,
+        block: Instructions,
+        list: Instructions,
+    ) -> Vec<Token> {
         let mut newlist = vec![];
         if let Some(scope) = eval.state.call_stack.last_mut() {
             for item in list.iter() {
@@ -179,11 +183,8 @@ pub fn include(eval: &mut Evaluator) {
             for t in block.iter() {
                 newlist.push(t.clone())
             }
-
-            eval.state
-                .execution_stack
-                .push(Token::Block(Block::Function(Rc::new(newlist))))
         }
+        newlist
     }
 
     match (
@@ -191,10 +192,16 @@ pub fn include(eval: &mut Evaluator) {
         eval.state.get_from_heap_or_pop(),
     ) {
         (Some(Token::Block(Block::Literal(block))), Some(Token::Block(Block::List(list)))) => {
-            include_compute(eval, block, list)
+            let value =    include_compute(eval, block, list);
+            eval.state
+            .execution_stack
+            .push(Token::Block(Block::Literal(Rc::new(value))))
         }
         (Some(Token::Block(Block::Function(block))), Some(Token::Block(Block::List(list)))) => {
-            include_compute(eval, block, list)
+            let value =    include_compute(eval, block, list);
+            eval.state
+            .execution_stack
+            .push(Token::Block(Block::Function(Rc::new(value))))
         }
         (a,b) => {
             print_error(&format!("Incorrect argument for auto. Expected Types [[Block | List] , [Block | List]], but got [{:?},{:?}]", a,b))
