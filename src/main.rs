@@ -3,6 +3,7 @@ use std::time::Instant;
 
 use clap::{App, Arg};
 use colored::Colorize;
+use crossterm::style::Stylize;
 use rustyline::{error::ReadlineError, validate::MatchingBracketValidator, Editor};
 
 use rustyline::{Cmd, EventHandler, KeyCode, KeyEvent, Modifiers};
@@ -76,7 +77,7 @@ fn main() {
             println!("No previous history.");
         }
 
-        let mut repl = String::new();
+        let _repl = String::new();
         let mut repl_debug: bool = false;
         let mut core = novacore::new();
 
@@ -94,11 +95,6 @@ fn main() {
                         break;
                     };
 
-                    if line.to_lowercase() == "clear" {
-                        repl.clear();
-                        continue;
-                    };
-
                     if line.to_lowercase() == "debug" {
                         repl_debug = !repl_debug;
                         continue;
@@ -110,7 +106,7 @@ fn main() {
                     } else {
                         core.run_string(&line);
                         if let Some(last) = core.get_stack_output() {
-                            println!(" {}", last)
+                            println!(" ---> {}", last.white())
                         }
                     }
                 }

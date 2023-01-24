@@ -78,7 +78,7 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                 }
             }
         }
-        println!("{}[{}]", sdep.bright_cyan(), t.to_str_long().bright_blue());
+        println!("{}[{}]", sdep.bright_cyan(), t.to_str_debug().bright_blue());
 
         //printstack.push_str(&("[".to_owned() + &t.get_Token_as_string() + "]"));
         //printstack.push(' ');

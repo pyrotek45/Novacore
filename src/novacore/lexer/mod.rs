@@ -529,6 +529,7 @@ impl Lexer {
                                         _ => todo!(),
                                     }
                                 }
+                                vec_last.pop();
                                 vec_last.push(Token::Reg(opcodes));
                             } else {
                                 vec_last.push(Token::Block(Block::List(Rc::new(list))));

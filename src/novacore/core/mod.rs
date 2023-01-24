@@ -124,67 +124,119 @@ impl Token {
         }
     }
 
-    pub fn to_str_long(&self) -> String {
+    pub fn to_str(&self) -> String {
         match self {
-            Token::Identifier(id) => format!("Identifier -> {}", &id),
-            Token::Function(index) => format!("Function -> {}", &index),
-            Token::UserBlockCall(_) => "User Block Call".to_string(),
-            Token::Integer(int) => format!("Integer -> {}", &int),
-            Token::Float(float) => format!("Float -> {}", &float),
-            Token::String(str) => format!("String > {}", &str),
-            Token::Char(ch) => format!("Char -> {}", &ch),
-            Token::Symbol(s) => format!("Symbol -> {}", &s),
-            Token::Bool(b) => format!("Bool -> {}", &b),
+            Token::Identifier(block) => format!("{}", block),
+            Token::Function(block) => format!("{}", block),
+            Token::UserBlockCall(block) => format!("{}", block),
+            Token::Integer(block) => format!("{}", block),
+            Token::Float(block) => format!("{:?}", block),
+            Token::String(block) => format!("{:?}", block),
+            Token::Char(block) => format!("{:?}", block),
+            Token::Symbol(block) => format!("{:?}", block),
+            Token::Bool(block) => format!("{:?}", block),
             Token::Block(block) => match block {
-                Block::Literal(list) => format!("LBlock[{}]", list.len()),
-                Block::Lambda(_) => "Lambda".to_string(),
-                Block::Function(_) => "Function".to_string(),
+                Block::Literal(block) => {
+                    let mut list = String::new();
+                    list.push_str("[");
+                    for item in block.iter() {
+                        list.push_str(&item.to_str());
+                        list.push(',');
+                    }
+                    list.pop();
+                    list.push_str("]");
+                    format!("{}",list)
+                },
+                Block::Lambda(block) => {
+                    let mut list = String::new();
+                    list.push_str("[");
+                    for item in block.iter() {
+                        list.push_str(&item.to_str());
+                        list.push(',');
+                    }
+                    list.pop();
+                    list.push_str("]");
+                    format!("{}",list)
+                },
+                Block::Function(block) => {
+                    let mut list = String::new();
+                    list.push_str("[");
+                    for item in block.iter() {
+                        list.push_str(&item.to_str());
+                        list.push(',');
+                    }
+                    list.pop();
+                    list.push_str("]");
+                    format!("{}",list)
+                },
                 Block::Auto(_, _) => "Auto".to_string(),
                 Block::Modifier(_, _) => "Modifier".to_string(),
-                Block::List(_) => "List".to_string(),
-                Block::ListLambda(_) => "ListLambda".to_string(),
-                Block::Struct(_) => "Struct".to_string(),
+                Block::List(block) => {
+                    let mut list = String::new();
+                    list.push_str("[");
+                    for item in block.iter() {
+                        list.push_str(&item.to_str());
+                        list.push(',');
+                    }
+                    list.pop();
+                    list.push_str("]");
+                    format!("{}",list)
+                },
+                Block::ListLambda(block) => {
+                    let mut list = String::new();
+                    list.push_str("[");
+                    for item in block.iter() {
+                        list.push_str(&item.to_str());
+                        list.push(',');
+                    }
+                    list.pop();
+                    list.push_str("]");
+                    format!("{}",list)
+                },
+                Block::Struct(block) => {
+                    let mut list = String::new();
+                    list.push_str("[");
+                    for (key,value) in block.iter() {
+                        list.push_str(&key);
+                        list.push_str(" => ");
+                        list.push_str(&value.to_str());
+                        list.push(',');
+                    }
+                    list.pop();
+                    list.push_str("]");
+                    format!("{}",list)
+                },
             },
             Token::Op(operator) => {
-                format!("Op -> {:?}", operator)
+                match operator {
+                    op => {
+                        format!("{:?}", op)
+                    }
+                }
+
             }
-            Token::FlowFunction(index) => {
-                format!("FlowFunction -> {}", &index)
-            }
-            Token::FlowUserBlockCall(_) => "Flow User Block Call".to_string(),
-            Token::Reg(opcodes) => format!("Register Operations({:?})", &opcodes),
+            Token::FlowFunction(block) => format!("{}", block),
+            Token::FlowUserBlockCall(block) => format!("{:?}", block),
+            Token::Reg(block) => format!("R{:?}", block),
         }
     }
 
-    pub fn to_str_compact(&self) -> String {
+    pub fn to_str_debug(&self) -> String {
         match self {
-            Token::Identifier(id) => format!("ID[{}]", &id),
-            Token::Function(index) => format!("F[{}]", &index),
-            Token::UserBlockCall(_) => "UBC".to_string(),
-            Token::Integer(int) => format!("INT[{}]", &int),
-            Token::Float(float) => format!("FL[{}]", &float),
-            Token::String(str) => format!("STR[{}]", &str),
-            Token::Char(ch) => format!("CHAR[{}]", &ch),
-            Token::Symbol(s) => format!("SYM[{}]", &s),
-            Token::Bool(b) => format!("BOOL[{}]", &b),
-            Token::Block(block) => match block {
-                Block::Literal(_) => "LB".to_string(),
-                Block::Lambda(_) => "PL".to_string(),
-                Block::Function(_) => "F".to_string(),
-                Block::Auto(_, _) => "A".to_string(),
-                Block::Modifier(_, _) => "MD".to_string(),
-                Block::List(_) => "L".to_string(),
-                Block::ListLambda(_) => "LL".to_string(),
-                Block::Struct(_) => "S".to_string(),
-            },
-            Token::Op(operator) => {
-                format!("O[{:?}]", operator)
-            }
-            Token::FlowFunction(index) => {
-                format!("FLF[{}]", &index)
-            }
-            Token::FlowUserBlockCall(_) => "FUBC".to_string(),
-            Token::Reg(opcodes) => format!("ROP({:?})", &opcodes),
+            Token::Identifier(_) => format!("{:?}", self),
+            Token::Function(_) => format!("{:?}", self),
+            Token::UserBlockCall(_) => format!("{:?}", self),
+            Token::Integer(_) => format!("{:?}", self),
+            Token::Float(_) => format!("{:?}", self),
+            Token::String(_) => format!("{:?}", self),
+            Token::Char(_) => format!("{:?}", self),
+            Token::Symbol(_) => format!("{:?}", self),
+            Token::Bool(_) => format!("{:?}", self),
+            Token::Block(_) => format!("{:?}", self),
+            Token::Op(_) => format!("{:?}", self),
+            Token::FlowFunction(_) => format!("{:?}", self),
+            Token::FlowUserBlockCall(_) => format!("{:?}", self),
+            Token::Reg(_) => format!("{:?}", self),
         }
     }
 }

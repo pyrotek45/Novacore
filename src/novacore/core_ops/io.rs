@@ -29,7 +29,7 @@ pub fn println(eval: &mut Evaluator) {
                 print!("{}\r\n", token)
             }
             Token::Block(_) => {
-                print!("{}\r\n", token.to_str_long())
+                print!("{}\r\n", token.to_str_debug())
             }
             _ => print_error(&format!("Incorrect argument for println, got {:?}", token)),
         }
@@ -63,7 +63,7 @@ pub fn print(eval: &mut Evaluator) {
                 print!("{}", token)
             }
             Token::Block(_) => {
-                print!("{}", token.to_str_long())
+                print!("{}", token.to_str_debug())
             }
             _ => print_error(&format!("Incorrect argument for print, got {:?}", token)),
         }
@@ -101,7 +101,7 @@ pub fn dump(eval: &mut Evaluator) {
     let mut output_string = String::new();
     output_string.push('[');
     for stack_output in eval.state.execution_stack.iter() {
-        output_string.push_str(&stack_output.to_str_compact());
+        output_string.push_str(&stack_output.to_str());
         output_string.push(',')
     }
     output_string.pop();

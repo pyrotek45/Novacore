@@ -42,15 +42,15 @@ impl Vm {
         self.evaluator
             .state
             .get_from_heap_or_pop()
-            .map(|tok| format!(" ---> [{}]", tok.to_str_long()))
+            .map(|tok| format!(" ---> [{}]", tok.to_str_debug()))
     }
 
     pub fn get_stack_output(&mut self) -> Option<String> {
         let mut output_string = String::new();
         output_string.push('[');
         for stack_output in self.evaluator.state.execution_stack.iter() {
-            output_string.push_str(&stack_output.to_str_compact());
-            output_string.push(',')
+            output_string.push_str(&stack_output.to_str());
+            output_string.push(',');
         }
         output_string.pop();
         if !output_string.is_empty() {
