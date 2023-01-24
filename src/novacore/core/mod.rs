@@ -127,7 +127,7 @@ impl Token {
     pub fn to_str(&self) -> String {
         match self {
             Token::Identifier(block) => format!("{}", block),
-            Token::Function(block) => format!("{}", block),
+            Token::Function(block) => format!("FUNC[{}]", block),
             Token::UserBlockCall(block) => format!("{}", block),
             Token::Integer(block) => format!("{}", block),
             Token::Float(block) => format!("{:?}", block),
@@ -138,42 +138,42 @@ impl Token {
             Token::Block(block) => match block {
                 Block::Literal(block) => {
                     let mut list = String::new();
-                    list.push_str("[");
+                    list.push_str("{");
                     for item in block.iter() {
                         list.push_str(&item.to_str());
                         list.push(',');
                     }
                     list.pop();
-                    list.push_str("]");
+                    list.push_str("}");
                     format!("{}",list)
                 },
                 Block::Lambda(block) => {
                     let mut list = String::new();
-                    list.push_str("[");
+                    list.push_str("L{");
                     for item in block.iter() {
                         list.push_str(&item.to_str());
                         list.push(',');
                     }
                     list.pop();
-                    list.push_str("]");
+                    list.push_str("}");
                     format!("{}",list)
                 },
                 Block::Function(block) => {
                     let mut list = String::new();
-                    list.push_str("[");
+                    list.push_str("FUNC{");
                     for item in block.iter() {
                         list.push_str(&item.to_str());
                         list.push(',');
                     }
                     list.pop();
-                    list.push_str("]");
+                    list.push_str("}");
                     format!("{}",list)
                 },
                 Block::Auto(_, _) => "Auto".to_string(),
                 Block::Modifier(_, _) => "Modifier".to_string(),
                 Block::List(block) => {
                     let mut list = String::new();
-                    list.push_str("[");
+                    list.push_str("LIST[");
                     for item in block.iter() {
                         list.push_str(&item.to_str());
                         list.push(',');
@@ -184,7 +184,7 @@ impl Token {
                 },
                 Block::ListLambda(block) => {
                     let mut list = String::new();
-                    list.push_str("[");
+                    list.push_str("LL[");
                     for item in block.iter() {
                         list.push_str(&item.to_str());
                         list.push(',');
@@ -195,7 +195,7 @@ impl Token {
                 },
                 Block::Struct(block) => {
                     let mut list = String::new();
-                    list.push_str("[");
+                    list.push_str("S{");
                     for (key,value) in block.iter() {
                         list.push_str(&key);
                         list.push_str(" => ");
@@ -203,7 +203,7 @@ impl Token {
                         list.push(',');
                     }
                     list.pop();
-                    list.push_str("]");
+                    list.push_str("}");
                     format!("{}",list)
                 },
             },
