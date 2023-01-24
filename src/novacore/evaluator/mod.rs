@@ -46,6 +46,7 @@ impl Evaluator {
                 if let Some(token) = self.state.get_from_heap_or_pop() {
                     self.state.execution_stack.push(token)
                 }
+
                 self.state.call_stack.pop();
             }
             Token::Block(Block::ListLambda(list)) => {
@@ -56,13 +57,10 @@ impl Evaluator {
                 }
             }
             Token::Op(operator) => match operator {
-                Operator::Continue => {
-                    self.state.continue_loop.push(true);
-                }
                 Operator::AccessCall => core_ops::control::get_access(self),
                 Operator::UserFunctionChain => core_ops::control::user_chain_call(self),
                 Operator::StoreTemp => core_ops::control::store_temp(self),
-                Operator::Break => core_ops::control::break_loop(self),
+                //Operator::Break => core_ops::control::break_loop(self),
                 Operator::And => core_ops::logical::logical_and(self),
                 Operator::Or => core_ops::logical::logical_or(self),
                 Operator::Not => core_ops::logical::logical_not(self),
@@ -92,9 +90,14 @@ impl Evaluator {
     pub fn evaluate(&mut self, expr: Vec<Token>) {
         for t in expr {
             self.eval(t);
-            if self.state.break_loop.pop().is_some() {
-                break;
-            }
         }
+    }
+
+    pub fn evaluate_function(&mut self, expr: Vec<Token>) {
+        self.state.call_stack.push(HashMap::new());
+        for t in expr {
+            self.eval(t);
+        }
+        self.state.call_stack.pop();
     }
 }

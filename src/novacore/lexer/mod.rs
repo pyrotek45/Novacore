@@ -91,8 +91,6 @@ impl Lexer {
         match token {
             // these can all be functions
             "self" => Token::Op(Operator::SelfId),
-            "break" => Token::Op(Operator::Break),
-            "continue" => Token::Op(Operator::Continue),
             // keep for now, maybe change to 1 true, 0 false
             "true" => Token::Bool(true),
             "false" => Token::Bool(false),

@@ -76,7 +76,12 @@ impl Vm {
 
         // Operations
         self.add_function("free", core_ops::operator::free);
+        self.add_function("resolve", core_ops::operator::resolve);
+        // self.add_function("exit", core_ops::operator::exit);
+
+        // Test
         self.add_function("ttos", core_ops::comparison::assert_stack_test);
+
         // readline
         // getch
         // rawread
@@ -96,7 +101,7 @@ impl Vm {
         self.add_function("random", core_ops::random::random);
 
         // stack operations
-        self.add_function("return", core_ops::shuffle::return_top);
+
         self.add_function("dup", core_ops::shuffle::dup);
         self.add_function("ddup", core_ops::shuffle::ddup);
         self.add_function("swap", core_ops::shuffle::swap);
@@ -134,7 +139,9 @@ impl Vm {
 
         // //control flow
         self.add_function("if", core_ops::control::if_statement);
-        self.add_function("for", core_ops::control::for_loop);
+        self.add_function("when", core_ops::control::when_statement);
+        self.add_function("unless", core_ops::control::unless_statement);
+        //self.add_function("for", core_ops::control::for_loop);
         self.add_function("call", core_ops::control::block_call);
         self.add_function("each", core_ops::control::each);
         self.add_function("times", core_ops::control::times);

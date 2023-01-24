@@ -39,8 +39,6 @@ pub enum Operator {
     Sub,
     Mul,
     Div,
-    Break,
-    Continue,
     PopStack,
 }
 

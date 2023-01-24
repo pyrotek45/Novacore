@@ -323,3 +323,15 @@ pub fn free(eval: &mut Evaluator) {
         print_error("Not enough arguments for free");
     }
 }
+
+pub fn resolve(eval: &mut Evaluator) {
+    if let Some(top) = eval.state.get_from_heap_or_pop() {
+        eval.state.execution_stack.push(top)
+    } else {
+        print_error("Not enough arguments for return");
+    }
+}
+
+// pub fn exit(eval: &mut Evaluator) {
+//     eval.state.exit_function = true
+// }

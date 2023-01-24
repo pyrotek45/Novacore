@@ -13,9 +13,7 @@ pub fn block_call(eval: &mut Evaluator) {
         if let Token::Block(block) = token {
             match block {
                 Block::Function(block) => {
-                    eval.state.call_stack.push(HashMap::new());
-                    eval.evaluate(block.to_vec());
-                    eval.state.call_stack.pop();
+                    eval.evaluate_function(block.to_vec());
                 }
                 Block::Literal(block) => eval.evaluate(block.to_vec()),
                 Block::List(list) => {
@@ -104,9 +102,7 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                     }
                 }
                 Block::Function(block) => {
-                    eval.state.call_stack.push(HashMap::new());
-                    eval.evaluate(block.to_vec());
-                    eval.state.call_stack.pop();
+                    eval.evaluate_function(block.to_vec());
                 }
                 Block::List(list) => {
                     if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
@@ -134,73 +130,88 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
 }
 
 pub fn if_statement(eval: &mut Evaluator) {
-    if let (Some(block), Some(boolmaybe)) = (
+    if let (Some(elseblock), Some(trueblock), Some(bool)) = (
+        eval.state.get_from_heap_or_pop(),
         eval.state.get_from_heap_or_pop(),
         eval.state.get_from_heap_or_pop(),
     ) {
-        //if true single if statement
-        if let Token::Bool(bool) = boolmaybe {
-            if bool {
-                match block {
-                    Token::Block(Block::Literal(block)) => eval.evaluate(block.to_vec()),
-                    Token::Block(Block::List(block)) => eval.evaluate(block.to_vec()),
-                    _ => print_error(&format!("Incorrect arguments for if, got [{:?}]", block)),
+        match (bool, trueblock, elseblock) {
+            (
+                Token::Bool(bool),
+                Token::Block(Block::Literal(trueblock)),
+                Token::Block(Block::Literal(elseblock)),
+            ) => {
+                if bool {
+                    eval.evaluate(trueblock.to_vec())
+                } else {
+                    eval.evaluate(elseblock.to_vec())
                 }
             }
-        } else if let Some(Token::Bool(bool)) = eval.state.get_from_heap_or_pop() {
-            if bool {
-                match boolmaybe {
-                    Token::Block(Block::Literal(block)) => eval.evaluate(block.to_vec()),
-                    Token::Block(Block::List(block)) => eval.evaluate(block.to_vec()),
-                    _ => print_error(&format!(
-                        "Incorrect arguments for if, got [{:?}]",
-                        boolmaybe
-                    )),
-                }
-            } else {
-                match block {
-                    Token::Block(Block::Literal(block)) => eval.evaluate(block.to_vec()),
-                    Token::Block(Block::List(block)) => eval.evaluate(block.to_vec()),
-                    _ => print_error(&format!("Incorrect arguments for if, got [{:?}]", block)),
-                }
-            }
+            (a, b, c) => print_error(&format!(
+                "Incorrect arguments for if, got [{:?},{:?},{:?}]",
+                a, b, c
+            )),
         }
     } else {
         print_error("Not enough arguments for if");
     }
 }
 
-pub fn while_loop(eval: &mut Evaluator) {
-    fn while_compute(eval: &mut Evaluator, test: Instructions, logic: Instructions) {
-        'outer: loop {
-            // run test block
-            for t in test.iter() {
-                eval.eval(t.clone());
-                if eval.state.break_loop.pop().is_some() {
-                    break 'outer;
-                }
-                if eval.state.continue_loop.pop().is_some() {
-                    continue 'outer;
+pub fn when_statement(eval: &mut Evaluator) {
+    if let (Some(trueblock), Some(bool)) = (
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
+        match (bool, trueblock) {
+            (Token::Bool(bool), Token::Block(Block::Literal(trueblock))) => {
+                if bool {
+                    eval.evaluate(trueblock.to_vec())
                 }
             }
+            (a, b) => print_error(&format!(
+                "Incorrect arguments for when, got [{:?},{:?}]",
+                a, b
+            )),
+        }
+    } else {
+        print_error("Not enough arguments for when");
+    }
+}
+
+pub fn unless_statement(eval: &mut Evaluator) {
+    if let (Some(trueblock), Some(bool)) = (
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
+        match (bool, trueblock) {
+            (Token::Bool(bool), Token::Block(Block::Literal(trueblock))) => {
+                if !bool {
+                    eval.evaluate(trueblock.to_vec())
+                }
+            }
+            (a, b) => print_error(&format!(
+                "Incorrect arguments for unless, got [{:?},{:?}]",
+                a, b
+            )),
+        }
+    } else {
+        print_error("Not enough arguments for unless");
+    }
+}
+
+pub fn while_loop(eval: &mut Evaluator) {
+    fn while_compute(eval: &mut Evaluator, test: Instructions, logic: Instructions) {
+        loop {
+            // run test block
+            eval.evaluate(test.to_vec());
 
             // get result and run logic block if true is on stack else break
             if let Some(Token::Bool(bool)) = eval.state.get_from_heap_or_pop() {
                 if bool {
-                    for t in logic.iter() {
-                        eval.eval(t.clone());
-                        if eval.state.break_loop.pop().is_some() {
-                            break 'outer;
-                        }
-                        if eval.state.continue_loop.pop().is_some() {
-                            continue 'outer;
-                        }
-                    }
+                    eval.evaluate(logic.to_vec())
                 } else {
-                    break 'outer;
+                    break;
                 }
-            } else {
-                break 'outer;
             }
         }
     }
@@ -234,16 +245,8 @@ pub fn while_loop(eval: &mut Evaluator) {
 
 pub fn times(eval: &mut Evaluator) {
     fn times_compute(eval: &mut Evaluator, logic: Instructions, times: usize) {
-        'outer: for _ in 0..times {
-            for t in logic.iter() {
-                eval.eval(t.clone());
-                if eval.state.break_loop.pop().is_some() {
-                    break 'outer;
-                }
-                if eval.state.continue_loop.pop().is_some() {
-                    continue 'outer;
-                }
-            }
+        for _ in 0..times {
+            eval.evaluate(logic.to_vec())
         }
     }
 
@@ -254,7 +257,11 @@ pub fn times(eval: &mut Evaluator) {
         match (logic, times) {
             (Token::Block(logic), Token::Integer(times)) => match logic {
                 Block::Literal(logic) => times_compute(eval, logic, times as usize),
-                Block::Function(logic) => times_compute(eval, logic, times as usize),
+                Block::Function(logic) => {
+                    eval.state.call_stack.push(HashMap::new());
+                    times_compute(eval, logic, times as usize);
+                    eval.state.call_stack.pop();
+                }
                 Block::List(logic) => times_compute(eval, logic, times as usize),
                 _ => print_error(&format!(
                     "Incorrect arguments for times, got [{:?},{:?}]",
@@ -277,16 +284,10 @@ pub fn each(eval: &mut Evaluator) {
         eval.state.get_from_heap_or_pop(),
     ) {
         fn each_compute(eval: &mut Evaluator, items: Instructions, logic: Instructions) {
-            'outer: for item in items.iter() {
+            for item in items.iter() {
                 eval.state.execution_stack.push(item.clone());
                 for t in logic.iter() {
                     eval.eval(t.clone());
-                    if eval.state.break_loop.pop().is_some() {
-                        break 'outer;
-                    }
-                    if eval.state.continue_loop.pop().is_some() {
-                        continue 'outer;
-                    }
                 }
             }
         }
@@ -294,7 +295,12 @@ pub fn each(eval: &mut Evaluator) {
             (Token::Block(items), Token::Block(logic)) => match (items, logic) {
                 (Block::Literal(items), Block::Literal(logic)) => each_compute(eval, items, logic),
                 (Block::List(items), Block::Literal(logic)) => each_compute(eval, items, logic),
-                (Block::Literal(items), Block::Function(logic)) => each_compute(eval, items, logic),
+                (Block::Literal(items), Block::Function(logic)) => {
+                    eval.state.call_stack.push(HashMap::new());
+                    each_compute(eval, items, logic);
+
+                    eval.state.call_stack.pop();
+                }
                 (Block::List(items), Block::Function(logic)) => each_compute(eval, items, logic),
                 (items, logic) => print_error(&format!(
                     "Incorrect arguments for each, got [{:?},{:?}]",
@@ -311,139 +317,139 @@ pub fn each(eval: &mut Evaluator) {
     }
 }
 
-pub fn break_loop(eval: &mut Evaluator) {
-    eval.state.break_loop.push(true);
-}
+// pub fn break_loop(eval: &mut Evaluator) {
+//     eval.state.break_loop.push(true);
+// }
 
-pub fn for_loop(eval: &mut Evaluator) {
-    fn for_compute(
-        eval: &mut Evaluator,
-        block: Instructions,
-        list: Instructions,
-        variable_name: String,
-    ) {
-        'outer1: for variable in list.iter() {
-            match &variable {
-                Token::Identifier(inner_ident) => {
-                    if let Some(token) = eval.state.get_from_heap(inner_ident) {
-                        if variable_name != "_" {
-                            if let Some(scope) = eval.state.call_stack.last_mut() {
-                                scope.insert(variable_name.to_string(), token.clone());
-                            }
-                        }
-                        for t in block.iter() {
-                            eval.eval(t.clone());
-                            if eval.state.break_loop.pop().is_some() {
-                                if let Some(scope) = eval.state.call_stack.last_mut() {
-                                    scope.remove(&variable_name);
-                                }
-                                break 'outer1;
-                            }
+// pub fn for_loop(eval: &mut Evaluator) {
+//     fn for_compute(
+//         eval: &mut Evaluator,
+//         block: Instructions,
+//         list: Instructions,
+//         variable_name: String,
+//     ) {
+//         'outer1: for variable in list.iter() {
+//             match &variable {
+//                 Token::Identifier(inner_ident) => {
+//                     if let Some(token) = eval.state.get_from_heap(inner_ident) {
+//                         if variable_name != "_" {
+//                             if let Some(scope) = eval.state.call_stack.last_mut() {
+//                                 scope.insert(variable_name.to_string(), token.clone());
+//                             }
+//                         }
+//                         for t in block.iter() {
+//                             eval.eval(t.clone());
+//                             if eval.state.break_loop.pop().is_some() {
+//                                 if let Some(scope) = eval.state.call_stack.last_mut() {
+//                                     scope.remove(&variable_name);
+//                                 }
+//                                 break 'outer1;
+//                             }
 
-                            if eval.state.continue_loop.pop().is_some() {
-                                eval.state.continue_loop.pop();
-                                if let Some(scope) = eval.state.call_stack.last_mut() {
-                                    scope.remove(&variable_name);
-                                }
-                                continue 'outer1;
-                            }
-                        }
+//                             if eval.state.continue_loop.pop().is_some() {
+//                                 eval.state.continue_loop.pop();
+//                                 if let Some(scope) = eval.state.call_stack.last_mut() {
+//                                     scope.remove(&variable_name);
+//                                 }
+//                                 continue 'outer1;
+//                             }
+//                         }
 
-                        if let Some(scope) = eval.state.call_stack.last_mut() {
-                            scope.remove(&variable_name);
-                        }
-                        eval.state.break_loop.pop();
-                    }
-                }
-                _ => {
-                    if variable_name != "_" {
-                        if let Some(scope) = eval.state.call_stack.last_mut() {
-                            scope.insert(variable_name.to_string(), variable.clone());
-                        }
-                    }
-                    for t in block.iter() {
-                        eval.eval(t.clone());
-                        if eval.state.break_loop.pop().is_some() {
-                            if let Some(scope) = eval.state.call_stack.last_mut() {
-                                scope.remove(&variable_name);
-                            }
-                            break 'outer1;
-                        }
+//                         if let Some(scope) = eval.state.call_stack.last_mut() {
+//                             scope.remove(&variable_name);
+//                         }
+//                         eval.state.break_loop.pop();
+//                     }
+//                 }
+//                 _ => {
+//                     if variable_name != "_" {
+//                         if let Some(scope) = eval.state.call_stack.last_mut() {
+//                             scope.insert(variable_name.to_string(), variable.clone());
+//                         }
+//                     }
+//                     for t in block.iter() {
+//                         eval.eval(t.clone());
+//                         if eval.state.break_loop.pop().is_some() {
+//                             if let Some(scope) = eval.state.call_stack.last_mut() {
+//                                 scope.remove(&variable_name);
+//                             }
+//                             break 'outer1;
+//                         }
 
-                        if eval.state.continue_loop.pop().is_some() {
-                            eval.state.continue_loop.pop();
-                            if let Some(scope) = eval.state.call_stack.last_mut() {
-                                scope.remove(&variable_name);
-                            }
-                            continue 'outer1;
-                        }
-                    }
+//                         if eval.state.continue_loop.pop().is_some() {
+//                             eval.state.continue_loop.pop();
+//                             if let Some(scope) = eval.state.call_stack.last_mut() {
+//                                 scope.remove(&variable_name);
+//                             }
+//                             continue 'outer1;
+//                         }
+//                     }
 
-                    if let Some(scope) = eval.state.call_stack.last_mut() {
-                        scope.remove(&variable_name);
-                    }
-                    eval.state.break_loop.pop();
-                }
-            }
-        }
-    }
+//                     if let Some(scope) = eval.state.call_stack.last_mut() {
+//                         scope.remove(&variable_name);
+//                     }
+//                     eval.state.break_loop.pop();
+//                 }
+//             }
+//         }
+//     }
 
-    if let (Some(block), Some(list), Some(variable)) = (
-        eval.state.get_from_heap_or_pop(),
-        eval.state.get_from_heap_or_pop(),
-        eval.state.execution_stack.pop(),
-    ) {
-        match (block, list, variable) {
-            (
-                Token::Block(Block::Literal(block)),
-                Token::Block(Block::List(list)),
-                Token::Identifier(variable_name),
-            ) => for_compute(eval, block, list, variable_name),
-            (
-                Token::Block(Block::Literal(block)),
-                Token::Block(Block::Literal(list)),
-                Token::Identifier(variable_name),
-            ) => for_compute(eval, block, list, variable_name),
-            (
-                Token::Block(Block::Literal(block)),
-                Token::Bool(bool),
-                Token::Identifier(variable_name),
-            ) => {
-                if bool {
-                    'outer: loop {
-                        for t in block.iter() {
-                            eval.eval(t.clone());
-                            if eval.state.break_loop.pop().is_some() {
-                                if let Some(scope) = eval.state.call_stack.last_mut() {
-                                    scope.remove(&variable_name);
-                                }
-                                break 'outer;
-                            }
+//     if let (Some(block), Some(list), Some(variable)) = (
+//         eval.state.get_from_heap_or_pop(),
+//         eval.state.get_from_heap_or_pop(),
+//         eval.state.execution_stack.pop(),
+//     ) {
+//         match (block, list, variable) {
+//             (
+//                 Token::Block(Block::Literal(block)),
+//                 Token::Block(Block::List(list)),
+//                 Token::Identifier(variable_name),
+//             ) => for_compute(eval, block, list, variable_name),
+//             (
+//                 Token::Block(Block::Literal(block)),
+//                 Token::Block(Block::Literal(list)),
+//                 Token::Identifier(variable_name),
+//             ) => for_compute(eval, block, list, variable_name),
+//             (
+//                 Token::Block(Block::Literal(block)),
+//                 Token::Bool(bool),
+//                 Token::Identifier(variable_name),
+//             ) => {
+//                 if bool {
+//                     'outer: loop {
+//                         for t in block.iter() {
+//                             eval.eval(t.clone());
+//                             if eval.state.break_loop.pop().is_some() {
+//                                 if let Some(scope) = eval.state.call_stack.last_mut() {
+//                                     scope.remove(&variable_name);
+//                                 }
+//                                 break 'outer;
+//                             }
 
-                            if eval.state.continue_loop.pop().is_some() {
-                                eval.state.continue_loop.pop();
-                                if let Some(scope) = eval.state.call_stack.last_mut() {
-                                    scope.remove(&variable_name);
-                                }
-                                continue 'outer;
-                            }
-                        }
-                        if let Some(scope) = eval.state.call_stack.last_mut() {
-                            scope.remove(&variable_name);
-                        }
-                        eval.state.break_loop.pop();
-                    }
-                }
-            }
-            (a, b, c) => print_error(&format!(
-                "Incorrect arguments for iteration[for], got [{:?},{:?},{:?}]",
-                a, b, c
-            )),
-        }
-    } else {
-        print_error("Not enough arguments for iteration[for]");
-    }
-}
+//                             if eval.state.continue_loop.pop().is_some() {
+//                                 eval.state.continue_loop.pop();
+//                                 if let Some(scope) = eval.state.call_stack.last_mut() {
+//                                     scope.remove(&variable_name);
+//                                 }
+//                                 continue 'outer;
+//                             }
+//                         }
+//                         if let Some(scope) = eval.state.call_stack.last_mut() {
+//                             scope.remove(&variable_name);
+//                         }
+//                         eval.state.break_loop.pop();
+//                     }
+//                 }
+//             }
+//             (a, b, c) => print_error(&format!(
+//                 "Incorrect arguments for iteration[for], got [{:?},{:?},{:?}]",
+//                 a, b, c
+//             )),
+//         }
+//     } else {
+//         print_error("Not enough arguments for iteration[for]");
+//     }
+// }
 
 pub fn user_chain_call(eval: &mut Evaluator) {
     if let Some(token) = eval.state.temp.last().cloned() {
@@ -452,6 +458,7 @@ pub fn user_chain_call(eval: &mut Evaluator) {
                 Block::Function(block) => {
                     eval.state.call_stack.push(HashMap::new());
                     eval.evaluate(block.to_vec());
+
                     eval.state.call_stack.pop();
                 }
                 Block::Modifier(object_name, method) => {
@@ -525,9 +532,7 @@ pub fn get_access(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
             Token::Block(Block::Function(block)) => {
-                eval.state.call_stack.push(HashMap::new());
-                eval.evaluate(block.to_vec());
-                eval.state.call_stack.pop();
+                eval.evaluate_function(block.to_vec());
             }
             Token::Block(Block::Literal(block)) => eval.evaluate(block.to_vec()),
             Token::Block(Block::List(list)) => {
