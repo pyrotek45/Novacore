@@ -171,7 +171,7 @@ impl Parser {
                             np.debug = true;
                         }
 
-                        self.operator_stack.push(Token::Block(Block::Lambda(Rc::new(
+                        self.operator_stack.push(Token::Block(Block::ListLambda(Rc::new(
                             np.shunt_list(shunted.to_vec()),
                         ))));
                     }

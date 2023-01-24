@@ -41,7 +41,6 @@ impl Evaluator {
                 core_ops::control::user_block_call(self, &function)
             }
             Token::Block(Block::Lambda(block)) => {
-                // Call with new scope
                 self.state.call_stack.push(HashMap::new());
                 self.evaluate(block.to_vec());
                 if let Some(token) = self.state.get_from_heap_or_pop() {
@@ -49,14 +48,21 @@ impl Evaluator {
                 }
                 self.state.call_stack.pop();
             }
+            Token::Block(Block::ListLambda(list)) => {
+                if let Some(key) = self.state.get_from_heap_or_pop() {
+                    if let Token::Integer(index) = key {
+                        if let Some(value) = list.get(index as usize) {
+                            self.state.execution_stack.push(value.clone())
+                        }
+                    }
+                }
+            }
             Token::Op(operator) => match operator {
                 Operator::Continue => {
                     self.state.continue_loop.push(true);
                 }
-                //Operator::BlockCall => core_ops::control::block_call(self),
                 Operator::AccessCall => core_ops::control::get_access(self),
                 Operator::UserFunctionChain => core_ops::control::user_chain_call(self),
-                //Operator::Return => core_ops::operator::return_top(self),
                 Operator::StoreTemp => core_ops::control::store_temp(self),
                 Operator::Break => core_ops::control::break_loop(self),
                 Operator::And => core_ops::logical::logical_and(self),

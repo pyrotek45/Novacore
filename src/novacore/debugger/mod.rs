@@ -37,7 +37,16 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                 }
                 Block::Auto(_, _) => todo!(),
                 Block::Modifier(_, _) => todo!(),
-                Block::Function(_) => todo!(),
+                Block::Function(block) => {
+                    println!(
+                        "{}{}{}",
+                        sdep.bright_cyan(),
+                        "|--".bright_cyan(),
+                        "List:".bright_cyan()
+                    );
+                    debug_output(depth + 1, block.clone());
+                    continue;
+                },
                 Block::List(block) => {
                     println!(
                         "{}{}{}",
@@ -48,8 +57,25 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                     debug_output(depth + 1, block.clone());
                     continue;
                 }
-                Block::ListLambda(_) => todo!(),
-                Block::Struct(_) => todo!(),
+                Block::ListLambda(block) => {
+                    println!(
+                        "{}{}{}",
+                        sdep.bright_cyan(),
+                        "|--".bright_cyan(),
+                        "ListLamda:".bright_cyan()
+                    );
+                    debug_output(depth + 1, block.clone());
+                    continue;
+                },
+                Block::Struct(_) => {
+                    println!(
+                        "{}{}{}",
+                        sdep.bright_cyan(),
+                        "|--".bright_cyan(),
+                        "Struct:".bright_cyan()
+                    );
+                    continue;
+                },
             }
         }
         println!("{}[{}]", sdep.bright_cyan(), t.to_str_long().bright_blue());
