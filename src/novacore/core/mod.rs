@@ -78,21 +78,21 @@ pub enum Token {
 impl Token {
     pub fn get_int(&self) -> i128 {
         match self {
-            Token::Integer(num) => return *num,
+            Token::Integer(num) => *num,
             _ => 0,
         }
     }
 
     pub fn _get_string(&self) -> &str {
         match self {
-            Token::String(value) => return value,
+            Token::String(value) => value,
             _ => "",
         }
     }
 
     pub fn get_float(&self) -> f64 {
         match self {
-            Token::Float(num) => return *num,
+            Token::Float(num) => *num,
             _ => 0.0,
         }
     }
@@ -126,9 +126,9 @@ impl Token {
 
     pub fn to_str(&self) -> String {
         match self {
-            Token::Identifier(block) => format!("{}", block),
+            Token::Identifier(block) => block.to_string(),
             Token::Function(block) => format!("FUNC[{}]", block),
-            Token::UserBlockCall(block) => format!("{}", block),
+            Token::UserBlockCall(block) => block.to_string(),
             Token::Integer(block) => format!("{}", block),
             Token::Float(block) => format!("{:?}", block),
             Token::String(block) => format!("{:?}", block),
@@ -138,82 +138,102 @@ impl Token {
             Token::Block(block) => match block {
                 Block::Literal(block) => {
                     let mut list = String::new();
-                    list.push_str("{");
-                    for item in block.iter() {
-                        list.push_str(&item.to_str());
-                        list.push(',');
+                    list.push('{');
+                    if !block.is_empty() {
+                        for item in block.iter() {
+                            list.push_str(&item.to_str());
+                            list.push(',');
+                        }
+                        list.pop();
+                        list.push('}');
+                    } else {
+                        list.push('}');
                     }
-                    list.pop();
-                    list.push_str("}");
-                    format!("{}",list)
-                },
+                    list.to_string()
+                }
                 Block::Lambda(block) => {
                     let mut list = String::new();
-                    list.push_str("L{");
-                    for item in block.iter() {
-                        list.push_str(&item.to_str());
-                        list.push(',');
+                    list.push_str("LF{");
+                    if !block.is_empty() {
+                        for item in block.iter() {
+                            list.push_str(&item.to_str());
+                            list.push(',');
+                        }
+                        list.pop();
+                        list.push('}');
+                    } else {
+                        list.push('}');
                     }
-                    list.pop();
-                    list.push_str("}");
-                    format!("{}",list)
-                },
+                    list.to_string()
+                }
                 Block::Function(block) => {
                     let mut list = String::new();
                     list.push_str("FUNC{");
-                    for item in block.iter() {
-                        list.push_str(&item.to_str());
-                        list.push(',');
+                    if !block.is_empty() {
+                        for item in block.iter() {
+                            list.push_str(&item.to_str());
+                            list.push(',');
+                        }
+                        list.pop();
+                        list.push('}');
+                    } else {
+                        list.push('}');
                     }
-                    list.pop();
-                    list.push_str("}");
-                    format!("{}",list)
-                },
+                    list.to_string()
+                }
                 Block::Auto(_, _) => "Auto".to_string(),
                 Block::Modifier(_, _) => "Modifier".to_string(),
                 Block::List(block) => {
                     let mut list = String::new();
-                    list.push_str("LIST[");
-                    for item in block.iter() {
-                        list.push_str(&item.to_str());
-                        list.push(',');
+                    list.push('[');
+                    if !block.is_empty() {
+                        for item in block.iter() {
+                            list.push_str(&item.to_str());
+                            list.push(',');
+                        }
+                        list.pop();
+                        list.push(']');
+                    } else {
+                        list.push(']');
                     }
-                    list.pop();
-                    list.push_str("]");
-                    format!("{}",list)
-                },
+                    list.to_string()
+                }
                 Block::ListLambda(block) => {
                     let mut list = String::new();
-                    list.push_str("LL[");
-                    for item in block.iter() {
-                        list.push_str(&item.to_str());
-                        list.push(',');
+                    list.push_str("LLF[");
+                    if !block.is_empty() {
+                        for item in block.iter() {
+                            list.push_str(&item.to_str());
+                            list.push(',');
+                        }
+                        list.pop();
+                        list.push(']');
+                    } else {
+                        list.push(']');
                     }
-                    list.pop();
-                    list.push_str("]");
-                    format!("{}",list)
-                },
+                    list.to_string()
+                }
                 Block::Struct(block) => {
                     let mut list = String::new();
                     list.push_str("S{");
-                    for (key,value) in block.iter() {
-                        list.push_str(&key);
-                        list.push_str(" => ");
-                        list.push_str(&value.to_str());
-                        list.push(',');
+                    if !block.is_empty() {
+                        for (key, value) in block.iter() {
+                            list.push_str(key);
+                            list.push_str(" => ");
+                            list.push_str(&value.to_str());
+                            list.push(',');
+                        }
+                        list.pop();
+                        list.push('}');
+                    } else {
+                        list.push('}');
                     }
-                    list.pop();
-                    list.push_str("}");
-                    format!("{}",list)
-                },
+                    list.to_string()
+                }
             },
             Token::Op(operator) => {
-                match operator {
-                    op => {
-                        format!("{:?}", op)
-                    }
-                }
-
+                let op = operator;
+                format!("{:?}", op)
             }
             Token::FlowFunction(block) => format!("{}", block),
             Token::FlowUserBlockCall(block) => format!("{:?}", block),

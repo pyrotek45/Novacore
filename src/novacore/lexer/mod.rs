@@ -224,10 +224,8 @@ impl Lexer {
                             vec_last.push(t);
                         }
                         self.buffer.clear();
-                    } else {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(Token::Symbol(' '));
-                        }
+                    } else if let Some(vec_last) = self.block_stack.last_mut() {
+                        vec_last.push(Token::Symbol(' '));
                     }
                 }
                 '.' => {
@@ -351,7 +349,7 @@ impl Lexer {
                                             if let Some(Token::Op(Operator::AccessCall)) =
                                                 vec_last.last()
                                             {
-                                                vec_last.push(Token::Integer(ident.clone()));
+                                                vec_last.push(Token::Integer(*ident));
                                                 self.is_parsing_chain = true;
                                                 //vec_last.push(Token::Op(Operator::Pass));
                                                 vec_last.push(Token::Op(Operator::StoreTemp));

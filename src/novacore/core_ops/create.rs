@@ -39,7 +39,7 @@ pub fn collect(eval: &mut Evaluator) {
                 for item in list.iter() {
                     match item {
                         Token::Identifier(ident) => {
-                            if let Some(value) = eval.state.get_from_heap(&ident) {
+                            if let Some(value) = eval.state.get_from_heap(ident) {
                                 newlist.push(value)
                             } else {
                                 newlist.push(item.clone())

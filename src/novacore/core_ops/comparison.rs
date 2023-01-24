@@ -78,15 +78,9 @@ pub fn assert_stack_test(eval: &mut Evaluator) {
         eval.state.execution_stack.pop(),
     ) {
         if left == right {
-            println!(
-                "{}",
-                format!("{}: [{:?} = {:?}]", "SUCCESS".bright_green(), left, right)
-            )
+            println!("{}: [{:?} = {:?}]", "SUCCESS".bright_green(), left, right)
         } else {
-            println!(
-                "{}",
-                format!("{}: [{:?} = {:?}]", "FAIL".red(), left, right)
-            )
+            println!("{}: [{:?} = {:?}]", "FAIL".red(), left, right)
         }
     } else {
         print_error("Not enough arguments for ttos");

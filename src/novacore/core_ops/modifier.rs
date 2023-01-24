@@ -167,15 +167,12 @@ pub fn include(eval: &mut Evaluator) {
         let mut newlist = vec![];
         if let Some(scope) = eval.state.call_stack.last_mut() {
             for item in list.iter() {
-                match item {
-                    Token::Identifier(ident) => {
-                        if let Some(token) = scope.get(ident) {
-                            newlist.push(Token::Identifier(ident.clone()));
-                            newlist.push(token.clone());
-                            newlist.push(Token::Op(Operator::VariableAssign))
-                        }
+                if let Token::Identifier(ident) = item {
+                    if let Some(token) = scope.get(ident) {
+                        newlist.push(Token::Identifier(ident.clone()));
+                        newlist.push(token.clone());
+                        newlist.push(Token::Op(Operator::VariableAssign))
                     }
-                    _ => {}
                 }
             }
 

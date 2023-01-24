@@ -49,11 +49,9 @@ impl Evaluator {
                 self.state.call_stack.pop();
             }
             Token::Block(Block::ListLambda(list)) => {
-                if let Some(key) = self.state.get_from_heap_or_pop() {
-                    if let Token::Integer(index) = key {
-                        if let Some(value) = list.get(index as usize) {
-                            self.state.execution_stack.push(value.clone())
-                        }
+                if let Some(Token::Integer(index)) = self.state.get_from_heap_or_pop() {
+                    if let Some(value) = list.get(index as usize) {
+                        self.state.execution_stack.push(value.clone())
                     }
                 }
             }

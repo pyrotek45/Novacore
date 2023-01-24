@@ -19,20 +19,16 @@ pub fn block_call(eval: &mut Evaluator) {
                 }
                 Block::Literal(block) => eval.evaluate(block.to_vec()),
                 Block::List(list) => {
-                    if let Some(key) = eval.state.get_from_heap_or_pop() {
-                        if let Token::Integer(index) = key {
-                            if let Some(value) = list.get(index as usize) {
-                                eval.state.execution_stack.push(value.clone())
-                            }
+                    if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
+                        if let Some(value) = list.get(index as usize) {
+                            eval.state.execution_stack.push(value.clone())
                         }
                     }
                 }
                 Block::Struct(data) => {
-                    if let Some(key) = eval.state.execution_stack.pop() {
-                        if let Token::Identifier(key) = key {
-                            if let Some(value) = data.get(&key) {
-                                eval.state.execution_stack.push(value.clone())
-                            }
+                    if let Some(Token::Identifier(key)) = eval.state.execution_stack.pop() {
+                        if let Some(value) = data.get(&key) {
+                            eval.state.execution_stack.push(value.clone())
                         }
                     }
                 }
@@ -113,22 +109,18 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                     eval.state.call_stack.pop();
                 }
                 Block::List(list) => {
-                    if let Some(key) = eval.state.get_from_heap_or_pop() {
-                        if let Token::Integer(index) = key {
-                            if let Some(value) = list.get(index as usize) {
-                                eval.state.execution_stack.push(value.clone())
-                            }
+                    if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
+                        if let Some(value) = list.get(index as usize) {
+                            eval.state.execution_stack.push(value.clone())
                         }
                     }
                 }
                 Block::Lambda(_) => todo!(),
                 Block::ListLambda(_) => todo!(),
                 Block::Struct(data) => {
-                    if let Some(key) = eval.state.execution_stack.pop() {
-                        if let Token::Identifier(key) = key {
-                            if let Some(value) = data.get(&key) {
-                                eval.state.execution_stack.push(value.clone())
-                            }
+                    if let Some(Token::Identifier(key)) = eval.state.execution_stack.pop() {
+                        if let Some(value) = data.get(&key) {
+                            eval.state.execution_stack.push(value.clone())
                         }
                     }
                 }
@@ -489,20 +481,16 @@ pub fn user_chain_call(eval: &mut Evaluator) {
                     }
                 }
                 Block::List(list) => {
-                    if let Some(key) = eval.state.get_from_heap_or_pop() {
-                        if let Token::Integer(index) = key {
-                            if let Some(value) = list.get(index as usize) {
-                                eval.state.execution_stack.push(value.clone())
-                            }
+                    if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
+                        if let Some(value) = list.get(index as usize) {
+                            eval.state.execution_stack.push(value.clone())
                         }
                     }
                 }
                 Block::Struct(data) => {
-                    if let Some(key) = eval.state.execution_stack.pop() {
-                        if let Token::Identifier(key) = key {
-                            if let Some(value) = data.get(&key) {
-                                eval.state.execution_stack.push(value.clone())
-                            }
+                    if let Some(Token::Identifier(key)) = eval.state.execution_stack.pop() {
+                        if let Some(value) = data.get(&key) {
+                            eval.state.execution_stack.push(value.clone())
                         }
                     }
                 }
@@ -543,29 +531,23 @@ pub fn get_access(eval: &mut Evaluator) {
             }
             Token::Block(Block::Literal(block)) => eval.evaluate(block.to_vec()),
             Token::Block(Block::List(list)) => {
-                if let Some(key) = eval.state.get_from_heap_or_pop() {
-                    if let Token::Integer(index) = key {
-                        if let Some(value) = list.get(index as usize) {
-                            eval.state.execution_stack.push(value.clone())
-                        }
+                if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
+                    if let Some(value) = list.get(index as usize) {
+                        eval.state.execution_stack.push(value.clone())
                     }
                 }
             }
             Token::Block(Block::Struct(data)) => {
-                if let Some(key) = eval.state.execution_stack.pop() {
-                    if let Token::Identifier(key) = key {
-                        if let Some(value) = data.get(&key) {
-                            eval.state.execution_stack.push(value.clone())
-                        }
+                if let Some(Token::Identifier(key)) = eval.state.execution_stack.pop() {
+                    if let Some(value) = data.get(&key) {
+                        eval.state.execution_stack.push(value.clone())
                     }
                 }
             }
             Token::String(word) => {
-                if let Some(key) = eval.state.get_from_heap_or_pop() {
-                    if let Token::Integer(index) = key {
-                        if let Some(value) = word.chars().nth(index as usize) {
-                            eval.state.execution_stack.push(Token::Char(value))
-                        }
+                if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
+                    if let Some(value) = word.chars().nth(index as usize) {
+                        eval.state.execution_stack.push(Token::Char(value))
                     }
                 }
             }
@@ -585,7 +567,7 @@ pub fn store_temp(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         eval.state.temp.push(token);
     } else {
-        print_error(&format!("Not enough arguments for store_temp"));
+        print_error("Not enough arguments for store_temp");
     }
 }
 
