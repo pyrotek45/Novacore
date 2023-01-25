@@ -73,6 +73,8 @@ impl Vm {
         self.add_function("print", core_ops::io::print);
         self.add_function("readln", core_ops::io::readln);
         self.add_function("dump", core_ops::io::dump);
+        self.add_function("import", core_ops::io::import);
+        
 
         // Operations
         self.add_function("free", core_ops::operator::free);

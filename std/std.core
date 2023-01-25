@@ -1,0 +1,23 @@
+map = func: {[function list] -> 
+    newlist = []
+    each: list {
+        function()
+        [i] -> newlist = push: i newlist
+    }
+    get(newlist)
+}
+
+fold = func: {[seed function list] -> 
+    seed 
+    each: list {
+        function()
+    }
+}
+
+filter = func: {[function list] -> 
+    newlist = []
+    each: list {
+         if: dup() function() {[i] -> newlist = push: i newlist} {drop()}
+    }
+    get(newlist)
+}

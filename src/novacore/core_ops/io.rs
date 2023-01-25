@@ -1,4 +1,5 @@
 use crate::novacore::{
+    self,
     core::Token,
     evaluator::Evaluator,
     utilities::{is_string_number, print_error, trim_newline},
@@ -108,5 +109,14 @@ pub fn dump(eval: &mut Evaluator) {
     if !output_string.is_empty() {
         output_string.push(']');
         println!("{}", output_string);
+    }
+}
+
+pub fn import(eval: &mut Evaluator) {
+    if let Some(Token::String(filepath)) = eval.state.get_from_heap_or_pop() {
+        let mut vm = novacore::new_from_file(&filepath);
+        eval.evaluate(vm.parser.shunt(vm.lexer.parse()))
+    } else {
+        print_error("Not enough arguments for import");
     }
 }
