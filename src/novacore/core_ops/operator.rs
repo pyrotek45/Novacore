@@ -92,7 +92,7 @@ pub fn add(eval: &mut Evaluator) {
             }
 
             (a, b) => print_error(&format!(
-                "Incorrect argument for addition. got [{:?},{:?}]",
+                "Incorrect arguments for addition. got [{:?},{:?}]",
                 a, b
             )),
         }
@@ -128,7 +128,7 @@ pub fn div(eval: &mut Evaluator) {
                     .push(Token::Float(*left as f64 / *right as f64));
             }
             (a, b) => print_error(&format!(
-                "Incorrect argument for division. got [{:?},{:?}]",
+                "Incorrect arguments for division. got [{:?},{:?}]",
                 a, b
             )),
         }
@@ -146,7 +146,7 @@ pub fn neg(eval: &mut Evaluator) {
             Token::Float(left) => {
                 eval.state.execution_stack.push(Token::Float(-left));
             }
-            a => print_error(&format!("Incorrect argument for division. got [{:?}]", a)),
+            a => print_error(&format!("Incorrect arguments for division. got [{:?}]", a)),
         }
     } else {
         print_error("Not enough arguments for division")
@@ -176,7 +176,7 @@ pub fn sub(eval: &mut Evaluator) {
                 eval.state.execution_stack.push(Token::Float(left - right));
             }
             (a, b) => print_error(&format!(
-                "Incorrect argument for subtraction. got [{:?},{:?}]",
+                "Incorrect arguments for subtraction. got [{:?},{:?}]",
                 a, b
             )),
         }
@@ -197,7 +197,7 @@ pub fn modulo(eval: &mut Evaluator) {
                     .push(Token::Integer(left.modulo(right)));
             }
             (a, b) => print_error(&format!(
-                "Incorrect argument for modulo %. got [{:?},{:?}]",
+                "Incorrect arguments for modulo %. got [{:?},{:?}]",
                 a, b
             )),
         }
@@ -229,7 +229,7 @@ pub fn mul(eval: &mut Evaluator) {
                 eval.state.execution_stack.push(Token::Float(left * right));
             }
             (a, b) => print_error(&format!(
-                "Incorrect argument for multiplication. got [{:?},{:?}]",
+                "Incorrect arguments for multiplication. got [{:?},{:?}]",
                 a, b
             )),
         }
