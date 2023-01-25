@@ -412,6 +412,8 @@ impl Lexer {
                                             vec_last.push(Token::Op(Operator::Gtr))
                                         }
                                     }
+                                } else {
+                                    vec_last.push(Token::Op(Operator::Gtr))
                                 }
                             }
                             '!' => vec_last.push(Token::Op(Operator::Not)),

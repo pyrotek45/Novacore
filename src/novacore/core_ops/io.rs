@@ -29,7 +29,7 @@ pub fn println(eval: &mut Evaluator) {
                 print!("{}\r\n", token)
             }
             Token::Block(_) => {
-                print!("{}\r\n", token.to_str_debug())
+                print!("{}\r\n", token.to_str())
             }
             _ => print_error(&format!("Incorrect argument for println, got {:?}", token)),
         }
@@ -63,7 +63,7 @@ pub fn print(eval: &mut Evaluator) {
                 print!("{}", token)
             }
             Token::Block(_) => {
-                print!("{}", token.to_str_debug())
+                print!("{}", token.to_str())
             }
             _ => print_error(&format!("Incorrect argument for print, got {:?}", token)),
         }

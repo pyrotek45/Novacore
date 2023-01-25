@@ -269,18 +269,19 @@ pub fn function_variable_assign(eval: &mut Evaluator) {
             }
         }
     } else {
-        print_error("Not enough arguments for function variable assign");
+        print_error("Not enough arguments for function variable assign [->]");
     }
 
     // Tie each Token into the call_stack using the tokens poped
-    for tokens in variable_stack {
-        if let Some(tok) = eval.state.execution_stack.pop() {
-            if let Token::Identifier(ident) = tok {
-                eval.state.move_varaible(&ident, &tokens)
-            } else {
-                eval.state.add_varaible(&tokens, tok.clone());
+    if let Some(mut newscope) = eval.state.call_stack.pop() {
+        for tokens in variable_stack {
+            if let Some(tok) = eval.state.get_from_heap_or_pop() {
+                newscope.insert(tokens, tok.clone());
             }
         }
+        eval.state.call_stack.push(newscope);
+    } else {
+        print_error("Not enough arguments for function variable assign  [->]");
     }
 }
 
