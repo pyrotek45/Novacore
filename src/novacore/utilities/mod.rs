@@ -44,6 +44,6 @@ pub fn is_string_number(data: &str) -> bool {
     true
 }
 
-pub fn print_error(err: &str) {
-    println!("{}: {}", "ERROR".red(), &err.bright_yellow());
-}
+// pub fn print_error(err: &str) {
+//     println!("{}: {}", "ERROR".red(), &err.bright_yellow());
+// }

@@ -1,6 +1,6 @@
-use crate::novacore::utilities::print_error;
 
 use super::core::Token;
+use colored::Colorize;
 use hashbrown::HashMap;
 
 pub struct State {
@@ -10,6 +10,8 @@ pub struct State {
     pub call_stack: Vec<HashMap<String, Token>>,
     pub error_log: Vec<String>,
     pub current_function_index: Vec<usize>,
+    pub traceback: Vec<String>,
+    pub finished: bool,
 }
 
 impl State {
@@ -19,6 +21,22 @@ impl State {
                 scope.insert(ident.to_string(), item);
             }
         }
+    }
+
+    pub fn show_error(&self, err: &str) {
+
+        // Function call traceback/ show each function line
+
+        // line and position of error
+
+        // type of error: output
+
+        for function_call in &self.traceback {
+            println!("Prev Function Call: {}", &function_call.bright_yellow());
+        }
+
+        println!("{}: {}","Error".red(), &err.bright_yellow());
+
     }
 
     pub fn remove_varaible(&mut self, ident: &str) {
@@ -41,7 +59,7 @@ impl State {
                     if let Some(token) = scope.get(&ident) {
                         Some(token.clone())
                     } else {
-                        print_error(&format!("Unknown identifier {}", ident));
+                        self.show_error(&format!("Unknown identifier {}", ident));
                         None
                     }
                 } else {
@@ -55,12 +73,12 @@ impl State {
         }
     }
 
-    pub fn get_from_heap(&self, ident: &str) -> Option<Token> {
+    pub fn get_from_heap(&mut self, ident: &str) -> Option<Token> {
         match self.call_stack.last() {
             Some(scope) => match scope.get(ident) {
                 Some(token) => Some(token.clone()),
                 None => {
-                    print_error(&format!("unknown identifier {}", ident));
+                    self.show_error(&format!("unknown identifier {}", ident));
                     None
                 }
             },
@@ -77,5 +95,7 @@ pub fn new() -> Box<State> {
         debug: false,
         error_log: vec![],
         current_function_index: vec![],
+        traceback: vec![],
+        finished: false,
     })
 }

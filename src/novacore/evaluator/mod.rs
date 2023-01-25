@@ -36,9 +36,15 @@ impl Evaluator {
                 self.functions[index](self);
                 self.state.current_function_index.pop();
             }
-            Token::UserBlockCall(function) => core_ops::control::user_block_call(self, &function),
+            Token::UserBlockCall(function) => {
+                self.state.traceback.push(function.clone());
+                core_ops::control::user_block_call(self, &function);
+                self.state.traceback.pop();
+            },
             Token::FlowUserBlockCall(function) => {
-                core_ops::control::user_block_call(self, &function)
+                self.state.traceback.push(function.clone());
+                core_ops::control::user_block_call(self, &function);
+                self.state.traceback.pop();
             }
             Token::Block(Block::Lambda(block)) => {
                 self.state.call_stack.push(HashMap::new());

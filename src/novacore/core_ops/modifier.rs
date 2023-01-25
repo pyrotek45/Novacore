@@ -5,7 +5,6 @@ use hashbrown::HashMap;
 use crate::novacore::{
     core::{Block, Instructions, Operator, Token},
     evaluator::Evaluator,
-    utilities::print_error,
 };
 
 pub fn create_struct(eval: &mut Evaluator) {
@@ -19,7 +18,7 @@ pub fn create_struct(eval: &mut Evaluator) {
                     .push(Token::Block(Block::Struct(new_struct)));
             }
         }
-        a => print_error(&format!(
+        a => eval.state.show_error(&format!(
             "Incorrect argument for struct. Expected Type [Block], but got [{:?}]",
             a
         )),
@@ -32,7 +31,7 @@ pub fn block(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::Literal(block)));
         }
-        a => print_error(&format!(
+        a => eval.state.show_error(&format!(
             "Incorrect argument for block. Expected Type [List], but got [{:?}]",
             a
         )),
@@ -46,7 +45,7 @@ pub fn list(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::List(block)));
         }
-        a => print_error(&format!(
+        a => eval.state.show_error(&format!(
             "Incorrect argument for list. Expected Type [Block], but got [{:?}]",
             a
         )),
@@ -65,7 +64,7 @@ pub fn func(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::Function(block)));
         }
-        a => print_error(&format!(
+        a => eval.state.show_error(&format!(
             "Incorrect argument for func. Expected Type [Block | List], but got [{:?}]",
             a
         )),
@@ -79,7 +78,7 @@ pub fn modifier(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::Modifier(None, block)));
         }
-        a => print_error(&format!(
+        a => eval.state.show_error(&format!(
             "Incorrect argument for mod. Expected Type [Block], but got [{:?}]",
             a
         )),
@@ -107,7 +106,7 @@ pub fn closure_let(eval: &mut Evaluator) {
                     .push(Token::Block(Block::Function(Rc::new(core_self))))
             }
         }
-        a => print_error(&format!(
+        a => eval.state.show_error(&format!(
             "Incorrect argument for let. Expected Type [Block], but got [{:?}]",
             a
         )),
@@ -137,7 +136,7 @@ pub fn closure_rec(eval: &mut Evaluator) {
                     .push(Token::Block(Block::Function(Rc::new(core_self))))
             }
         }
-        (a, b) => print_error(&format!(
+        (a, b) => eval.state.show_error(&format!(
             "Incorrect argument for rec. Expected Types [Identifier , Block], but got [{:?},{:?}]",
             a, b
         )),
@@ -155,7 +154,7 @@ pub fn closure_auto(eval: &mut Evaluator) {
                 Rc::new(logic.to_vec()),
             )))
         }
-        (a, b) => print_error(&format!(
+        (a, b) => eval.state.show_error(&format!(
             "Incorrect argument for auto. Expected Types [Block , Block], but got [{:?},{:?}]",
             a, b
         )),
@@ -204,7 +203,7 @@ pub fn include(eval: &mut Evaluator) {
             .push(Token::Block(Block::Function(Rc::new(value))))
         }
         (a,b) => {
-            print_error(&format!("Incorrect argument for auto. Expected Types [[Block | List] , [Block | List]], but got [{:?},{:?}]", a,b))
+            eval.state.show_error(&format!("Incorrect argument for auto. Expected Types [[Block | List] , [Block | List]], but got [{:?},{:?}]", a,b))
         }
     }
 }

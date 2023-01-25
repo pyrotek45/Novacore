@@ -2,7 +2,7 @@ use crate::novacore::{
     self,
     core::Token,
     evaluator::Evaluator,
-    utilities::{is_string_number, print_error, trim_newline},
+    utilities::{is_string_number, trim_newline},
 };
 
 pub fn println(eval: &mut Evaluator) {
@@ -32,10 +32,10 @@ pub fn println(eval: &mut Evaluator) {
             Token::Block(_) => {
                 print!("{}\r\n", token.to_str())
             }
-            _ => print_error(&format!("Incorrect argument for println, got {:?}", token)),
+            _ => eval.state.show_error(&format!("Incorrect argument for println, got {:?}", token)),
         }
     } else {
-        print_error("Not enough arguments for println");
+        eval.state.show_error("Not enough arguments for println");
     }
 }
 
@@ -66,10 +66,10 @@ pub fn print(eval: &mut Evaluator) {
             Token::Block(_) => {
                 print!("{}", token.to_str())
             }
-            _ => print_error(&format!("Incorrect argument for print, got {:?}", token)),
+            _ => eval.state.show_error(&format!("Incorrect argument for print, got {:?}", token)),
         }
     } else {
-        print_error("Not enough arguments for print");
+        eval.state.show_error("Not enough arguments for print");
     }
 }
 
@@ -117,6 +117,6 @@ pub fn import(eval: &mut Evaluator) {
         let mut vm = novacore::new_from_file(&filepath);
         eval.evaluate(vm.parser.shunt(vm.lexer.parse()))
     } else {
-        print_error("Not enough arguments for import");
+        eval.state.show_error("Not enough arguments for import");
     }
 }

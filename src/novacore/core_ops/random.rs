@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::novacore::{core::Token, evaluator::Evaluator, utilities::print_error};
+use crate::novacore::{core::Token, evaluator::Evaluator};
 
 pub fn random(eval: &mut Evaluator) {
     if let (Some(ref end), Some(ref start)) = (
@@ -21,12 +21,12 @@ pub fn random(eval: &mut Evaluator) {
                         .push(Token::Integer(rng.gen_range(*right..=*left)));
                 }
             }
-            (a, b) => print_error(&format!(
+            (a, b) => eval.state.show_error(&format!(
                 "Incorrect arguments for random, got [{:?},{:?}]",
                 a, b
             )),
         }
     } else {
-        print_error("Not enough arguments for random");
+        eval.state.show_error("Not enough arguments for random");
     }
 }

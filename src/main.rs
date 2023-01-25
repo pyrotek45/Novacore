@@ -83,7 +83,7 @@ fn main() {
 
         loop {
             // Repl prompt
-            let readline = rl.readline("Nova :: $ ");
+            let readline = rl.readline("Nova $ ");
             match readline {
                 Ok(line) => {
                     // Rustlyline History support

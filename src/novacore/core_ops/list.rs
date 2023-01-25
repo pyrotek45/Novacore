@@ -3,7 +3,6 @@ use std::rc::Rc;
 use crate::novacore::{
     core::{Block, Token},
     evaluator::Evaluator,
-    utilities::print_error,
 };
 
 pub fn list_push(eval: &mut Evaluator) {
@@ -19,13 +18,13 @@ pub fn list_push(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Block(Block::List(Rc::new(newlist))))
             }
-            (list, token) => print_error(&format!(
+            (list, token) => eval.state.show_error(&format!(
                 "Incorrect arguments for push, got [{:?},{:?}]",
                 list, token
             )),
         }
     } else {
-        print_error("Not enough arguments for push");
+        eval.state.show_error("Not enough arguments for push");
     }
 }
 
@@ -44,13 +43,13 @@ pub fn list_pop(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Block(Block::List(Rc::new(newlist))))
             }
-            (list, token) => print_error(&format!(
+            (list, token) => eval.state.show_error(&format!(
                 "Incorrect arguments for push, got [{:?},{:?}]",
                 list, token
             )),
         }
     } else {
-        print_error("Not enough arguments for push");
+        eval.state.show_error("Not enough arguments for push");
     }
 }
 
@@ -62,10 +61,10 @@ pub fn list_last(eval: &mut Evaluator) {
                     eval.state.execution_stack.push(token.clone())
                 }
             }
-            list => print_error(&format!("Incorrect arguments for last, got [{:?}]", list)),
+            list => eval.state.show_error(&format!("Incorrect arguments for last, got [{:?}]", list)),
         }
     } else {
-        print_error("Not enough arguments for last");
+        eval.state.show_error("Not enough arguments for last");
     }
 }
 
@@ -90,13 +89,13 @@ pub fn list_insert(eval: &mut Evaluator) {
                         .push(Token::Block(Block::List(Rc::new(newlist))))
                 }
             }
-            (list, index, item) => print_error(&format!(
+            (list, index, item) => eval.state.show_error(&format!(
                 "Incorrect arguments for insert, got [{:?},{:?},{:?}]",
                 list, index, item
             )),
         }
     } else {
-        print_error("Not enough arguments for insert");
+        eval.state.show_error("Not enough arguments for insert");
     }
 }
 
@@ -120,13 +119,13 @@ pub fn list_remove(eval: &mut Evaluator) {
                         .push(Token::Block(Block::List(Rc::new(newlist))))
                 }
             }
-            (list, index) => print_error(&format!(
+            (list, index) => eval.state.show_error(&format!(
                 "Incorrect arguments for remove, got [{:?},{:?}]",
                 list, index
             )),
         }
     } else {
-        print_error("Not enough arguments for remove");
+        eval.state.show_error("Not enough arguments for remove");
     }
 }
 

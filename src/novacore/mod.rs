@@ -3,7 +3,7 @@ mod utilities;
 mod core;
 use std::rc::Rc;
 
-use self::{core::CallBack, evaluator::Evaluator, utilities::print_error};
+use self::{core::CallBack, evaluator::Evaluator};
 
 mod core_ops;
 mod debugger;
@@ -22,11 +22,6 @@ impl Vm {
     pub fn run(&mut self) {
         self.evaluator
             .evaluate(self.parser.shunt(self.lexer.parse()));
-        if !self.evaluator.state.error_log.is_empty() {
-            for err in self.evaluator.state.error_log.iter() {
-                print_error(err)
-            }
-        }
     }
 
     pub fn run_string(&mut self, input: &str) {
@@ -74,7 +69,6 @@ impl Vm {
         self.add_function("readln", core_ops::io::readln);
         self.add_function("dump", core_ops::io::dump);
         self.add_function("import", core_ops::io::import);
-        
 
         // Operations
         self.add_function("free", core_ops::operator::free);

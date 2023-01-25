@@ -3,7 +3,6 @@ use std::rc::Rc;
 use crate::novacore::{
     core::{Block, Token},
     evaluator::Evaluator,
-    utilities::print_error,
 };
 
 pub fn create_range(eval: &mut Evaluator) {
@@ -21,13 +20,13 @@ pub fn create_range(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Block(Block::List(Rc::new(new_list.to_vec()))));
             }
-            (a, b) => print_error(&format!(
+            (a, b) => eval.state.show_error(&format!(
                 "Incorrect arguments for range , got [{:?},{:?}]",
                 a, b
             )),
         }
     } else {
-        print_error("Not enough arguments for range")
+        eval.state.show_error("Not enough arguments for range")
     }
 }
 
@@ -86,13 +85,13 @@ pub fn collect(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Block(Block::Function(Rc::new(newlist))))
             }
-            _ => print_error(&format!(
+            _ => eval.state.show_error(&format!(
                 "Incorrect arguments for collect , got [{:?}]",
                 list
             )),
         }
     } else {
-        print_error("Not enough arguments for collect")
+        eval.state.show_error("Not enough arguments for collect")
     }
 }
 
@@ -108,9 +107,9 @@ pub fn iota(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Block(Block::List(Rc::new(new_list.to_vec()))));
             }
-            _ => print_error(&format!("Incorrect arguments for iota , got [{:?}]", end)),
+            _ => eval.state.show_error(&format!("Incorrect arguments for iota , got [{:?}]", end)),
         }
     } else {
-        print_error("Not enough arguments for iota")
+        eval.state.show_error("Not enough arguments for iota")
     }
 }

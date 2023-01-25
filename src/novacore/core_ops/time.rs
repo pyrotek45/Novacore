@@ -7,7 +7,6 @@ use hashbrown::HashMap;
 use crate::novacore::{
     core::{Block, Token},
     evaluator::Evaluator,
-    utilities::print_error,
 };
 
 pub fn sleep(eval: &mut Evaluator) {
@@ -15,7 +14,7 @@ pub fn sleep(eval: &mut Evaluator) {
         let delay = time::Duration::from_millis(time as u64);
         thread::sleep(delay);
     } else {
-        print_error("Not enough arguments for sleep");
+        eval.state.show_error("Not enough arguments for sleep");
     }
 }
 
@@ -57,9 +56,9 @@ pub fn time(eval: &mut Evaluator) {
                 }
             }
         } else {
-            print_error(&format!("Cannot time {:?}", token));
+            eval.state.show_error(&format!("Cannot time {:?}", token));
         }
     } else {
-        print_error("Not enough arguments for time");
+        eval.state.show_error("Not enough arguments for time");
     }
 }

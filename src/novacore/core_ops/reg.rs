@@ -1,4 +1,4 @@
-use crate::novacore::{core::Token, evaluator::Evaluator, utilities::print_error};
+use crate::novacore::{core::Token, evaluator::Evaluator};
 
 pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>) {
     let offset = eval.state.execution_stack.len() - 1;
@@ -69,6 +69,6 @@ pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>) {
 
             eval.state.execution_stack[offset - opcodes[2]] = temp
         }
-        a => print_error(&format!("Incorrect reg operation, got  [{:?}]", a)),
+        a => eval.state.show_error(&format!("Incorrect reg operation, got  [{:?}]", a)),
     }
 }

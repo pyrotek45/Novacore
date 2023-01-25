@@ -5,7 +5,6 @@ use hashbrown::HashMap;
 use crate::novacore::{
     core::{Block, Instructions, Operator, Token},
     evaluator::Evaluator,
-    utilities::print_error,
 };
 
 pub fn block_call(eval: &mut Evaluator) {
@@ -31,14 +30,14 @@ pub fn block_call(eval: &mut Evaluator) {
                     }
                 }
                 _ => {
-                    print_error(&format!("Cant call this type [{:?}]", block));
+                    eval.state.show_error(&format!("Cant call this type [{:?}]", block));
                 }
             }
         } else {
-            print_error(&format!("Cant call this type [{:?}]", token));
+            eval.state.show_error(&format!("Cant call this type [{:?}]", token));
         }
     } else {
-        print_error("Not enough arguments for call");
+        eval.state.show_error("Not enough arguments for call");
     }
 }
 
@@ -108,7 +107,11 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                     if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
                         if let Some(value) = list.get(index as usize) {
                             eval.state.execution_stack.push(value.clone())
+                        } else {
+                            eval.state.show_error("Index out of bounds")
                         }
+                    } else {
+                        eval.state.show_error("Incorrect arguments for list")
                     }
                 }
                 Block::Lambda(_) => todo!(),
@@ -122,10 +125,10 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                 }
             }
         } else {
-            print_error(&format!("Cant call this type [{:?}]", token));
+            eval.state.show_error(&format!("Cant call this type [{:?}]", token));
         }
     } else {
-        print_error("Not enough arguments for user_block_call");
+        eval.state.show_error("Not enough arguments for user_block_call");
     }
 }
 
@@ -147,13 +150,13 @@ pub fn if_statement(eval: &mut Evaluator) {
                     eval.evaluate(elseblock.to_vec())
                 }
             }
-            (a, b, c) => print_error(&format!(
+            (a, b, c) => eval.state.show_error(&format!(
                 "Incorrect arguments for if, got [{:?},{:?},{:?}]",
                 a, b, c
             )),
         }
     } else {
-        print_error("Not enough arguments for if");
+        eval.state.show_error("Not enough arguments for if");
     }
 }
 
@@ -168,13 +171,13 @@ pub fn when_statement(eval: &mut Evaluator) {
                     eval.evaluate(trueblock.to_vec())
                 }
             }
-            (a, b) => print_error(&format!(
+            (a, b) => eval.state.show_error(&format!(
                 "Incorrect arguments for when, got [{:?},{:?}]",
                 a, b
             )),
         }
     } else {
-        print_error("Not enough arguments for when");
+        eval.state.show_error("Not enough arguments for when");
     }
 }
 
@@ -189,13 +192,13 @@ pub fn unless_statement(eval: &mut Evaluator) {
                     eval.evaluate(trueblock.to_vec())
                 }
             }
-            (a, b) => print_error(&format!(
+            (a, b) => eval.state.show_error(&format!(
                 "Incorrect arguments for unless, got [{:?},{:?}]",
                 a, b
             )),
         }
     } else {
-        print_error("Not enough arguments for unless");
+        eval.state.show_error("Not enough arguments for unless");
     }
 }
 
@@ -233,13 +236,13 @@ pub fn while_loop(eval: &mut Evaluator) {
             (Token::Block(Block::List(test)), Token::Block(Block::List(logic))) => {
                 while_compute(eval, test, logic)
             }
-            (testing, logic) => print_error(&format!(
+            (testing, logic) => eval.state.show_error(&format!(
                 "Incorrect arguments for while, got [{:?},{:?}]",
                 testing, logic
             )),
         }
     } else {
-        print_error("Not enough arguments for while");
+        eval.state.show_error("Not enough arguments for while");
     }
 }
 
@@ -263,18 +266,18 @@ pub fn times(eval: &mut Evaluator) {
                     eval.state.call_stack.pop();
                 }
                 Block::List(logic) => times_compute(eval, logic, times as usize),
-                _ => print_error(&format!(
+                _ => eval.state.show_error(&format!(
                     "Incorrect arguments for times, got [{:?},{:?}]",
                     logic, times
                 )),
             },
-            (logic, times) => print_error(&format!(
+            (logic, times) => eval.state.show_error(&format!(
                 "Incorrect arguments for times, got [{:?},{:?}]",
                 logic, times
             )),
         }
     } else {
-        print_error("Not enough arguments for times");
+        eval.state.show_error("Not enough arguments for times");
     }
 }
 
@@ -302,18 +305,18 @@ pub fn each(eval: &mut Evaluator) {
                     eval.state.call_stack.pop();
                 }
                 (Block::List(items), Block::Function(logic)) => each_compute(eval, items, logic),
-                (items, logic) => print_error(&format!(
+                (items, logic) => eval.state.show_error(&format!(
                     "Incorrect arguments for each, got [{:?},{:?}]",
                     items, logic
                 )),
             },
-            (items, logic) => print_error(&format!(
+            (items, logic) => eval.state.show_error(&format!(
                 "Incorrect arguments for each, got [{:?},{:?}]",
                 items, logic
             )),
         }
     } else {
-        print_error("Not enough arguments for each");
+        eval.state.show_error("Not enough arguments for each");
     }
 }
 
@@ -441,13 +444,13 @@ pub fn each(eval: &mut Evaluator) {
 //                     }
 //                 }
 //             }
-//             (a, b, c) => print_error(&format!(
+//             (a, b, c) => eval.state.show_error(&format!(
 //                 "Incorrect arguments for iteration[for], got [{:?},{:?},{:?}]",
 //                 a, b, c
 //             )),
 //         }
 //     } else {
-//         print_error("Not enough arguments for iteration[for]");
+//         eval.state.show_error("Not enough arguments for iteration[for]");
 //     }
 // }
 
@@ -501,19 +504,19 @@ pub fn user_chain_call(eval: &mut Evaluator) {
                         }
                     }
                 }
-                _ => print_error(&format!(
+                _ => eval.state.show_error(&format!(
                     "Incorrect arguments for chain_call, got [{:?}]",
                     block
                 )),
             }
         } else {
-            print_error(&format!(
+            eval.state.show_error(&format!(
                 "Incorrect type for chain_call, got [{:?}]",
                 eval.state.auxiliary.last()
             ));
         }
     } else {
-        print_error("Not enough arguments for chain_call");
+        eval.state.show_error("Not enough arguments for chain_call");
     }
     eval.state.auxiliary.pop();
 }
@@ -526,7 +529,7 @@ pub fn get_access(eval: &mut Evaluator) {
         eval.state.execution_stack.push(top);
         eval.state.execution_stack.push(under)
     } else {
-        print_error("Not enough arguments for access");
+        eval.state.show_error("Not enough arguments for access");
     }
 
     if let Some(token) = eval.state.get_from_heap_or_pop() {
@@ -557,14 +560,14 @@ pub fn get_access(eval: &mut Evaluator) {
                 }
             }
             token => {
-                print_error(&format!(
+                eval.state.show_error(&format!(
                     "Incorrect arguments for access, got [{:?}]",
                     token
                 ));
             }
         }
     } else {
-        print_error("Not enough arguments for access");
+        eval.state.show_error("Not enough arguments for access");
     }
 }
 
@@ -572,7 +575,7 @@ pub fn store_temp(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         eval.state.auxiliary.push(token);
     } else {
-        print_error("Not enough arguments for store_temp");
+        eval.state.show_error("Not enough arguments for store_temp");
     }
 }
 
@@ -580,6 +583,6 @@ pub fn eval_top(eval: &mut Evaluator) {
     if let Some(token) = eval.state.execution_stack.pop() {
         eval.eval(token)
     } else {
-        print_error("Not enough arguments for eval");
+        eval.state.show_error("Not enough arguments for eval");
     }
 }
