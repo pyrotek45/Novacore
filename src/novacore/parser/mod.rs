@@ -290,7 +290,7 @@ impl Parser {
                     | Operator::Or
                     | Operator::Gtr
                     | Operator::Lss
-                    | Operator::Neg => {
+                    | Operator::Invert => {
                         //Pop off higher precedence before adding
 
                         // if last item in operator stack is not a "("

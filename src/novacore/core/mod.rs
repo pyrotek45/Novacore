@@ -33,7 +33,7 @@ pub enum Operator {
     Equals,
     Gtr,
     Lss,
-    Neg,
+    Invert,
     Mod,
     Add,
     Sub,
@@ -104,14 +104,14 @@ impl Token {
             Token::Op(Operator::Equals) | Token::Op(Operator::Gtr) | Token::Op(Operator::Lss) => 9,
             Token::Op(Operator::Add) | Token::Op(Operator::Sub) => 12,
             Token::Op(Operator::Mul) | Token::Op(Operator::Div) | Token::Op(Operator::Mod) => 13,
-            Token::Op(Operator::Neg) => 15,
+            Token::Op(Operator::Invert) => 15,
             _ => 0,
         }
     }
 
     pub fn is_left_associative(&self) -> bool {
         match self {
-            Token::Op(Operator::Neg) => false,
+            Token::Op(Operator::Invert) => false,
             Token::Op(Operator::Or) => true,
             Token::Op(Operator::And) => true,
             Token::Op(Operator::Not) => true,
@@ -125,14 +125,14 @@ impl Token {
     pub fn to_str(&self) -> String {
         match self {
             Token::Identifier(block) => block.to_string(),
-            Token::Function(block) => format!("FUNC[{}]", block),
+            Token::Function(block) => format!("Func[{}]", block),
             Token::UserBlockCall(block) => block.to_string(),
             Token::Integer(block) => format!("{}", block),
-            Token::Float(block) => format!("{:?}", block),
-            Token::String(block) => format!("{:?}", block),
-            Token::Char(block) => format!("{:?}", block),
-            Token::Symbol(block) => format!("{:?}", block),
-            Token::Bool(block) => format!("{:?}", block),
+            Token::Float(block) => format!("{}", block),
+            Token::String(block) => block.to_string(),
+            Token::Char(block) => format!("{}", block),
+            Token::Symbol(block) => format!("{}", block),
+            Token::Bool(block) => format!("Bool{}", block),
             Token::Block(block) => match block {
                 Block::Literal(block) => {
                     let mut list = String::new();
@@ -151,7 +151,7 @@ impl Token {
                 }
                 Block::Lambda(block) => {
                     let mut list = String::new();
-                    list.push_str("LF{");
+                    list.push_str("L{");
                     if !block.is_empty() {
                         for item in block.iter() {
                             list.push_str(&item.to_str());
@@ -166,7 +166,7 @@ impl Token {
                 }
                 Block::Function(block) => {
                     let mut list = String::new();
-                    list.push_str("FUNC{");
+                    list.push_str("Func{");
                     if !block.is_empty() {
                         for item in block.iter() {
                             list.push_str(&item.to_str());

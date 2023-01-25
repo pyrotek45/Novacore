@@ -11,7 +11,6 @@ pub struct State {
     pub error_log: Vec<String>,
     pub current_function_index: Vec<usize>,
     pub traceback: Vec<String>,
-    pub finished: bool,
 }
 
 impl State {
@@ -23,7 +22,7 @@ impl State {
         }
     }
 
-    pub fn show_error(&self, err: &str) {
+    pub fn show_error(&mut self, err: &str) {
 
         // Function call traceback/ show each function line
 
@@ -32,7 +31,7 @@ impl State {
         // type of error: output
 
         for function_call in &self.traceback {
-            println!("Prev Function Call: {}", &function_call.bright_yellow());
+            println!("Prev Call: {}", &function_call.bright_yellow());
         }
 
         println!("{}: {}","Error".red(), &err.bright_yellow());
@@ -73,15 +72,9 @@ impl State {
         }
     }
 
-    pub fn get_from_heap(&mut self, ident: &str) -> Option<Token> {
+    pub fn get_from_heap(&self, ident: &str) -> Option<Token> {
         match self.call_stack.last() {
-            Some(scope) => match scope.get(ident) {
-                Some(token) => Some(token.clone()),
-                None => {
-                    self.show_error(&format!("unknown identifier {}", ident));
-                    None
-                }
-            },
+            Some(scope) => scope.get(ident).cloned(),
             None => None,
         }
     }
@@ -96,6 +89,5 @@ pub fn new() -> Box<State> {
         error_log: vec![],
         current_function_index: vec![],
         traceback: vec![],
-        finished: false,
     })
 }

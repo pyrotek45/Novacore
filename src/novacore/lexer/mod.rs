@@ -425,7 +425,7 @@ impl Lexer {
                             //     Token: Token::Op(Operator::UserOpCall),
                             // }),
                             '$' => vec_last.push(Token::Symbol('$')),
-                            '~' => vec_last.push(Token::Op(Operator::Neg)),
+                            '~' => vec_last.push(Token::Op(Operator::Invert)),
                             // '?' => vec_last.push(Token {
                             //     Token: Token::Op(Operator::MacroVariableAssign),
                             // }),

@@ -1,5 +1,3 @@
-use colored::Colorize;
-
 pub fn _read_lines<P>(
     filename: P,
 ) -> std::io::Result<std::io::Lines<std::io::BufReader<std::fs::File>>>

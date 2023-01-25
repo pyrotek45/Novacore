@@ -73,7 +73,7 @@ impl Evaluator {
                 Operator::Equals => core_ops::comparison::equality_comparison(self),
                 Operator::Gtr => core_ops::comparison::greater_than_comparison(self),
                 Operator::Lss => core_ops::comparison::less_than_comparison(self),
-                Operator::Neg => core_ops::operator::neg(self),
+                Operator::Invert => core_ops::operator::neg(self),
                 Operator::Mod => core_ops::operator::modulo(self),
                 Operator::Add => core_ops::operator::add(self),
                 Operator::Sub => core_ops::operator::sub(self),

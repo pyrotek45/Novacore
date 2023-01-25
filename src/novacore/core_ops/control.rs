@@ -19,14 +19,22 @@ pub fn block_call(eval: &mut Evaluator) {
                     if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
                         if let Some(value) = list.get(index as usize) {
                             eval.state.execution_stack.push(value.clone())
+                        } else {
+                            eval.state.show_error("Index out of Bounds");
                         }
+                    } else {
+                        eval.state.show_error("Incorrect arguments for list")
                     }
                 }
                 Block::Struct(data) => {
                     if let Some(Token::Identifier(key)) = eval.state.execution_stack.pop() {
                         if let Some(value) = data.get(&key) {
                             eval.state.execution_stack.push(value.clone())
+                        } else {
+                            eval.state.show_error(&format!("Key does not exist [{}]", &key))
                         }
+                    } else {
+                        eval.state.show_error("Incorrect arguments for struct")
                     }
                 }
                 _ => {
@@ -108,7 +116,7 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                         if let Some(value) = list.get(index as usize) {
                             eval.state.execution_stack.push(value.clone())
                         } else {
-                            eval.state.show_error("Index out of bounds")
+                            eval.state.show_error("Index out of Bounds");
                         }
                     } else {
                         eval.state.show_error("Incorrect arguments for list")
@@ -120,7 +128,11 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                     if let Some(Token::Identifier(key)) = eval.state.execution_stack.pop() {
                         if let Some(value) = data.get(&key) {
                             eval.state.execution_stack.push(value.clone())
+                        } else {
+                            eval.state.show_error(&format!("Key does not exist [{}]", &key))
                         }
+                    } else {
+                        eval.state.show_error("Incorrect arguments for struct")
                     }
                 }
             }
@@ -128,7 +140,7 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
             eval.state.show_error(&format!("Cant call this type [{:?}]", token));
         }
     } else {
-        eval.state.show_error("Not enough arguments for user_block_call");
+        eval.state.show_error("Unknown identifier");
     }
 }
 

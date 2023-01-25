@@ -276,6 +276,8 @@ pub fn function_variable_assign(eval: &mut Evaluator) {
         for tokens in variable_stack {
             if let Some(tok) = eval.state.get_from_heap_or_pop() {
                 newscope.insert(tokens, tok.clone());
+            } else {
+                eval.state.show_error("Not enough arguments")
             }
         }
         eval.state.call_stack.push(newscope);
