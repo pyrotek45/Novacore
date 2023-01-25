@@ -6,7 +6,7 @@ use hashbrown::HashMap;
 pub struct State {
     pub debug: bool,
     pub execution_stack: Vec<Token>,
-    pub temp: Vec<Token>,
+    pub auxiliary: Vec<Token>,
     pub call_stack: Vec<HashMap<String, Token>>,
     pub error_log: Vec<String>,
     pub current_function_index: Vec<usize>,
@@ -73,7 +73,7 @@ pub fn new() -> Box<State> {
     Box::new(State {
         execution_stack: Vec::with_capacity(1024),
         call_stack: vec![HashMap::new()],
-        temp: vec![],
+        auxiliary: vec![],
         debug: false,
         error_log: vec![],
         current_function_index: vec![],

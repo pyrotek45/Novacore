@@ -452,7 +452,7 @@ pub fn each(eval: &mut Evaluator) {
 // }
 
 pub fn user_chain_call(eval: &mut Evaluator) {
-    if let Some(token) = eval.state.temp.last().cloned() {
+    if let Some(token) = eval.state.auxiliary.last().cloned() {
         if let Token::Block(block) = token {
             match block {
                 Block::Function(block) => {
@@ -509,13 +509,13 @@ pub fn user_chain_call(eval: &mut Evaluator) {
         } else {
             print_error(&format!(
                 "Incorrect type for chain_call, got [{:?}]",
-                eval.state.temp.last()
+                eval.state.auxiliary.last()
             ));
         }
     } else {
         print_error("Not enough arguments for chain_call");
     }
-    eval.state.temp.pop();
+    eval.state.auxiliary.pop();
 }
 
 pub fn get_access(eval: &mut Evaluator) {
@@ -570,7 +570,7 @@ pub fn get_access(eval: &mut Evaluator) {
 
 pub fn store_temp(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
-        eval.state.temp.push(token);
+        eval.state.auxiliary.push(token);
     } else {
         print_error("Not enough arguments for store_temp");
     }
