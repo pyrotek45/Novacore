@@ -21,3 +21,16 @@ filter = func: {[function list] ->
     }
     get(newlist)
 }
+
+dip = func: [
+    [x y] -> y: x get:
+]
+
+keep = func: [
+    [x y] -> x y: x get:
+]
+
+bi = func: [
+    [x p q] -> p x: q x: 
+]
+

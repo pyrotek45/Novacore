@@ -97,7 +97,6 @@ impl Vm {
         self.add_function("random", core_ops::random::random);
 
         // stack operations
-
         self.add_function("dup", core_ops::shuffle::dup);
         self.add_function("ddup", core_ops::shuffle::ddup);
         self.add_function("swap", core_ops::shuffle::swap);
@@ -141,6 +140,7 @@ impl Vm {
         self.add_function("if", core_ops::control::if_statement);
         self.add_function("when", core_ops::control::when_statement);
         self.add_function("unless", core_ops::control::unless_statement);
+
         //self.add_function("for", core_ops::control::for_loop);
         self.add_function("call", core_ops::control::block_call);
         self.add_function("each", core_ops::control::each);

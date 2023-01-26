@@ -32,7 +32,9 @@ pub fn println(eval: &mut Evaluator) {
             Token::Block(_) => {
                 print!("{}\r\n", token.to_str())
             }
-            _ => eval.state.show_error(&format!("Incorrect argument for println, got {:?}", token)),
+            _ => eval
+                .state
+                .show_error(&format!("Incorrect argument for println, got {:?}", token)),
         }
     } else {
         eval.state.show_error("Not enough arguments for println");
@@ -66,7 +68,9 @@ pub fn print(eval: &mut Evaluator) {
             Token::Block(_) => {
                 print!("{}", token.to_str())
             }
-            _ => eval.state.show_error(&format!("Incorrect argument for print, got {:?}", token)),
+            _ => eval
+                .state
+                .show_error(&format!("Incorrect argument for print, got {:?}", token)),
         }
     } else {
         eval.state.show_error("Not enough arguments for print");

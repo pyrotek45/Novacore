@@ -145,7 +145,9 @@ pub fn neg(eval: &mut Evaluator) {
             Token::Float(left) => {
                 eval.state.execution_stack.push(Token::Float(-left));
             }
-            a => eval.state.show_error(&format!("Incorrect arguments for division. got [{:?}]", a)),
+            a => eval
+                .state
+                .show_error(&format!("Incorrect arguments for division. got [{:?}]", a)),
         }
     } else {
         eval.state.show_error("Not enough arguments for division")
@@ -180,7 +182,8 @@ pub fn sub(eval: &mut Evaluator) {
             )),
         }
     } else {
-        eval.state.show_error("Not enough arguments for subtraction")
+        eval.state
+            .show_error("Not enough arguments for subtraction")
     }
 }
 
@@ -233,7 +236,8 @@ pub fn mul(eval: &mut Evaluator) {
             )),
         }
     } else {
-        eval.state.show_error("Not enough arguments for multiplication")
+        eval.state
+            .show_error("Not enough arguments for multiplication")
     }
 }
 
@@ -255,7 +259,8 @@ pub fn variable_assign(eval: &mut Evaluator) {
             }
         }
     } else {
-        eval.state.show_error("Not enough arguments for variable assignment");
+        eval.state
+            .show_error("Not enough arguments for variable assignment");
     }
 }
 
@@ -268,7 +273,8 @@ pub fn function_variable_assign(eval: &mut Evaluator) {
             }
         }
     } else {
-        eval.state.show_error("Not enough arguments for function variable assign [->]");
+        eval.state
+            .show_error("Not enough arguments for function variable assign [->]");
     }
 
     // Tie each Token into the call_stack using the tokens poped
@@ -282,7 +288,8 @@ pub fn function_variable_assign(eval: &mut Evaluator) {
         }
         eval.state.call_stack.push(newscope);
     } else {
-        eval.state.show_error("Not enough arguments for function variable assign  [->]");
+        eval.state
+            .show_error("Not enough arguments for function variable assign  [->]");
     }
 }
 
@@ -319,7 +326,3 @@ pub fn resolve(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for return");
     }
 }
-
-// pub fn exit(eval: &mut Evaluator) {
-//     eval.state.exit_function = true
-// }

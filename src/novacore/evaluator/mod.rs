@@ -40,7 +40,7 @@ impl Evaluator {
                 self.state.traceback.push(function.clone());
                 core_ops::control::user_block_call(self, &function);
                 self.state.traceback.pop();
-            },
+            }
             Token::FlowUserBlockCall(function) => {
                 self.state.traceback.push(function.clone());
                 core_ops::control::user_block_call(self, &function);

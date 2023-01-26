@@ -191,19 +191,20 @@ pub fn include(eval: &mut Evaluator) {
         eval.state.get_from_heap_or_pop(),
     ) {
         (Some(Token::Block(Block::Literal(block))), Some(Token::Block(Block::List(list)))) => {
-            let value =    include_compute(eval, block, list);
+            let value = include_compute(eval, block, list);
             eval.state
-            .execution_stack
-            .push(Token::Block(Block::Literal(Rc::new(value))))
+                .execution_stack
+                .push(Token::Block(Block::Literal(Rc::new(value))))
         }
         (Some(Token::Block(Block::Function(block))), Some(Token::Block(Block::List(list)))) => {
-            let value =    include_compute(eval, block, list);
+            let value = include_compute(eval, block, list);
             eval.state
-            .execution_stack
-            .push(Token::Block(Block::Function(Rc::new(value))))
+                .execution_stack
+                .push(Token::Block(Block::Function(Rc::new(value))))
         }
-        (a,b) => {
-            eval.state.show_error(&format!("Incorrect argument for auto. Expected Types [[Block | List] , [Block | List]], but got [{:?},{:?}]", a,b))
-        }
+        (a, b) => eval.state.show_error(&format!(
+            "Incorrect argument for include, got [{:?},{:?}]",
+            a, b
+        )),
     }
 }

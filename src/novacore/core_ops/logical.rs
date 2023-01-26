@@ -47,7 +47,8 @@ pub fn logical_not(eval: &mut Evaluator) {
         if let Token::Bool(bool) = token {
             eval.state.execution_stack.push(Token::Bool(!bool));
         } else {
-            eval.state.show_error(&format!("Incorrect argument for not, got [{:?}]", token))
+            eval.state
+                .show_error(&format!("Incorrect argument for not, got [{:?}]", token))
         }
     } else {
         eval.state.show_error("Not enough arguments for not");

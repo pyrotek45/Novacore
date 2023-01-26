@@ -1,4 +1,3 @@
-
 use super::core::Token;
 use colored::Colorize;
 use hashbrown::HashMap;
@@ -23,7 +22,6 @@ impl State {
     }
 
     pub fn show_error(&mut self, err: &str) {
-
         // Function call traceback/ show each function line
 
         // line and position of error
@@ -34,8 +32,7 @@ impl State {
             println!("Prev Call: {}", &function_call.bright_yellow());
         }
 
-        println!("{}: {}","Error".red(), &err.bright_yellow());
-
+        println!("{}: {}", "Error".red(), &err.bright_yellow());
     }
 
     pub fn remove_varaible(&mut self, ident: &str) {
@@ -52,31 +49,29 @@ impl State {
     }
 
     pub fn get_from_heap_or_pop(&mut self) -> Option<Token> {
-        if let Some(tok) = self.execution_stack.pop() {
-            if let Token::Identifier(ident) = tok {
-                if let Some(scope) = self.call_stack.last_mut() {
-                    if let Some(token) = scope.get(&ident) {
-                        Some(token.clone())
-                    } else {
-                        self.show_error(&format!("Unknown identifier {}", ident));
-                        None
-                    }
-                } else {
-                    None
+        let tok = self.execution_stack.pop()?;
+    
+        if let Token::Identifier(ident) = tok {
+            for scopes in self.call_stack.iter().rev() {
+                if let Some(token) = scopes.get(&ident) {
+                    return Some(token.clone());
                 }
-            } else {
-                Some(tok)
             }
-        } else {
+            self.show_error(&format!("Unknown identifier {}", ident));
             None
+        } else {
+            Some(tok)
         }
     }
 
-    pub fn get_from_heap(&self, ident: &str) -> Option<Token> {
-        match self.call_stack.last() {
-            Some(scope) => scope.get(ident).cloned(),
-            None => None,
+    pub fn get_from_heap(&mut self, ident: &str) -> Option<Token> {
+        for scopes in self.call_stack.iter().rev() {
+            if let Some(token) = scopes.get(ident) {
+                return Some(token.clone());
+            }
         }
+        self.show_error(&format!("Unknown identifier {}", ident));
+        None
     }
 }
 

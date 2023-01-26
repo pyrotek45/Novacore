@@ -61,7 +61,9 @@ pub fn list_last(eval: &mut Evaluator) {
                     eval.state.execution_stack.push(token.clone())
                 }
             }
-            list => eval.state.show_error(&format!("Incorrect arguments for last, got [{:?}]", list)),
+            list => eval
+                .state
+                .show_error(&format!("Incorrect arguments for last, got [{:?}]", list)),
         }
     } else {
         eval.state.show_error("Not enough arguments for last");

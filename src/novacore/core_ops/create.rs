@@ -107,7 +107,9 @@ pub fn iota(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Block(Block::List(Rc::new(new_list.to_vec()))));
             }
-            _ => eval.state.show_error(&format!("Incorrect arguments for iota , got [{:?}]", end)),
+            _ => eval
+                .state
+                .show_error(&format!("Incorrect arguments for iota , got [{:?}]", end)),
         }
     } else {
         eval.state.show_error("Not enough arguments for iota")

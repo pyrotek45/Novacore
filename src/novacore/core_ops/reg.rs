@@ -69,6 +69,8 @@ pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>) {
 
             eval.state.execution_stack[offset - opcodes[2]] = temp
         }
-        a => eval.state.show_error(&format!("Incorrect reg operation, got  [{:?}]", a)),
+        a => eval
+            .state
+            .show_error(&format!("Incorrect reg operation, got  [{:?}]", a)),
     }
 }

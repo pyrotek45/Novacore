@@ -31,18 +31,21 @@ pub fn block_call(eval: &mut Evaluator) {
                         if let Some(value) = data.get(&key) {
                             eval.state.execution_stack.push(value.clone())
                         } else {
-                            eval.state.show_error(&format!("Key does not exist [{}]", &key))
+                            eval.state
+                                .show_error(&format!("Key does not exist [{}]", &key))
                         }
                     } else {
                         eval.state.show_error("Incorrect arguments for struct")
                     }
                 }
                 _ => {
-                    eval.state.show_error(&format!("Cant call this type [{:?}]", block));
+                    eval.state
+                        .show_error(&format!("Cant call this type [{:?}]", block));
                 }
             }
         } else {
-            eval.state.show_error(&format!("Cant call this type [{:?}]", token));
+            eval.state
+                .show_error(&format!("Cant call this type [{:?}]", token));
         }
     } else {
         eval.state.show_error("Not enough arguments for call");
@@ -129,7 +132,8 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                         if let Some(value) = data.get(&key) {
                             eval.state.execution_stack.push(value.clone())
                         } else {
-                            eval.state.show_error(&format!("Key does not exist [{}]", &key))
+                            eval.state
+                                .show_error(&format!("Key does not exist [{}]", &key))
                         }
                     } else {
                         eval.state.show_error("Incorrect arguments for struct")
@@ -137,7 +141,8 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                 }
             }
         } else {
-            eval.state.show_error(&format!("Cant call this type [{:?}]", token));
+            eval.state
+                .show_error(&format!("Cant call this type [{:?}]", token));
         }
     } else {
         eval.state.show_error("Unknown identifier");

@@ -1,4 +1,4 @@
-use crate::novacore::{evaluator::Evaluator};
+use crate::novacore::evaluator::Evaluator;
 
 pub fn dup(eval: &mut Evaluator) {
     if let Some(top) = eval.state.execution_stack.last() {

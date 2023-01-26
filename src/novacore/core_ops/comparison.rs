@@ -8,7 +8,8 @@ pub fn equality_comparison(eval: &mut Evaluator) {
     ) {
         eval.state.execution_stack.push(Token::Bool(left == right));
     } else {
-        eval.state.show_error("Not enough arguments for equality_comparison");
+        eval.state
+            .show_error("Not enough arguments for equality_comparison");
     }
 }
 
@@ -38,7 +39,8 @@ pub fn less_than_comparison(eval: &mut Evaluator) {
             )),
         }
     } else {
-        eval.state.show_error("Not enough arguments for less_than_comparison");
+        eval.state
+            .show_error("Not enough arguments for less_than_comparison");
     }
 }
 
@@ -68,7 +70,8 @@ pub fn greater_than_comparison(eval: &mut Evaluator) {
             )),
         }
     } else {
-        eval.state.show_error("Not enough arguments for greater_than_comparison");
+        eval.state
+            .show_error("Not enough arguments for greater_than_comparison");
     }
 }
 
