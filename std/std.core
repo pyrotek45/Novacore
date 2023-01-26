@@ -22,15 +22,12 @@ filter = func: {[function list] ->
     get(newlist)
 }
 
-dip = func: [
-    [x y] -> y: x get:
-]
+dip = func: {[x y] -> y() get(x)}
 
-keep = func: [
-    [x y] -> x y: x get:
-]
+keep = func: {[x y] -> x y() get(x)}
 
-bi = func: [
-    [x p q] -> p x: q x: 
-]
+bi = func: {[x p q] -> p x() q x()}
 
+product = func: {[list] -> fold: 1 {*} list}
+
+sum = func: {[list] -> fold: 0 {+} list}
