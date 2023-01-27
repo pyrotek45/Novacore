@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::novacore::{
     self,
     core::Token,
@@ -119,7 +121,8 @@ pub fn dump(eval: &mut Evaluator) {
 pub fn import(eval: &mut Evaluator) {
     if let Some(Token::String(filepath)) = eval.state.get_from_heap_or_pop() {
         let mut vm = novacore::new_from_file(&filepath);
-        eval.evaluate(vm.parser.shunt(vm.lexer.parse()))
+        vm.evaluator.state.current_file = filepath;
+        eval.evaluate(Rc::new(vm.parser.shunt(vm.lexer.parse())))
     } else {
         eval.state.show_error("Not enough arguments for import");
     }

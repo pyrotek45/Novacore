@@ -27,7 +27,7 @@ pub fn time(eval: &mut Evaluator) {
                     // Call with new scope
                     eval.state.call_stack.push(HashMap::new());
 
-                    eval.evaluate(block.to_vec());
+                    eval.evaluate(block);
 
                     if let Some(token) = eval.state.get_from_heap_or_pop() {
                         eval.state.execution_stack.push(token)
@@ -40,14 +40,14 @@ pub fn time(eval: &mut Evaluator) {
                 Block::Literal(block) => {
                     // call in same scope
                     let start = Instant::now();
-                    eval.evaluate(block.to_vec());
+                    eval.evaluate(block);
                     let duration = start.elapsed();
                     println!("{} {:?}", ">> Execution:".bright_green(), duration);
                 }
                 Block::List(block) => {
                     // call in same scope
                     let start = Instant::now();
-                    eval.evaluate(block.to_vec());
+                    eval.evaluate(block);
                     let duration = start.elapsed();
                     println!("{} {:?}", ">> Execution:".bright_green(), duration);
                 }

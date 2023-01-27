@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use hashbrown::HashMap;
 
 use crate::novacore::{
@@ -12,9 +10,9 @@ pub fn block_call(eval: &mut Evaluator) {
         if let Token::Block(block) = token {
             match block {
                 Block::Function(block) => {
-                    eval.evaluate_function(block.to_vec());
+                    eval.evaluate_function(block);
                 }
-                Block::Literal(block) => eval.evaluate(block.to_vec()),
+                Block::Literal(block) => eval.evaluate(block),
                 Block::List(list) => {
                     if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
                         if let Some(value) = list.get(index as usize) {
@@ -56,63 +54,9 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
     if let Some(token) = eval.state.get_from_heap(function_name) {
         if let Token::Block(block) = token {
             match block {
-                Block::Literal(block) => eval.evaluate(block.to_vec()),
-                Block::Auto(setup, logic) => {
-                    eval.state.call_stack.push(HashMap::new());
-
-                    eval.evaluate(setup.to_vec());
-                    eval.evaluate(logic.to_vec());
-
-                    let mut core_self = vec![];
-                    if let Some(scope) = eval.state.call_stack.last_mut() {
-                        for (ident, token) in scope {
-                            core_self.push(Token::Identifier(ident.clone()));
-                            core_self.push(token.clone());
-                            core_self.push(Token::Op(Operator::VariableAssign))
-                        }
-                    }
-
-                    if let Some(token) = eval.state.get_from_heap_or_pop() {
-                        eval.state.execution_stack.push(token)
-                    }
-
-                    eval.state.call_stack.pop();
-
-                    if let Some(scope) = eval.state.call_stack.last_mut() {
-                        scope.insert(
-                            function_name.to_string(),
-                            Token::Block(Block::Auto(Rc::new(core_self), Rc::new(logic.to_vec()))),
-                        );
-                    }
-                }
-                Block::Modifier(object_name, method) => {
-                    if let Some(object_name) = object_name {
-                        if let Some(Token::Block(Block::Literal(object_state))) =
-                            eval.state.get_from_heap(&object_name)
-                        {
-                            eval.state.call_stack.push(HashMap::new());
-                            eval.evaluate(object_state.to_vec());
-                            eval.evaluate(method.to_vec());
-
-                            let mut core_self = vec![];
-                            if let Some(scope) = eval.state.call_stack.last_mut() {
-                                for (ident, token) in scope {
-                                    core_self.push(Token::Identifier(ident.clone()));
-                                    core_self.push(token.clone());
-                                    core_self.push(Token::Op(Operator::VariableAssign))
-                                }
-                            }
-
-                            if let Some(token) = eval.state.get_from_heap_or_pop() {
-                                eval.state.execution_stack.push(token)
-                            }
-
-                            eval.state.call_stack.pop();
-                        }
-                    }
-                }
+                Block::Literal(block) => eval.evaluate(block),
                 Block::Function(block) => {
-                    eval.evaluate_function(block.to_vec());
+                    eval.evaluate_function(block);
                 }
                 Block::List(list) => {
                     if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
@@ -126,7 +70,6 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                     }
                 }
                 Block::Lambda(_) => todo!(),
-                Block::ListLambda(_) => todo!(),
                 Block::Struct(data) => {
                     if let Some(Token::Identifier(key)) = eval.state.execution_stack.pop() {
                         if let Some(value) = data.get(&key) {
@@ -162,9 +105,9 @@ pub fn if_statement(eval: &mut Evaluator) {
                 Token::Block(Block::Literal(elseblock)),
             ) => {
                 if bool {
-                    eval.evaluate(trueblock.to_vec())
+                    eval.evaluate(trueblock)
                 } else {
-                    eval.evaluate(elseblock.to_vec())
+                    eval.evaluate(elseblock)
                 }
             }
             (a, b, c) => eval.state.show_error(&format!(
@@ -185,7 +128,7 @@ pub fn when_statement(eval: &mut Evaluator) {
         match (bool, trueblock) {
             (Token::Bool(bool), Token::Block(Block::Literal(trueblock))) => {
                 if bool {
-                    eval.evaluate(trueblock.to_vec())
+                    eval.evaluate(trueblock)
                 }
             }
             (a, b) => eval.state.show_error(&format!(
@@ -206,7 +149,7 @@ pub fn unless_statement(eval: &mut Evaluator) {
         match (bool, trueblock) {
             (Token::Bool(bool), Token::Block(Block::Literal(trueblock))) => {
                 if !bool {
-                    eval.evaluate(trueblock.to_vec())
+                    eval.evaluate(trueblock)
                 }
             }
             (a, b) => eval.state.show_error(&format!(
@@ -223,12 +166,12 @@ pub fn while_loop(eval: &mut Evaluator) {
     fn while_compute(eval: &mut Evaluator, test: Instructions, logic: Instructions) {
         loop {
             // run test block
-            eval.evaluate(test.to_vec());
+            eval.evaluate(test.clone());
 
             // get result and run logic block if true is on stack else break
             if let Some(Token::Bool(bool)) = eval.state.get_from_heap_or_pop() {
                 if bool {
-                    eval.evaluate(logic.to_vec())
+                    eval.evaluate(logic.clone())
                 } else {
                     break;
                 }
@@ -266,7 +209,7 @@ pub fn while_loop(eval: &mut Evaluator) {
 pub fn times(eval: &mut Evaluator) {
     fn times_compute(eval: &mut Evaluator, logic: Instructions, times: usize) {
         for _ in 0..times {
-            eval.evaluate(logic.to_vec())
+            eval.evaluate(logic.clone())
         }
     }
 
@@ -477,35 +420,9 @@ pub fn user_chain_call(eval: &mut Evaluator) {
             match block {
                 Block::Function(block) => {
                     eval.state.call_stack.push(HashMap::new());
-                    eval.evaluate(block.to_vec());
+                    eval.evaluate(block);
 
                     eval.state.call_stack.pop();
-                }
-                Block::Modifier(object_name, method) => {
-                    if let Some(object_name) = object_name {
-                        if let Some(Token::Block(Block::Literal(object_state))) =
-                            eval.state.get_from_heap(&object_name)
-                        {
-                            eval.state.call_stack.push(HashMap::new());
-                            eval.evaluate(object_state.to_vec());
-                            eval.evaluate(method.to_vec());
-
-                            let mut core_self = vec![];
-                            if let Some(scope) = eval.state.call_stack.last_mut() {
-                                for (ident, token) in scope {
-                                    core_self.push(Token::Identifier(ident.clone()));
-                                    core_self.push(token.clone());
-                                    core_self.push(Token::Op(Operator::VariableAssign))
-                                }
-                            }
-
-                            if let Some(token) = eval.state.get_from_heap_or_pop() {
-                                eval.state.execution_stack.push(token)
-                            }
-
-                            eval.state.call_stack.pop();
-                        }
-                    }
                 }
                 Block::List(list) => {
                     if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
@@ -552,9 +469,9 @@ pub fn get_access(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
             Token::Block(Block::Function(block)) => {
-                eval.evaluate_function(block.to_vec());
+                eval.evaluate_function(block);
             }
-            Token::Block(Block::Literal(block)) => eval.evaluate(block.to_vec()),
+            Token::Block(Block::Literal(block)) => eval.evaluate(block),
             Token::Block(Block::List(list)) => {
                 if let Some(Token::Integer(index)) = eval.state.get_from_heap_or_pop() {
                     if let Some(value) = list.get(index as usize) {

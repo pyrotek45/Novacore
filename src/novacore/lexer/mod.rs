@@ -24,6 +24,8 @@ pub struct Lexer {
 
     // Output
     pub block_stack: Vec<Vec<Token>>,
+    pub line: usize,
+    pub col: usize,
 }
 
 impl Lexer {
@@ -40,6 +42,8 @@ impl Lexer {
                 is_skip: false,
                 is_parsing_chain: false,
                 function_list: HashMap::new(),
+                line: 1,
+                col: 1,
             }
         } else {
             println!(
@@ -62,6 +66,8 @@ impl Lexer {
             is_skip: false,
             is_parsing_chain: false,
             function_list: HashMap::new(),
+            line: 1,
+            col: 1,
         }
     }
 
@@ -76,6 +82,8 @@ impl Lexer {
             is_skip: false,
             is_parsing_chain: false,
             function_list: HashMap::new(),
+            line: 1,
+            col: 1,
         }
     }
 
@@ -195,7 +203,7 @@ impl Lexer {
                             }
                         }
                     }
-
+                    self.line += 1;
                     continue;
                 }
 
@@ -273,12 +281,6 @@ impl Lexer {
                                                 .push(Token::Block(Block::Lambda(block.clone())));
                                             continue;
                                         }
-                                        Token::Block(Block::List(block)) => {
-                                            vec_last.push(Token::Block(Block::ListLambda(
-                                                block.clone(),
-                                            )));
-                                            continue;
-                                        }
                                         _ => {
                                             vec_last.push(last.clone());
                                             vec_last.push(Token::Symbol(c))
@@ -333,13 +335,6 @@ impl Lexer {
                                         Token::Block(Block::Literal(block)) => {
                                             vec_last
                                                 .push(Token::Block(Block::Lambda(block.clone())));
-                                            vec_last.push(Token::Symbol(c));
-                                            continue;
-                                        }
-                                        Token::Block(Block::List(block)) => {
-                                            vec_last.push(Token::Block(Block::ListLambda(
-                                                block.clone(),
-                                            )));
                                             vec_last.push(Token::Symbol(c));
                                             continue;
                                         }

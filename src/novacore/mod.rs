@@ -21,7 +21,7 @@ pub struct Vm {
 impl Vm {
     pub fn run(&mut self) {
         self.evaluator
-            .evaluate(self.parser.shunt(self.lexer.parse()));
+            .evaluate(Rc::new(self.parser.shunt(self.lexer.parse())));
     }
 
     pub fn run_string(&mut self, input: &str) {
@@ -30,7 +30,7 @@ impl Vm {
         self.parser = parser::Parser::new();
         self.init();
         self.evaluator
-            .evaluate(self.parser.shunt(self.lexer.parse()))
+            .evaluate(Rc::new(self.parser.shunt(self.lexer.parse())))
     }
 
     pub fn _get_last_in_state(&mut self) -> Option<String> {
@@ -126,10 +126,10 @@ impl Vm {
         // append
 
         // //modifier
-        self.add_function("let", core_ops::modifier::closure_let);
-        self.add_function("rec", core_ops::modifier::closure_rec);
-        self.add_function("auto", core_ops::modifier::closure_auto);
-        self.add_function("mod", core_ops::modifier::modifier);
+        // self.add_function("let", core_ops::modifier::closure_let);
+        // self.add_function("rec", core_ops::modifier::closure_rec);
+        // self.add_function("auto", core_ops::modifier::closure_auto);
+        // self.add_function("mod", core_ops::modifier::modifier);
         self.add_function("func", core_ops::modifier::func);
         self.add_function("list", core_ops::modifier::list);
         self.add_function("struct", core_ops::modifier::create_struct);
@@ -186,6 +186,7 @@ pub fn new_from_file(filename: &str) -> Vm {
         evaluator: evaluator::Evaluator::new(),
         parser: parser::Parser::new(),
     };
+    core.evaluator.state.current_file = filename.to_owned();
     core.init();
     core
 }

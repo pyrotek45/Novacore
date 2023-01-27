@@ -293,21 +293,21 @@ pub fn function_variable_assign(eval: &mut Evaluator) {
     }
 }
 
-pub fn get_self(eval: &mut Evaluator) {
-    if let Some(scope) = eval.state.call_stack.last_mut() {
-        let mut core_self = vec![];
+// pub fn get_self(eval: &mut Evaluator) {
+//     if let Some(scope) = eval.state.call_stack.last_mut() {
+//         let mut core_self = vec![];
 
-        for (ident, token) in scope {
-            core_self.push(Token::Identifier(ident.clone()));
-            core_self.push(token.clone());
-            core_self.push(Token::Op(Operator::VariableAssign))
-        }
+//         for (ident, token) in scope {
+//             core_self.push(Token::Identifier(ident.clone()));
+//             core_self.push(token.clone());
+//             core_self.push(Token::Op(LinePos{line: 0,col: 0},Operator::VariableAssign))
+//         }
 
-        eval.state
-            .execution_stack
-            .push(Token::Block(Block::Function(Rc::new(core_self))))
-    }
-}
+//         eval.state
+//             .execution_stack
+//             .push(Token::Block(Block::Function(Rc::new(core_self))))
+//     }
+// }
 
 pub fn free(eval: &mut Evaluator) {
     if let Some(token) = eval.state.execution_stack.pop() {

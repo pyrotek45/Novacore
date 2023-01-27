@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use hashbrown::HashMap;
 
 use super::{
@@ -28,8 +30,10 @@ impl Evaluator {
             Token::Reg(opcodes) => core_ops::reg::register_operation(self, opcodes),
             Token::Function(index) => {
                 self.state.current_function_index.push(index);
+                self.state.traceback.push(index.to_string());
                 self.functions[index](self);
                 self.state.current_function_index.pop();
+                self.state.traceback.pop();
             }
             Token::FlowFunction(index) => {
                 self.state.current_function_index.push(index);
@@ -42,25 +46,14 @@ impl Evaluator {
                 self.state.traceback.pop();
             }
             Token::FlowUserBlockCall(function) => {
-                self.state.traceback.push(function.clone());
+                self.state
+                    .traceback
+                    .push(function.clone());
                 core_ops::control::user_block_call(self, &function);
                 self.state.traceback.pop();
             }
             Token::Block(Block::Lambda(block)) => {
-                self.state.call_stack.push(HashMap::new());
-                self.evaluate(block.to_vec());
-                if let Some(token) = self.state.get_from_heap_or_pop() {
-                    self.state.execution_stack.push(token)
-                }
-
-                self.state.call_stack.pop();
-            }
-            Token::Block(Block::ListLambda(list)) => {
-                if let Some(Token::Integer(index)) = self.state.get_from_heap_or_pop() {
-                    if let Some(value) = list.get(index as usize) {
-                        self.state.execution_stack.push(value.clone())
-                    }
-                }
+                self.evaluate_function(block);
             }
             Token::Op(operator) => match operator {
                 Operator::AccessCall => core_ops::control::get_access(self),
@@ -83,7 +76,7 @@ impl Evaluator {
                 Operator::FunctionVariableAssign => {
                     core_ops::operator::function_variable_assign(self)
                 }
-                Operator::SelfId => core_ops::operator::get_self(self),
+                //Operator::SelfId => core_ops::operator::get_self(self),
                 _ => {}
             },
             Token::Symbol(_) => {}
@@ -93,16 +86,16 @@ impl Evaluator {
         }
     }
 
-    pub fn evaluate(&mut self, expr: Vec<Token>) {
-        for t in expr {
-            self.eval(t);
+    pub fn evaluate(&mut self, expr: Rc<Vec<Token>>) {
+        for t in &*expr {
+            self.eval(t.clone());
         }
     }
 
-    pub fn evaluate_function(&mut self, expr: Vec<Token>) {
+    pub fn evaluate_function(&mut self, expr: Rc<Vec<Token>>) {
         self.state.call_stack.push(HashMap::new());
-        for t in expr {
-            self.eval(t);
+        for t in &*expr {
+            self.eval(t.clone());
         }
         self.state.call_stack.pop();
     }

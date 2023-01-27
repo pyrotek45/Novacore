@@ -4,6 +4,12 @@ use hashbrown::HashMap;
 
 use super::evaluator::Evaluator;
 
+//#[derive(PartialEq, Clone, Debug)]
+// pub struct LinePos {
+//     pub line: usize,
+//     pub col: usize,
+// }
+
 pub type CallBack = fn(eval: &mut Evaluator);
 pub type Instructions = Rc<Vec<Token>>;
 
@@ -12,10 +18,7 @@ pub enum Block {
     Literal(Instructions),
     Lambda(Instructions),
     Function(Instructions),
-    Auto(Instructions, Instructions),
-    Modifier(Option<String>, Instructions),
     List(Instructions),
-    ListLambda(Instructions),
     Struct(HashMap<String, Token>),
 }
 
@@ -51,12 +54,12 @@ pub enum Token {
     Function(usize),
     FlowFunction(usize),
 
-    // symbols
-    Op(Operator),
-
     // user defined functions
     UserBlockCall(String),
     FlowUserBlockCall(String), // Block calls
+
+    // symbols
+    Op(Operator),
 
     // Basic Types
     Integer(i128),
@@ -179,26 +182,9 @@ impl Token {
                     }
                     list.to_string()
                 }
-                Block::Auto(_, _) => "Auto".to_string(),
-                Block::Modifier(_, _) => "Modifier".to_string(),
                 Block::List(block) => {
                     let mut list = String::new();
                     list.push('[');
-                    if !block.is_empty() {
-                        for item in block.iter() {
-                            list.push_str(&item.to_str());
-                            list.push(',');
-                        }
-                        list.pop();
-                        list.push(']');
-                    } else {
-                        list.push(']');
-                    }
-                    list.to_string()
-                }
-                Block::ListLambda(block) => {
-                    let mut list = String::new();
-                    list.push_str("LLF[");
                     if !block.is_empty() {
                         for item in block.iter() {
                             list.push_str(&item.to_str());

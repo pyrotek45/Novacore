@@ -80,6 +80,8 @@ fn main() {
         let _repl = String::new();
         let mut repl_debug: bool = false;
         let mut core = novacore::new();
+        // core.lexer = Lexer::new();
+        // core.init();
 
         loop {
             // Repl prompt

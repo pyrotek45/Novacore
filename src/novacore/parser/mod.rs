@@ -165,17 +165,6 @@ impl Parser {
                             np.shunt(shunted.to_vec()),
                         ))));
                     }
-                    Block::ListLambda(shunted) => {
-                        let mut np = Parser::new();
-                        if self.debug {
-                            np.debug = true;
-                        }
-
-                        self.operator_stack
-                            .push(Token::Block(Block::ListLambda(Rc::new(
-                                np.shunt_list(shunted.to_vec()),
-                            ))));
-                    }
                     Block::List(shunted) => {
                         let mut np = Parser::new();
                         if self.debug {
@@ -230,12 +219,7 @@ impl Parser {
                                         Block::Literal(_) => todo!(),
                                         Block::Lambda(_) => self.output_stack.push(last.clone()),
                                         Block::Function(_) => todo!(),
-                                        Block::Auto(_, _) => todo!(),
-                                        Block::Modifier(_, _) => todo!(),
                                         Block::List(_) => todo!(),
-                                        Block::ListLambda(_) => {
-                                            self.output_stack.push(last.clone())
-                                        }
                                         Block::Struct(_) => todo!(),
                                     },
                                     Token::Function(_) => self.output_stack.push(last.clone()),

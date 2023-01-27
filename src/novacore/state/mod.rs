@@ -2,6 +2,31 @@ use super::core::Token;
 use colored::Colorize;
 use hashbrown::HashMap;
 
+pub fn read_lines<P>(
+    filename: P,
+) -> std::io::Result<std::io::Lines<std::io::BufReader<std::fs::File>>>
+where
+    P: AsRef<std::path::Path>,
+{
+    let file = std::fs::File::open(filename)?;
+    Ok(std::io::BufRead::lines(std::io::BufReader::new(file)))
+}
+
+pub fn print_line(line: usize, file: &str) {
+    if let Ok(lines) = read_lines(file) {
+        // Consumes the iterator, returns an (Optional) String
+        let mut linenumber = 0;
+        for l in lines {
+            linenumber += 1;
+            if linenumber == line {
+                if let Ok(ip) = l {
+                    println!("  {}  ", ip.white());
+                }
+            }
+        }
+    }
+}
+
 pub struct State {
     pub debug: bool,
     pub execution_stack: Vec<Token>,
@@ -10,6 +35,7 @@ pub struct State {
     pub error_log: Vec<String>,
     pub current_function_index: Vec<usize>,
     pub traceback: Vec<String>,
+    pub current_file: String,
 }
 
 impl State {
@@ -29,7 +55,8 @@ impl State {
         // type of error: output
 
         for function_call in &self.traceback {
-            println!("Prev Call: {}", &function_call.bright_yellow());
+            //print_line( &self.current_file);
+            println!("Last call: {}", &function_call.bright_yellow());
         }
 
         println!("{}: {}", "Error".red(), &err.bright_yellow());
@@ -50,7 +77,7 @@ impl State {
 
     pub fn get_from_heap_or_pop(&mut self) -> Option<Token> {
         let tok = self.execution_stack.pop()?;
-    
+
         if let Token::Identifier(ident) = tok {
             for scopes in self.call_stack.iter().rev() {
                 if let Some(token) = scopes.get(&ident) {
@@ -84,5 +111,6 @@ pub fn new() -> Box<State> {
         error_log: vec![],
         current_function_index: vec![],
         traceback: vec![],
+        current_file: "".to_string(),
     })
 }
