@@ -228,12 +228,14 @@ impl Lexer {
                     if let Some(t) = self.check_token() {
                         if let Some(vec_last) = self.block_stack.last_mut() {
                             vec_last.push(t);
+                            vec_last.push(Token::Symbol(' '));
                         }
                         self.buffer.clear();
                     } else if let Some(vec_last) = self.block_stack.last_mut() {
                         vec_last.push(Token::Symbol(' '));
                     }
                 }
+
                 '.' => {
                     if is_string_number(&self.buffer) && !(&self.buffer.contains('.')) {
                         self.buffer.push(c);
@@ -253,7 +255,7 @@ impl Lexer {
 
                 // Symbols
                 '+' | '-' | '*' | '/' | '(' | ')' | '<' | '>' | '`' | '~' | '@' | '%' | '^'
-                | '&' | ',' | '?' | ';' | ':' | '=' | '!' | '$' => {
+                | '&' | ',' | '?' | ';' | ':' | '=' | '!' | '$' | '|' => {
                     if let Some(t) = self.check_token() {
                         if let Some(vec_last) = self.block_stack.last_mut() {
                             vec_last.push(t)
@@ -266,16 +268,16 @@ impl Lexer {
                             ':' => {
                                 if let Some(ref last) = vec_last.pop() {
                                     match &last {
-                                        Token::Identifier(ident) => {
-                                            if let Some(index) = self.function_list.get(ident) {
-                                                vec_last.push(Token::FlowFunction(*index));
-                                                continue;
-                                            } else {
-                                                vec_last
-                                                    .push(Token::FlowUserBlockCall(ident.clone()));
-                                                continue;
-                                            }
-                                        }
+                                        // Token::Identifier(ident) => {
+                                        //     if let Some(index) = self.function_list.get(ident) {
+                                        //         vec_last.push(Token::FlowFunction(*index));
+                                        //         continue;
+                                        //     } else {
+                                        //         vec_last
+                                        //             .push(Token::FlowUserBlockCall(ident.clone()));
+                                        //         continue;
+                                        //     }
+                                        // }
                                         Token::Block(Block::Literal(block)) => {
                                             vec_last
                                                 .push(Token::Block(Block::Lambda(block.clone())));
@@ -411,14 +413,15 @@ impl Lexer {
                                     vec_last.push(Token::Op(Operator::Gtr))
                                 }
                             }
+                            ';' => vec_last.push(Token::Op(Operator::PopHeap)),
                             '!' => vec_last.push(Token::Op(Operator::Not)),
+                            '|' => vec_last.push(Token::Op(Operator::Call)),
+                            '^' => vec_last.push(Token::Op(Operator::Return)),
                             '%' => vec_last.push(Token::Op(Operator::Mod)),
                             '/' => vec_last.push(Token::Op(Operator::Div)),
                             '*' => vec_last.push(Token::Op(Operator::Mul)),
                             '+' => vec_last.push(Token::Op(Operator::Add)),
-                            // '@' => vec_last.push(Token {
-                            //     Token: Token::Op(Operator::UserOpCall),
-                            // }),
+                            '@' => vec_last.push(Token::Symbol('@')),
                             '$' => vec_last.push(Token::Symbol('$')),
                             '~' => vec_last.push(Token::Op(Operator::Invert)),
                             // '?' => vec_last.push(Token {
@@ -486,8 +489,9 @@ impl Lexer {
                         self.buffer.clear();
                     };
 
-                    if let Some(list) = self.block_stack.pop() {
+                    if let Some(mut list) = self.block_stack.pop() {
                         if let Some(vec_last) = self.block_stack.last_mut() {
+                            list.retain(|x| *x != Token::Symbol(' '));
                             vec_last.push(Token::Block(Block::Literal(Rc::new(list))));
                         }
                     }
@@ -512,7 +516,7 @@ impl Lexer {
                         self.buffer.clear();
                     };
 
-                    if let Some(list) = self.block_stack.pop() {
+                    if let Some(mut list) = self.block_stack.pop() {
                         if let Some(vec_last) = self.block_stack.last_mut() {
                             if let Some(Token::Symbol('$')) = vec_last.last() {
                                 let mut opcodes = vec![];
@@ -525,6 +529,7 @@ impl Lexer {
                                 vec_last.pop();
                                 vec_last.push(Token::Reg(opcodes));
                             } else {
+                                list.retain(|x| *x != Token::Symbol(' '));
                                 vec_last.push(Token::Block(Block::List(Rc::new(list))));
                             }
                         }
@@ -544,7 +549,6 @@ impl Lexer {
         };
 
         self.block_stack[0].retain(|x| *x != Token::Symbol(' '));
-
         self.block_stack[0].to_owned()
     }
 }

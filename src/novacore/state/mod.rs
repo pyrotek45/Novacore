@@ -36,6 +36,7 @@ pub struct State {
     pub current_function_index: Vec<usize>,
     pub traceback: Vec<String>,
     pub current_file: String,
+    pub function_list: HashMap<String, usize>,
 }
 
 impl State {
@@ -80,6 +81,9 @@ impl State {
 
         if let Token::Identifier(ident) = tok {
             for scopes in self.call_stack.iter().rev() {
+                if let Some(func) = self.function_list.get(&ident) {
+                    return Some(Token::Function(*func));
+                }
                 if let Some(token) = scopes.get(&ident) {
                     return Some(token.clone());
                 }
@@ -93,6 +97,9 @@ impl State {
 
     pub fn get_from_heap(&mut self, ident: &str) -> Option<Token> {
         for scopes in self.call_stack.iter().rev() {
+            if let Some(func) = self.function_list.get(ident) {
+                return Some(Token::Function(*func));
+            }
             if let Some(token) = scopes.get(ident) {
                 return Some(token.clone());
             }
@@ -112,5 +119,6 @@ pub fn new() -> Box<State> {
         current_function_index: vec![],
         traceback: vec![],
         current_file: "".to_string(),
+        function_list: HashMap::new(),
     })
 }

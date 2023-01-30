@@ -77,8 +77,8 @@ pub fn greater_than_comparison(eval: &mut Evaluator) {
 
 pub fn assert_stack_test(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
-        eval.state.execution_stack.pop(),
-        eval.state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
     ) {
         if left == right {
             println!("{}: [{:?} = {:?}]", "SUCCESS".bright_green(), left, right)

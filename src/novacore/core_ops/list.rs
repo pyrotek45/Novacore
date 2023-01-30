@@ -31,7 +31,7 @@ pub fn list_push(eval: &mut Evaluator) {
 pub fn list_pop(eval: &mut Evaluator) {
     if let (Some(list), Some(token)) = (
         eval.state.get_from_heap_or_pop(),
-        eval.state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
     ) {
         match (list, token) {
             (Token::Block(Block::List(list)), Token::Identifier(ident)) => {
@@ -44,12 +44,12 @@ pub fn list_pop(eval: &mut Evaluator) {
                     .push(Token::Block(Block::List(Rc::new(newlist))))
             }
             (list, token) => eval.state.show_error(&format!(
-                "Incorrect arguments for push, got [{:?},{:?}]",
+                "Incorrect arguments for pop, got [{:?},{:?}]",
                 list, token
             )),
         }
     } else {
-        eval.state.show_error("Not enough arguments for push");
+        eval.state.show_error("Not enough arguments for pop");
     }
 }
 

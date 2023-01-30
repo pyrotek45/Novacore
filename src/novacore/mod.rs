@@ -58,7 +58,7 @@ impl Vm {
 
     pub fn add_function(&mut self, name: &str, function: CallBack) {
         self.lexer
-            .add_function(name, self.evaluator.add_function(function));
+            .add_function(name, self.evaluator.add_function(name.to_owned(),function));
     }
 
     pub fn init(&mut self) {
@@ -72,7 +72,7 @@ impl Vm {
 
         // Operations
         self.add_function("free", core_ops::operator::free);
-        self.add_function("get", core_ops::operator::resolve);
+        self.add_function("return", core_ops::operator::resolve);
         // self.add_function("exit", core_ops::operator::exit);
 
         // Test
@@ -140,9 +140,11 @@ impl Vm {
         self.add_function("if", core_ops::control::if_statement);
         self.add_function("when", core_ops::control::when_statement);
         self.add_function("unless", core_ops::control::unless_statement);
+        self.add_function("for", core_ops::control::for_each);
 
         //self.add_function("for", core_ops::control::for_loop);
         self.add_function("call", core_ops::control::block_call);
+        self.add_function("exe", core_ops::control::exe);
         self.add_function("each", core_ops::control::each);
         self.add_function("times", core_ops::control::times);
         self.add_function("while", core_ops::control::while_loop);
@@ -188,6 +190,7 @@ pub fn new_from_file(filename: &str) -> Vm {
     };
     core.evaluator.state.current_file = filename.to_owned();
     core.init();
+    core.evaluator.state.function_list = core.lexer.function_list.clone();
     core
 }
 
@@ -198,5 +201,6 @@ pub fn new() -> Vm {
         parser: parser::Parser::new(),
     };
     core.init();
+    core.evaluator.state.function_list = core.lexer.function_list.clone();
     core
 }

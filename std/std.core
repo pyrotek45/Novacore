@@ -1,4 +1,4 @@
-map = func: {[function list] -> 
+map = func: {[list function] -> 
     newlist = []
     each: list {
         function()
@@ -7,19 +7,19 @@ map = func: {[function list] ->
     get(newlist)
 }
 
-fold = func: {[seed function list] -> 
-    seed 
-    each: list {
+fold = func: {[input seed function] -> 
+    seed^ 
+    each: input^ {
         function()
     }
 }
 
-filter = func: {[function list] -> 
+filter = func: {[q function] -> 
     newlist = []
-    each: list {
-         if: dup() function() {[i] -> newlist = push: i newlist} {drop()}
+    each: q^ {
+        dup | function | {[i] -> newlist = push: i^ newlist^} {drop()} if |
     }
-    get(newlist)
+    newlist^
 }
 
 dip = func: {[x y] -> y() get(x)}
@@ -31,3 +31,4 @@ bi = func: {[x p q] -> p x() q x()}
 product = func: {[list] -> fold: 1 {*} list}
 
 sum = func: {[list] -> fold: 0 {+} list}
+

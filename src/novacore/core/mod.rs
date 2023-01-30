@@ -43,6 +43,10 @@ pub enum Operator {
     Mul,
     Div,
     PopStack,
+    Swap,
+    Call,
+    Return,
+    PopHeap,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -52,11 +56,11 @@ pub enum Token {
 
     // built in functions
     Function(usize),
-    FlowFunction(usize),
+    //FlowFunction(usize),
 
     // user defined functions
     UserBlockCall(String),
-    FlowUserBlockCall(String), // Block calls
+    //FlowUserBlockCall(String), // Block calls
 
     // symbols
     Op(Operator),
@@ -135,7 +139,7 @@ impl Token {
             Token::String(block) => block.to_string(),
             Token::Char(block) => format!("{}", block),
             Token::Symbol(block) => format!("{}", block),
-            Token::Bool(block) => format!("Bool{}", block),
+            Token::Bool(block) => format!("Bool[{}]", block),
             Token::Block(block) => match block {
                 Block::Literal(block) => {
                     let mut list = String::new();
@@ -219,8 +223,8 @@ impl Token {
                 let op = operator;
                 format!("{:?}", op)
             }
-            Token::FlowFunction(block) => format!("{}", block),
-            Token::FlowUserBlockCall(block) => format!("{:?}", block),
+            //Token::FlowFunction(block) => format!("{}", block),
+            //Token::FlowUserBlockCall(block) => format!("{:?}", block),
             Token::Reg(block) => format!("R{:?}", block),
         }
     }
@@ -238,8 +242,8 @@ impl Token {
             Token::Bool(_) => format!("{:?}", self),
             Token::Block(_) => format!("{:?}", self),
             Token::Op(_) => format!("{:?}", self),
-            Token::FlowFunction(_) => format!("{:?}", self),
-            Token::FlowUserBlockCall(_) => format!("{:?}", self),
+            //Token::FlowFunction(_) => format!("{:?}", self),
+            //Token::FlowUserBlockCall(_) => format!("{:?}", self),
             Token::Reg(_) => format!("{:?}", self),
         }
     }

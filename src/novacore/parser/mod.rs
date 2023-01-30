@@ -181,6 +181,7 @@ impl Parser {
                 },
                 Token::Symbol(symbol) => {
                     match symbol {
+                        '@' => self.output_stack.push(Token::Op(Operator::Swap)),
                         // ',' => {
                         //     // pop temp off operator stack and check if its "("
                         //     if let Some(temp) = self.operator_stack.pop() {
@@ -315,14 +316,17 @@ impl Parser {
                     Operator::StoreTemp
                     | Operator::UserFunctionChain
                     | Operator::SelfId
+                    | Operator::Call
+                    | Operator::Return
+                    | Operator::PopHeap
                     | Operator::FunctionVariableAssign => self.output_stack.push(token),
                     _ => self.operator_stack.push(token),
                 },
                 Token::Char(_) => self.output_stack.push(token),
                 Token::UserBlockCall(_) => self.operator_stack.push(token),
                 Token::Function(_) => self.operator_stack.push(token),
-                Token::FlowFunction(_) => self.operator_stack.push(token),
-                Token::FlowUserBlockCall(_) => self.operator_stack.push(token),
+                // Token::FlowFunction(_) => self.operator_stack.push(token),
+                // Token::FlowUserBlockCall(_) => self.operator_stack.push(token),
             }
         }
 

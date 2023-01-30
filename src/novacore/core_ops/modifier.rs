@@ -116,7 +116,7 @@ pub fn func(eval: &mut Evaluator) {
 // pub fn closure_rec(eval: &mut Evaluator) {
 //     match (
 //         eval.state.get_from_heap_or_pop(),
-//         eval.state.execution_stack.pop(),
+//         eval.state.get_from_heap_or_pop(),
 //     ) {
 //         (Some(Token::Block(Block::Literal(block))), Some(Token::Identifier(ident))) => {
 //             if let Some(function_index) = eval.state.current_function_index.last() {

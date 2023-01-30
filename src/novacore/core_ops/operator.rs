@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use hashbrown::HashMap;
 use modulo::Mod;
 
 use crate::novacore::{
@@ -147,10 +148,10 @@ pub fn neg(eval: &mut Evaluator) {
             }
             a => eval
                 .state
-                .show_error(&format!("Incorrect arguments for division. got [{:?}]", a)),
+                .show_error(&format!("Incorrect arguments for inversion. got [{:?}]", a)),
         }
     } else {
-        eval.state.show_error("Not enough arguments for division")
+        eval.state.show_error("Not enough arguments for inversion")
     }
 }
 
@@ -243,7 +244,7 @@ pub fn mul(eval: &mut Evaluator) {
 
 pub fn variable_assign(eval: &mut Evaluator) {
     if let (Some(token), Some(ident)) = (
-        eval.state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
         eval.state.execution_stack.pop(),
     ) {
         match (&token, &ident) {
@@ -274,23 +275,26 @@ pub fn function_variable_assign(eval: &mut Evaluator) {
         }
     } else {
         eval.state
-            .show_error("Not enough arguments for function variable assign [->]");
+            .show_error("Not enough arguments for [->]");
     }
 
     // Tie each Token into the call_stack using the tokens poped
-    if let Some(mut newscope) = eval.state.call_stack.pop() {
-        for tokens in variable_stack {
-            if let Some(tok) = eval.state.get_from_heap_or_pop() {
-                newscope.insert(tokens, tok.clone());
-            } else {
-                eval.state.show_error("Not enough arguments")
-            }
+    let mut newscope = HashMap::new();
+    for tokens in variable_stack {
+        if let Some(tok) = eval.state.get_from_heap_or_pop() {
+            newscope.insert(tokens, tok.clone());
+        } else {
+            eval.state.show_error("Not enough arguments for -> ")
         }
-        eval.state.call_stack.push(newscope);
-    } else {
-        eval.state
-            .show_error("Not enough arguments for function variable assign  [->]");
     }
+    eval.state.call_stack.push(newscope);
+
+
+
+}
+
+pub fn pop_heap(eval: &mut Evaluator) {
+    eval.state.call_stack.pop();
 }
 
 // pub fn get_self(eval: &mut Evaluator) {
