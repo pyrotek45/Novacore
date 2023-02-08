@@ -4,7 +4,7 @@ use hashbrown::HashMap;
 use modulo::Mod;
 
 use crate::novacore::{
-    core::{Block, Operator, Token},
+    core::{Block, Token},
     evaluator::Evaluator,
 };
 
@@ -248,10 +248,10 @@ pub fn variable_assign(eval: &mut Evaluator) {
         eval.state.execution_stack.pop(),
     ) {
         match (&token, &ident) {
-            (Token::Identifier(moved), Token::Identifier(identifier)) => {
+            (Token::Id(moved), Token::Id(identifier)) => {
                 eval.state.move_varaible(moved, identifier)
             }
-            (_, Token::Identifier(identifier)) => eval.state.add_varaible(identifier, token),
+            (_, Token::Id(identifier)) => eval.state.add_varaible(identifier, token),
             _ => {
                 eval.state.show_error(&format!(
                     "Can not assign these two types [{:?},{:?}]",
@@ -265,17 +265,39 @@ pub fn variable_assign(eval: &mut Evaluator) {
     }
 }
 
-pub fn function_variable_assign(eval: &mut Evaluator) {
-    let mut variable_stack: Vec<String> = Vec::with_capacity(10);
-    if let Some(Token::Block(Block::List(identifiers))) = eval.state.get_from_heap_or_pop() {
-        for toks in identifiers.iter().rev() {
-            if let Token::Identifier(ident) = &toks {
-                variable_stack.push(ident.clone())
+pub fn variable_assign_set(eval: &mut Evaluator) {
+    if let (Some(ident), Some(token)) = (
+        eval.state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
+        match (&token, &ident) {
+            (Token::Id(moved), Token::Id(identifier)) => {
+                eval.state.move_varaible(moved, identifier)
+            }
+            (_, Token::Id(identifier)) => eval.state.add_varaible(identifier, token),
+            _ => {
+                eval.state.show_error(&format!(
+                    "Can not assign these two types [{:?},{:?}]",
+                    token, ident
+                ));
             }
         }
     } else {
         eval.state
-            .show_error("Not enough arguments for [->]");
+            .show_error("Not enough arguments for variable assignment");
+    }
+}
+
+pub fn bind_variables(eval: &mut Evaluator) {
+    let mut variable_stack: Vec<String> = Vec::with_capacity(10);
+    if let Some(Token::Block(Block::List(identifiers))) = eval.state.get_from_heap_or_pop() {
+        for toks in identifiers.iter().rev() {
+            if let Token::Id(ident) = &toks {
+                variable_stack.push(ident.clone())
+            }
+        }
+    } else {
+        eval.state.show_error("Not enough arguments for [->]");
     }
 
     // Tie each Token into the call_stack using the tokens poped
@@ -287,35 +309,30 @@ pub fn function_variable_assign(eval: &mut Evaluator) {
             eval.state.show_error("Not enough arguments for -> ")
         }
     }
-    eval.state.call_stack.push(newscope);
-
-
-
+    eval.state.bindings.push(newscope);
 }
 
-pub fn pop_heap(eval: &mut Evaluator) {
-    eval.state.call_stack.pop();
+pub fn pop_bindings(eval: &mut Evaluator) {
+    eval.state.bindings.pop();
 }
 
-// pub fn get_self(eval: &mut Evaluator) {
-//     if let Some(scope) = eval.state.call_stack.last_mut() {
-//         let mut core_self = vec![];
+pub fn get_new(eval: &mut Evaluator) {
+    if let Some(scope) = eval.state.call_stack.last_mut() {
+        let mut core_self = HashMap::new();
 
-//         for (ident, token) in scope {
-//             core_self.push(Token::Identifier(ident.clone()));
-//             core_self.push(token.clone());
-//             core_self.push(Token::Op(LinePos{line: 0,col: 0},Operator::VariableAssign))
-//         }
+        for (ident, token) in scope {
+            core_self.insert(ident.clone(), token.clone());
+        }
 
-//         eval.state
-//             .execution_stack
-//             .push(Token::Block(Block::Function(Rc::new(core_self))))
-//     }
-// }
+        eval.state
+            .execution_stack
+            .push(Token::Block(Block::Struct(Rc::new(core_self))))
+    }
+}
 
 pub fn free(eval: &mut Evaluator) {
     if let Some(token) = eval.state.execution_stack.pop() {
-        if let Token::Identifier(ident) = token {
+        if let Token::Id(ident) = token {
             eval.state.remove_varaible(&ident)
         }
     } else {
@@ -328,5 +345,14 @@ pub fn resolve(eval: &mut Evaluator) {
         eval.state.execution_stack.push(top)
     } else {
         eval.state.show_error("Not enough arguments for return");
+    }
+}
+
+pub fn resolve_binding(eval: &mut Evaluator) {
+    if let Some(top) = eval.state.get_from_binding() {
+        eval.state.execution_stack.push(top)
+    } else {
+        eval.state
+            .show_error("Not enough arguments for binding resolve");
     }
 }

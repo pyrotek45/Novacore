@@ -22,7 +22,7 @@ pub fn time(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         if let Token::Block(block) = token {
             match block {
-                Block::Function(block) => {
+                Block::Function(_, block) => {
                     let start = Instant::now();
                     // Call with new scope
                     eval.state.call_stack.push(HashMap::new());

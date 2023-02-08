@@ -1,8 +1,10 @@
 use std::rc::Rc;
 
+use hashbrown::HashMap;
+
 use crate::novacore::{
     self,
-    core::Token,
+    core::{Block, Token},
     evaluator::Evaluator,
     utilities::{is_string_number, trim_newline},
 };
@@ -10,7 +12,7 @@ use crate::novacore::{
 pub fn println(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
-            Token::Identifier(token) => {
+            Token::Id(token) => {
                 print!("{}\r\n", &token)
             }
             Token::Integer(token) => {
@@ -46,7 +48,7 @@ pub fn println(eval: &mut Evaluator) {
 pub fn print(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
-            Token::Identifier(token) => {
+            Token::Id(token) => {
                 print!("{}", &token)
             }
             Token::Integer(token) => {
@@ -118,11 +120,29 @@ pub fn dump(eval: &mut Evaluator) {
     }
 }
 
+pub fn load(eval: &mut Evaluator) {
+    if let (Some(Token::String(filepath)), Some(Token::Id(id))) = (
+        eval.state.get_from_heap_or_pop(),
+        eval.state.execution_stack.pop(),
+    ) {
+        let mut vm = novacore::new_from_file(&filepath);
+        vm.evaluator.state.current_file = filepath;
+        eval.state.call_stack.push(HashMap::new());
+        eval.evaluate(Rc::new(vm.parser.parse(vm.lexer.parse())));
+        if let Some(module) = eval.state.call_stack.pop() {
+            eval.state
+                .add_varaible(&id, Token::Block(Block::Struct(Rc::new(module))))
+        }
+    } else {
+        eval.state.show_error("Not enough arguments for load");
+    }
+}
+
 pub fn import(eval: &mut Evaluator) {
     if let Some(Token::String(filepath)) = eval.state.get_from_heap_or_pop() {
         let mut vm = novacore::new_from_file(&filepath);
         vm.evaluator.state.current_file = filepath;
-        eval.evaluate(Rc::new(vm.parser.shunt(vm.lexer.parse())))
+        eval.evaluate(Rc::new(vm.parser.parse(vm.lexer.parse())));
     } else {
         eval.state.show_error("Not enough arguments for import");
     }

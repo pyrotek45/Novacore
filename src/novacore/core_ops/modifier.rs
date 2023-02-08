@@ -15,7 +15,7 @@ pub fn create_struct(eval: &mut Evaluator) {
             if let Some(new_struct) = eval.state.call_stack.pop() {
                 eval.state
                     .execution_stack
-                    .push(Token::Block(Block::Struct(new_struct)));
+                    .push(Token::Block(Block::Struct(Rc::new(new_struct))));
             }
         }
         a => eval.state.show_error(&format!(
@@ -53,21 +53,21 @@ pub fn list(eval: &mut Evaluator) {
 }
 
 pub fn func(eval: &mut Evaluator) {
-    match eval.state.get_from_heap_or_pop() {
-        Some(Token::Block(Block::Literal(block))) => {
-            eval.state
-                .execution_stack
-                .push(Token::Block(Block::Function(block)));
+    if let (Some(block), Some(list)) = (
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
+        match (block, list) {
+            (Token::Block(Block::Literal(block)), Token::Block(Block::List(list))) => {
+                eval.state
+                    .execution_stack
+                    .push(Token::Block(Block::Function(list, block)));
+            }
+            (a, b) => eval.state.show_error(&format!(
+                "Incorrect argument for func. Expected Type [Block | List], but got [{:?} {:?}]",
+                a, b
+            )),
         }
-        Some(Token::Block(Block::List(block))) => {
-            eval.state
-                .execution_stack
-                .push(Token::Block(Block::Function(block)));
-        }
-        a => eval.state.show_error(&format!(
-            "Incorrect argument for func. Expected Type [Block | List], but got [{:?}]",
-            a
-        )),
     }
 }
 
@@ -170,11 +170,11 @@ pub fn include(eval: &mut Evaluator) {
         let mut newlist = vec![];
         if let Some(scope) = eval.state.call_stack.last_mut() {
             for item in list.iter() {
-                if let Token::Identifier(ident) = item {
+                if let Token::Id(ident) = item {
                     if let Some(token) = scope.get(ident) {
-                        newlist.push(Token::Identifier(ident.clone()));
+                        newlist.push(Token::Id(ident.clone()));
                         newlist.push(token.clone());
-                        newlist.push(Token::Op(Operator::VariableAssign))
+                        newlist.push(Token::Op(Operator::VariableAssign, 0))
                     }
                 }
             }
@@ -196,12 +196,12 @@ pub fn include(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::Literal(Rc::new(value))))
         }
-        (Some(Token::Block(Block::Function(block))), Some(Token::Block(Block::List(list)))) => {
-            let value = include_compute(eval, block, list);
-            eval.state
-                .execution_stack
-                .push(Token::Block(Block::Function(Rc::new(value))))
-        }
+        // (Some(Token::Block(Block::Function(block))), Some(Token::Block(Block::List(list)))) => {
+        //     let value = include_compute(eval, block, list);
+        //     eval.state
+        //         .execution_stack
+        //         .push(Token::Block(Block::Function(Rc::new(value))))
+        // }
         (a, b) => eval.state.show_error(&format!(
             "Incorrect argument for include, got [{:?},{:?}]",
             a, b

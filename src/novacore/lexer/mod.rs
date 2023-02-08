@@ -8,43 +8,49 @@ use super::{
 };
 
 pub struct Lexer {
-    // File and Token buffer
-    source: String,
-    buffer: String,
+    file: String,
+    token_buffer: String,
 
-    // Operator added
-    pub function_list: HashMap<String, usize>,
+    function_list: HashMap<String, usize>,
 
     // State
     is_parsing_stringdq: bool,
     is_parsing_stringsq: bool,
     is_parsing_comment: bool,
     is_skip: bool,
-    is_parsing_chain: bool,
+    is_parsing_chain: Vec<bool>,
 
     // Output
-    pub block_stack: Vec<Vec<Token>>,
-    pub line: usize,
-    pub col: usize,
+    tokens: Vec<Vec<Token>>,
+
+    line: usize,
+    _col: usize,
+}
+
+pub fn new() -> Lexer {
+    Lexer {
+        file: "".to_string(),
+        token_buffer: String::new(),
+        is_parsing_stringdq: false,
+        is_parsing_stringsq: false,
+        tokens: vec![vec![]],
+        is_parsing_comment: false,
+        is_skip: false,
+        is_parsing_chain: vec![],
+        function_list: HashMap::new(),
+        line: 1,
+        _col: 1,
+    }
 }
 
 impl Lexer {
-    // Creates a lexer using the file as input
-    pub fn new_from_file(filename: &str) -> Self {
+    pub fn get_function_list(&self) -> HashMap<String, usize> {
+        self.function_list.clone()
+    }
+
+    pub fn add_file(&mut self, filename: &str) {
         if let Ok(content) = std::fs::read_to_string(filename) {
-            Lexer {
-                source: content,
-                buffer: String::new(),
-                is_parsing_stringdq: false,
-                is_parsing_stringsq: false,
-                block_stack: vec![vec![]],
-                is_parsing_comment: false,
-                is_skip: false,
-                is_parsing_chain: false,
-                function_list: HashMap::new(),
-                line: 1,
-                col: 1,
-            }
+            self.file = content;
         } else {
             println!(
                 "ERROR: file: {} could not be found. Exiting with error code 1",
@@ -54,41 +60,8 @@ impl Lexer {
         }
     }
 
-    // Creates a lexer using a string as input
-    pub fn new_from_string(input: &str) -> Self {
-        Lexer {
-            source: input.to_string(),
-            buffer: String::new(),
-            is_parsing_stringdq: false,
-            is_parsing_stringsq: false,
-            block_stack: vec![vec![]],
-            is_parsing_comment: false,
-            is_skip: false,
-            is_parsing_chain: false,
-            function_list: HashMap::new(),
-            line: 1,
-            col: 1,
-        }
-    }
-
-    pub fn new() -> Self {
-        Lexer {
-            source: "".to_string(),
-            buffer: String::new(),
-            is_parsing_stringdq: false,
-            is_parsing_stringsq: false,
-            block_stack: vec![vec![]],
-            is_parsing_comment: false,
-            is_skip: false,
-            is_parsing_chain: false,
-            function_list: HashMap::new(),
-            line: 1,
-            col: 1,
-        }
-    }
-
     pub fn insert_string(&mut self, input: &str) {
-        self.source += input
+        self.file += input
     }
 
     pub fn add_function(&mut self, name: &str, index: usize) {
@@ -97,72 +70,96 @@ impl Lexer {
 
     fn match_token(&self, token: &str) -> Token {
         match token {
-            // these can all be functions
-            "self" => Token::Op(Operator::SelfId),
-            // keep for now, maybe change to 1 true, 0 false
+            "break" => Token::Op(Operator::Break, self.line),
+            "continue" => Token::Op(Operator::Continue, self.line),
+
+            "new" => Token::Op(Operator::New, self.line),
+
             "true" => Token::Bool(true),
             "false" => Token::Bool(false),
-            // change to && and ||
-            "and" => Token::Op(Operator::And),
-            "or" => Token::Op(Operator::Or),
-            _ => Token::Identifier(self.buffer.to_lowercase()),
+
+            "and" => Token::Op(Operator::And, self.line),
+            "or" => Token::Op(Operator::Or, self.line),
+
+            _ => Token::Id(self.token_buffer.to_lowercase()),
         }
     }
 
     pub fn clear(&mut self) {
-        self.block_stack = vec![vec![]];
+        self.tokens = vec![vec![]];
     }
+
     // // This Op is used to check to see if the current
     // // buffer is either a (number,Op,bool,identifier)
-    fn check_token(&self) -> Option<Token> {
-        // Checking if buffer is numerical
-        if !self.buffer.is_empty() {
-            if is_string_number(&self.buffer) {
+    fn check_token_buffer(&self) -> Option<Token> {
+        if !self.token_buffer.is_empty() {
+            if is_string_number(&self.token_buffer) {
                 // Float
-                if self.buffer.contains('.') {
-                    if let Ok(v) = self.buffer.parse() {
+                if self.token_buffer.contains('.') {
+                    if let Ok(v) = self.token_buffer.parse() {
                         return Some(Token::Float(v));
                     }
                 } else {
                     // Int
-                    if let Ok(v) = self.buffer.parse() {
+                    if let Ok(v) = self.token_buffer.parse() {
                         return Some(Token::Integer(v));
                     }
                 }
             } else {
-                return Some(self.match_token(&self.buffer.to_lowercase()));
+                return Some(self.match_token(&self.token_buffer.to_lowercase()));
             }
         }
         Option::None
     }
 
+    pub fn check_token(&mut self) {
+        if let Some(t) = self.check_token_buffer() {
+            if let Some(vec_last) = self.tokens.last_mut() {
+                vec_last.push(t)
+            }
+            self.token_buffer.clear();
+        }
+    }
+
+    fn add_token(&mut self, token: Token) {
+        if let Some(vec_last) = self.tokens.last_mut() {
+            vec_last.push(token)
+        }
+    }
+
+    fn last_token(&self) -> Option<&Token> {
+        if let Some(vec_last) = self.tokens.last() {
+            vec_last.last()
+        } else {
+            None
+        }
+    }
     // // Going through each char in the file or string
     pub fn parse(&mut self) -> Vec<Token> {
-        // Parsing strings double quote
-        for c in self.source.chars() {
+        for c in self.file.clone().chars() {
             if self.is_parsing_stringdq {
                 if c == '\\' {
                     self.is_skip = true;
                     continue;
                 }
                 if c != '"' || self.is_skip {
-                    self.buffer.push(c);
+                    self.token_buffer.push(c);
                     if self.is_skip {
                         self.is_skip = false;
                     }
                     continue;
                 } else {
                     self.is_parsing_stringdq = false;
-                    if let Some(vec_last) = self.block_stack.last_mut() {
-                        if self.buffer.chars().count() == 1 {
-                            if let Some(mychar) = self.buffer.chars().next() {
+                    if let Some(vec_last) = self.tokens.last_mut() {
+                        if self.token_buffer.chars().count() == 1 {
+                            if let Some(mychar) = self.token_buffer.chars().next() {
                                 vec_last.push(Token::Char(mychar))
                             }
                         } else {
-                            vec_last.push(Token::String(self.buffer.clone()))
+                            vec_last.push(Token::String(self.token_buffer.clone()))
                         }
                     }
-                    self.buffer.clear();
+                    self.token_buffer.clear();
                     continue;
                 }
             }
@@ -173,13 +170,8 @@ impl Lexer {
                     continue;
                 } else {
                     self.is_parsing_comment = false;
-                    if let Some(vec_last) = self.block_stack.last_mut() {
-                        if let Some(last) = vec_last.last() {
-                            if &Token::Symbol(',') != last {
-                                vec_last.push(Token::Symbol(','))
-                            }
-                        }
-                    }
+                    self.add_token(Token::Symbol(','));
+                    self.line += 1;
                     continue;
                 }
             }
@@ -189,147 +181,125 @@ impl Lexer {
             match c {
                 // Newline
                 '\n' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t)
-                        }
-                        self.buffer.clear();
-                    }
-
-                    if let Some(vec_last) = self.block_stack.last_mut() {
-                        if let Some(last) = vec_last.last() {
-                            if &Token::Symbol(';') != last {
-                                vec_last.push(Token::Symbol(';'))
-                            }
-                        }
-                    }
+                    self.check_token();
+                    self.add_token(Token::Symbol(','));
                     self.line += 1;
                     continue;
                 }
 
-                // Comment
+                //Comment
                 '#' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t)
-                        }
-                        self.buffer.clear();
-                    }
+                    self.check_token();
                     self.is_parsing_comment = true;
                 }
 
                 // Letters and numbers
                 'a'..='z' | 'A'..='Z' | '_' | '0'..='9' => {
-                    self.buffer.push(c);
+                    self.token_buffer.push(c);
                 }
 
                 // Spaces
                 ' ' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t);
-                            vec_last.push(Token::Symbol(' '));
-                        }
-                        self.buffer.clear();
-                    } else if let Some(vec_last) = self.block_stack.last_mut() {
-                        vec_last.push(Token::Symbol(' '));
-                    }
+                    self.check_token();
                 }
 
                 '.' => {
-                    if is_string_number(&self.buffer) && !(&self.buffer.contains('.')) {
-                        self.buffer.push(c);
+                    if is_string_number(&self.token_buffer) && !(&self.token_buffer.contains('.')) {
+                        self.token_buffer.push(c);
                         continue;
                     }
 
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
+                    if let Some(t) = self.check_token_buffer() {
+                        if let Some(vec_last) = self.tokens.last_mut() {
                             vec_last.push(t);
-                            vec_last.push(Token::Op(Operator::AccessCall))
+                            vec_last.push(Token::Op(Operator::AccessCall, self.line))
                         }
-                        self.buffer.clear();
-                    } else if let Some(vec_last) = self.block_stack.last_mut() {
-                        vec_last.push(Token::Op(Operator::AccessCall))
+                        self.token_buffer.clear();
+                    } else if let Some(vec_last) = self.tokens.last_mut() {
+                        vec_last.push(Token::Op(Operator::AccessCall, self.line))
                     }
                 }
 
                 // Symbols
                 '+' | '-' | '*' | '/' | '(' | ')' | '<' | '>' | '`' | '~' | '@' | '%' | '^'
                 | '&' | ',' | '?' | ';' | ':' | '=' | '!' | '$' | '|' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t)
-                        }
-                        self.buffer.clear();
-                    }
+                    self.check_token();
 
-                    if let Some(vec_last) = self.block_stack.last_mut() {
+                    if let Some(vec_last) = self.tokens.last_mut() {
                         match c {
-                            ':' => {
-                                if let Some(ref last) = vec_last.pop() {
-                                    match &last {
-                                        // Token::Identifier(ident) => {
-                                        //     if let Some(index) = self.function_list.get(ident) {
-                                        //         vec_last.push(Token::FlowFunction(*index));
-                                        //         continue;
-                                        //     } else {
-                                        //         vec_last
-                                        //             .push(Token::FlowUserBlockCall(ident.clone()));
-                                        //         continue;
-                                        //     }
-                                        // }
-                                        Token::Block(Block::Literal(block)) => {
-                                            vec_last
-                                                .push(Token::Block(Block::Lambda(block.clone())));
-                                            continue;
-                                        }
-                                        _ => {
-                                            vec_last.push(last.clone());
-                                            vec_last.push(Token::Symbol(c))
-                                        }
-                                    }
-                                } else {
-                                    vec_last.push(Token::Symbol(c))
-                                }
-                            }
+                            ':' => self.add_token(Token::Op(Operator::VariableAssign, self.line)),
                             ')' => {
-                                if self.is_parsing_chain {
-                                    vec_last.push(Token::Op(Operator::UserFunctionChain));
-                                    self.is_parsing_chain = false;
+                                if !self.is_parsing_chain.is_empty() {
+                                    vec_last
+                                        .push(Token::Op(Operator::UserFunctionChain, self.line));
+                                    self.is_parsing_chain.pop();
                                 }
 
                                 vec_last.push(Token::Symbol(c));
                             }
-                            '-' => vec_last.push(Token::Op(Operator::Sub)),
+                            '-' => {
+                                if let Some(last) = vec_last.pop() {
+                                    match last {
+                                        Token::Id(_) => {
+                                            vec_last.push(last);
+                                            vec_last.push(Token::Op(Operator::Sub, self.line));
+                                            continue;
+                                        }
+                                        Token::Integer(_) => {
+                                            vec_last.push(last);
+                                            vec_last.push(Token::Op(Operator::Sub, self.line));
+                                            continue;
+                                        }
+                                        Token::Float(_) => {
+                                            vec_last.push(last);
+                                            vec_last.push(Token::Op(Operator::Sub, self.line));
+                                            continue;
+                                        }
+                                        _ => {
+                                            vec_last.push(last);
+                                            vec_last.push(Token::Op(Operator::Neg, self.line))
+                                        }
+                                    }
+                                } else {
+                                    vec_last.push(Token::Op(Operator::Neg, self.line))
+                                }
+                            }
                             '(' => {
                                 if let Some(ref last) = vec_last.pop() {
                                     match &last {
-                                        Token::Identifier(ident) => {
+                                        Token::Id(ident) => {
                                             if let Some(index) = self.function_list.get(ident) {
-                                                vec_last.push(Token::Function(*index));
+                                                vec_last.push(Token::Function(*index, self.line));
                                                 vec_last.push(Token::Symbol(c));
                                                 continue;
                                             } else {
                                                 // check if accesscall is
-                                                if let Some(Token::Op(Operator::AccessCall)) =
+                                                if let Some(Token::Op(Operator::AccessCall, _)) =
                                                     vec_last.last()
                                                 {
-                                                    vec_last.push(Token::Identifier(ident.clone()));
-                                                    self.is_parsing_chain = true;
+                                                    vec_last.push(Token::Id(ident.clone()));
+                                                    self.is_parsing_chain.push(true);
                                                     //vec_last.push(Token::Op(Operator::Pass));
-                                                    vec_last.push(Token::Op(Operator::StoreTemp));
+                                                    vec_last.push(Token::Op(
+                                                        Operator::StoreTemp,
+                                                        self.line,
+                                                    ));
                                                     vec_last.push(Token::Symbol(c));
                                                     continue;
                                                 }
-                                                vec_last.push(Token::UserBlockCall(ident.clone()));
+                                                vec_last.push(Token::BlockCall(
+                                                    ident.clone(),
+                                                    self.line,
+                                                ));
                                                 vec_last.push(Token::Symbol(c));
                                                 continue;
                                             }
                                         }
                                         Token::Symbol(')') => {
                                             vec_last.push(last.clone());
-                                            self.is_parsing_chain = true;
-                                            vec_last.push(Token::Op(Operator::StoreTemp));
+                                            self.is_parsing_chain.push(true);
+                                            vec_last
+                                                .push(Token::Op(Operator::StoreTemp, self.line));
                                             vec_last.push(Token::Symbol(c));
 
                                             continue;
@@ -341,13 +311,16 @@ impl Lexer {
                                             continue;
                                         }
                                         Token::Integer(ident) => {
-                                            if let Some(Token::Op(Operator::AccessCall)) =
+                                            if let Some(Token::Op(Operator::AccessCall, _)) =
                                                 vec_last.last()
                                             {
                                                 vec_last.push(Token::Integer(*ident));
-                                                self.is_parsing_chain = true;
+                                                self.is_parsing_chain.push(true);
                                                 //vec_last.push(Token::Op(Operator::Pass));
-                                                vec_last.push(Token::Op(Operator::StoreTemp));
+                                                vec_last.push(Token::Op(
+                                                    Operator::StoreTemp,
+                                                    self.line,
+                                                ));
                                                 vec_last.push(Token::Symbol(c));
                                                 continue;
                                             }
@@ -364,85 +337,31 @@ impl Lexer {
                                     vec_last.push(Token::Symbol(c))
                                 }
                             }
-                            // '&' => {
-                            //     if let Some(last) = vec_last.pop() {
-                            //         match last.Token {
-                            //             Token::Symbol('&') => {
-                            //                 vec_last.push(Token {
-                            //                     Token: Token::Op(Operator::UserMacroChain),
-                            //                 });
-                            //                 continue;
-                            //             }
-                            //             _ => {
-                            //                 vec_last.push(last);
-                            //                 vec_last.push(Token {
-                            //                     Token: Token::Symbol(c),
-                            //                 })
-                            //             }
-                            //         }
-                            //     }
-                            // }
-                            '<' => {
-                                if let Some(last) = vec_last.pop() {
-                                    match last {
-                                        Token::Op(Operator::Lss) => {
-                                            vec_last.push(Token::Op(Operator::PopStack));
-                                            continue;
-                                        }
-                                        _ => {
-                                            vec_last.push(last);
-                                            vec_last.push(Token::Op(Operator::Lss))
-                                        }
-                                    }
-                                }
-                            }
+                            '<' => self.add_token(Token::Op(Operator::Lss, self.line)),
                             '>' => {
                                 if let Some(last) = vec_last.pop() {
                                     match last {
-                                        Token::Op(Operator::Sub) => {
-                                            vec_last
-                                                .push(Token::Op(Operator::FunctionVariableAssign));
+                                        Token::Op(Operator::Neg, _) => {
+                                            vec_last.push(Token::Op(Operator::BindVar, self.line));
                                             continue;
                                         }
                                         _ => {
                                             vec_last.push(last);
-                                            vec_last.push(Token::Op(Operator::Gtr))
+                                            vec_last.push(Token::Op(Operator::Gtr, self.line))
                                         }
                                     }
                                 } else {
-                                    vec_last.push(Token::Op(Operator::Gtr))
+                                    vec_last.push(Token::Op(Operator::Gtr, self.line))
                                 }
                             }
-                            ';' => vec_last.push(Token::Op(Operator::PopHeap)),
-                            '!' => vec_last.push(Token::Op(Operator::Not)),
-                            '|' => vec_last.push(Token::Op(Operator::Call)),
-                            '^' => vec_last.push(Token::Op(Operator::Return)),
-                            '%' => vec_last.push(Token::Op(Operator::Mod)),
-                            '/' => vec_last.push(Token::Op(Operator::Div)),
-                            '*' => vec_last.push(Token::Op(Operator::Mul)),
-                            '+' => vec_last.push(Token::Op(Operator::Add)),
-                            '@' => vec_last.push(Token::Symbol('@')),
-                            '$' => vec_last.push(Token::Symbol('$')),
-                            '~' => vec_last.push(Token::Op(Operator::Invert)),
-                            // '?' => vec_last.push(Token {
-                            //     Token: Token::Op(Operator::MacroVariableAssign),
-                            // }),
-                            '=' => {
-                                if let Some(last) = vec_last.pop() {
-                                    match last {
-                                        Token::Op(Operator::VariableAssign) => {
-                                            vec_last.push(Token::Op(Operator::Equals));
-                                            continue;
-                                        }
-                                        _ => {
-                                            vec_last.push(last);
-                                            vec_last.push(Token::Op(Operator::VariableAssign))
-                                        }
-                                    }
-                                } else {
-                                    vec_last.push(Token::Op(Operator::VariableAssign))
-                                }
-                            }
+                            '^' => vec_last.push(Token::Op(Operator::ResolveBind, self.line)),
+                            '!' => vec_last.push(Token::Op(Operator::Not, self.line)),
+                            '%' => vec_last.push(Token::Op(Operator::Mod, self.line)),
+                            '/' => vec_last.push(Token::Op(Operator::Div, self.line)),
+                            '*' => vec_last.push(Token::Op(Operator::Mul, self.line)),
+                            '+' => vec_last.push(Token::Op(Operator::Add, self.line)),
+                            '~' => vec_last.push(Token::Op(Operator::Invert, self.line)),
+                            '=' => vec_last.push(Token::Op(Operator::Equals, self.line)),
                             _ => vec_last.push(Token::Symbol(c)),
                         }
                     }
@@ -450,74 +369,48 @@ impl Lexer {
 
                 // Double quotes (start parsing a string)
                 '"' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t)
-                        }
-                        self.buffer.clear();
-                    }
+                    self.check_token();
                     self.is_parsing_stringdq = true;
                 }
 
                 // Single quotes (starts parsing a string)
                 '\'' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t)
-                        }
-                        self.buffer.clear();
-                    }
+                    self.check_token();
                     self.is_parsing_stringsq = true;
                 }
 
                 // Parsing blocks
                 '{' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t)
-                        }
-                        self.buffer.clear();
+                    self.check_token();
+                    if let Some(Token::Op(Operator::VariableAssign, _)) = self.last_token() {
+                    } else {
+                        self.add_token(Token::Symbol(','));
                     }
-                    self.block_stack.push(vec![]);
+                    self.tokens.push(vec![]);
                 }
 
                 '}' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t)
-                        }
-                        self.buffer.clear();
-                    };
-
-                    if let Some(mut list) = self.block_stack.pop() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            list.retain(|x| *x != Token::Symbol(' '));
-                            vec_last.push(Token::Block(Block::Literal(Rc::new(list))));
-                        }
+                    self.check_token();
+                    if let Some(list) = self.tokens.pop() {
+                        self.add_token(Token::Block(Block::Literal(Rc::new(list))));
                     }
                 }
 
                 //Parsing raw blocks
                 '[' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t)
-                        }
-                        self.buffer.clear();
+                    self.check_token();
+                    if let Some(Token::Op(Operator::VariableAssign, _)) = self.last_token() {
+                    } else {
+                        self.add_token(Token::Symbol(','));
                     }
-                    self.block_stack.push(vec![]);
+                    self.tokens.push(vec![]);
                 }
 
                 ']' => {
-                    if let Some(t) = self.check_token() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
-                            vec_last.push(t)
-                        }
-                        self.buffer.clear();
-                    };
+                    self.check_token();
 
-                    if let Some(mut list) = self.block_stack.pop() {
-                        if let Some(vec_last) = self.block_stack.last_mut() {
+                    if let Some(list) = self.tokens.pop() {
+                        if let Some(vec_last) = self.tokens.last_mut() {
                             if let Some(Token::Symbol('$')) = vec_last.last() {
                                 let mut opcodes = vec![];
                                 for rso in list {
@@ -529,26 +422,17 @@ impl Lexer {
                                 vec_last.pop();
                                 vec_last.push(Token::Reg(opcodes));
                             } else {
-                                list.retain(|x| *x != Token::Symbol(' '));
                                 vec_last.push(Token::Block(Block::List(Rc::new(list))));
                             }
                         }
                     }
                 }
-
-                _ => println!("what the FRICK"),
+                _ => println!("what the FRICK is a {}", c),
             }
         }
 
-        // Add char to the buffer
-        if let Some(t) = self.check_token() {
-            if let Some(vec_last) = self.block_stack.last_mut() {
-                vec_last.push(t)
-            }
-            self.buffer.clear();
-        };
+        self.check_token();
 
-        self.block_stack[0].retain(|x| *x != Token::Symbol(' '));
-        self.block_stack[0].to_owned()
+        self.tokens[0].to_owned()
     }
 }

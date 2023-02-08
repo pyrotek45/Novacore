@@ -31,10 +31,10 @@ pub fn list_push(eval: &mut Evaluator) {
 pub fn list_pop(eval: &mut Evaluator) {
     if let (Some(list), Some(token)) = (
         eval.state.get_from_heap_or_pop(),
-        eval.state.get_from_heap_or_pop(),
+        eval.state.execution_stack.pop(),
     ) {
         match (list, token) {
-            (Token::Block(Block::List(list)), Token::Identifier(ident)) => {
+            (Token::Block(Block::List(list)), Token::Id(ident)) => {
                 let mut newlist = list.to_vec();
                 if let Some(value) = newlist.pop() {
                     eval.state.add_varaible(&ident, value)
@@ -102,7 +102,7 @@ pub fn list_insert(eval: &mut Evaluator) {
 }
 
 pub fn list_remove(eval: &mut Evaluator) {
-    if let (Some(list), Some(index)) = (
+    if let (Some(index), Some(list)) = (
         eval.state.get_from_heap_or_pop(),
         eval.state.get_from_heap_or_pop(),
     ) {

@@ -37,7 +37,7 @@ pub fn collect(eval: &mut Evaluator) {
             Token::Block(Block::List(list)) => {
                 for item in list.iter() {
                     match item {
-                        Token::Identifier(ident) => {
+                        Token::Id(ident) => {
                             if let Some(value) = eval.state.get_from_heap(ident) {
                                 newlist.push(value)
                             } else {
@@ -54,7 +54,7 @@ pub fn collect(eval: &mut Evaluator) {
             Token::Block(Block::Literal(list)) => {
                 for item in list.iter() {
                     match item {
-                        Token::Identifier(ident) => {
+                        Token::Id(ident) => {
                             if let Some(value) = eval.state.get_from_heap(ident) {
                                 newlist.push(value)
                             } else {
@@ -68,23 +68,23 @@ pub fn collect(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Block(Block::Literal(Rc::new(newlist))))
             }
-            Token::Block(Block::Function(list)) => {
-                for item in list.iter() {
-                    match item {
-                        Token::Identifier(ident) => {
-                            if let Some(value) = eval.state.get_from_heap(ident) {
-                                newlist.push(value)
-                            } else {
-                                newlist.push(item.clone())
-                            }
-                        }
-                        _ => newlist.push(item.clone()),
-                    }
-                }
-                eval.state
-                    .execution_stack
-                    .push(Token::Block(Block::Function(Rc::new(newlist))))
-            }
+            // Token::Block(Block::Function(_,list)) => {
+            //     for item in list.iter() {
+            //         match item {
+            //             Token::Id(ident) => {
+            //                 if let Some(value) = eval.state.get_from_heap(ident) {
+            //                     newlist.push(value)
+            //                 } else {
+            //                     newlist.push(item.clone())
+            //                 }
+            //             }
+            //             _ => newlist.push(item.clone()),
+            //         }
+            //     }
+            //     eval.state
+            //         .execution_stack
+            //         .push(Token::Block(Block::Function(Rc::new()),Rc::new(newlist))))
+            // }
             _ => eval.state.show_error(&format!(
                 "Incorrect arguments for collect , got [{:?}]",
                 list

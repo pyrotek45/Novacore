@@ -20,7 +20,7 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                         "{}{}{}",
                         sdep.bright_cyan(),
                         "|--".bright_cyan(),
-                        "Literal:".bright_cyan()
+                        "Block:".bright_cyan()
                     );
                     debug_output(depth + 1, block.clone());
                     continue;
@@ -35,7 +35,7 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                     debug_output(depth + 1, block.clone());
                     continue;
                 }
-                Block::Function(block) => {
+                Block::Function(_, block) => {
                     println!(
                         "{}{}{}",
                         sdep.bright_cyan(),

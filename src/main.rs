@@ -80,6 +80,7 @@ fn main() {
         let _repl = String::new();
         let mut repl_debug: bool = false;
         let mut core = novacore::new();
+        core.evaluator.state.repl_mode = true;
         // core.lexer = Lexer::new();
         // core.init();
 
@@ -102,6 +103,11 @@ fn main() {
                         continue;
                     };
 
+                    if line.to_lowercase() == "reset" {
+                        core = novacore::new();
+                        core.evaluator.state.repl_mode = true;
+                        continue;
+                    };
                     // Enable vm debug
                     if repl_debug {
                         core.debug_string(&line)

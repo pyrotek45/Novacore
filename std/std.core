@@ -1,34 +1,48 @@
-map = func: {[list function] -> 
-    newlist = []
-    each: list {
-        function()
-        [i] -> newlist = push: i newlist
-    }
-    get(newlist)
-}
+def( map func( [l q] {
+    def(nl [])
+    each(l {
+        q()
+        push(nl)
+        set(nl)
+    })
+    return(nl)
+}))
 
-fold = func: {[input seed function] -> 
-    seed^ 
-    each: input^ {
-        function()
-    }
-}
+def( fold func( [l s q] {
+    return(s)
+    each(l {q()})
+}))
 
-filter = func: {[q function] -> 
-    newlist = []
-    each: q^ {
-        dup | function | {[i] -> newlist = push: i^ newlist^} {drop()} if |
-    }
-    newlist^
-}
+def( filter func( [l q] {
+    def(nl [])
+    each(l {
+        dup()
+        q()
+        if({
+            push(nl)
+            set(nl)
+        } {
+            drop()
+        })
+    })
+    return(nl)
+}))
 
-dip = func: {[x y] -> y() get(x)}
+def( dip func( [x y] {
+    y()
+    return(x)
+})
 
-keep = func: {[x y] -> x y() get(x)}
+def( keep func( [x y] { 
+    y(x) 
+    return(x)
+}))
 
-bi = func: {[x p q] -> p x() q x()}
+def( bi func( [p q x] {
+    x(p) 
+    x(q)
+}))
 
-product = func: {[list] -> fold: 1 {*} list}
-
-sum = func: {[list] -> fold: 0 {+} list}
-
+def( return_num {
+    times({return()})
+})

@@ -15,22 +15,22 @@ mod state;
 pub struct Vm {
     lexer: lexer::Lexer,
     parser: parser::Parser,
-    evaluator: Evaluator,
+    pub evaluator: Evaluator,
 }
 
 impl Vm {
     pub fn run(&mut self) {
         self.evaluator
-            .evaluate(Rc::new(self.parser.shunt(self.lexer.parse())));
+            .evaluate(Rc::new(self.parser.parse(self.lexer.parse())));
     }
 
     pub fn run_string(&mut self, input: &str) {
-        self.lexer = lexer::Lexer::new();
+        self.lexer = lexer::new();
         self.lexer.insert_string(input);
-        self.parser = parser::Parser::new();
+        self.parser = parser::new();
         self.init();
         self.evaluator
-            .evaluate(Rc::new(self.parser.shunt(self.lexer.parse())))
+            .evaluate(Rc::new(self.parser.parse(self.lexer.parse())))
     }
 
     pub fn _get_last_in_state(&mut self) -> Option<String> {
@@ -58,7 +58,7 @@ impl Vm {
 
     pub fn add_function(&mut self, name: &str, function: CallBack) {
         self.lexer
-            .add_function(name, self.evaluator.add_function(name.to_owned(),function));
+            .add_function(name, self.evaluator.add_function(name.to_owned(), function));
     }
 
     pub fn init(&mut self) {
@@ -68,11 +68,14 @@ impl Vm {
         self.add_function("print", core_ops::io::print);
         self.add_function("readln", core_ops::io::readln);
         self.add_function("dump", core_ops::io::dump);
+        self.add_function("load", core_ops::io::load);
         self.add_function("import", core_ops::io::import);
 
         // Operations
         self.add_function("free", core_ops::operator::free);
         self.add_function("return", core_ops::operator::resolve);
+        self.add_function("def", core_ops::operator::variable_assign);
+        self.add_function("set", core_ops::operator::variable_assign_set);
         // self.add_function("exit", core_ops::operator::exit);
 
         // Test
@@ -153,54 +156,57 @@ impl Vm {
 
     pub fn debug_file(&mut self, filename: &str) {
         let mut core = Vm {
-            lexer: lexer::Lexer::new_from_file(filename),
+            lexer: lexer::new(),
             evaluator: evaluator::Evaluator::new(),
-            parser: parser::Parser::new(),
+            parser: parser::new(),
         };
+        core.lexer.add_file(filename);
         core.init();
-        println!("Lexer Debug");
+        println!("Lexer:");
         debugger::debug_output(0, Rc::new(core.lexer.parse()));
-        println!("Parser Debug");
+        println!("Parser:");
         core.lexer.clear();
         core.parser.clear();
-        debugger::debug_output(0, Rc::new(core.parser.shunt(core.lexer.parse())));
+        debugger::debug_output(0, Rc::new(core.parser.parse(core.lexer.parse())));
     }
 
     pub fn debug_string(&mut self, filename: &str) {
         let mut core = Vm {
-            lexer: lexer::Lexer::new_from_string(filename),
+            lexer: lexer::new(),
             evaluator: evaluator::Evaluator::new(),
-            parser: parser::Parser::new(),
+            parser: parser::new(),
         };
+        core.lexer.insert_string(filename);
         core.init();
         println!("Lexer Debug");
         debugger::debug_output(0, Rc::new(core.lexer.parse()));
         println!("Parser Debug");
         core.lexer.clear();
         core.parser.clear();
-        debugger::debug_output(0, Rc::new(core.parser.shunt(core.lexer.parse())));
+        debugger::debug_output(0, Rc::new(core.parser.parse(core.lexer.parse())));
     }
 }
 
 pub fn new_from_file(filename: &str) -> Vm {
     let mut core = Vm {
-        lexer: lexer::Lexer::new_from_file(filename),
+        lexer: lexer::new(),
         evaluator: evaluator::Evaluator::new(),
-        parser: parser::Parser::new(),
+        parser: parser::new(),
     };
+    core.lexer.add_file(filename);
     core.evaluator.state.current_file = filename.to_owned();
     core.init();
-    core.evaluator.state.function_list = core.lexer.function_list.clone();
+    core.evaluator.state.function_list = core.lexer.get_function_list();
     core
 }
 
 pub fn new() -> Vm {
     let mut core = Vm {
-        lexer: lexer::Lexer::new(),
+        lexer: lexer::new(),
         evaluator: evaluator::Evaluator::new(),
-        parser: parser::Parser::new(),
+        parser: parser::new(),
     };
     core.init();
-    core.evaluator.state.function_list = core.lexer.function_list.clone();
+    core.evaluator.state.function_list = core.lexer.get_function_list();
     core
 }

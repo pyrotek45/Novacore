@@ -4,12 +4,6 @@ use hashbrown::HashMap;
 
 use super::evaluator::Evaluator;
 
-//#[derive(PartialEq, Clone, Debug)]
-// pub struct LinePos {
-//     pub line: usize,
-//     pub col: usize,
-// }
-
 pub type CallBack = fn(eval: &mut Evaluator);
 pub type Instructions = Rc<Vec<Token>>;
 
@@ -17,17 +11,17 @@ pub type Instructions = Rc<Vec<Token>>;
 pub enum Block {
     Literal(Instructions),
     Lambda(Instructions),
-    Function(Instructions),
+    Function(Instructions, Instructions),
     List(Instructions),
-    Struct(HashMap<String, Token>),
+    Struct(Rc<HashMap<String, Token>>),
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Operator {
     VariableAssign,
-    FunctionVariableAssign,
-    SelfId,
-    AccessCall, // the dot Token::operator
+    BindVar,
+    New,
+    AccessCall,
     UserFunctionChain,
     StoreTemp,
     And,
@@ -42,28 +36,30 @@ pub enum Operator {
     Sub,
     Mul,
     Div,
-    PopStack,
-    Swap,
-    Call,
-    Return,
-    PopHeap,
+    PopBindings,
+    Neg,
+    Break,
+    Continue,
+    ResolveBind,
 }
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Token {
     // Variables
-    Identifier(String),
+    Id(String),
 
     // built in functions
-    Function(usize),
+    Function(usize, usize),
+
     //FlowFunction(usize),
 
     // user defined functions
-    UserBlockCall(String),
+    BlockCall(String, usize),
+
     //FlowUserBlockCall(String), // Block calls
 
     // symbols
-    Op(Operator),
+    Op(Operator, usize),
 
     // Basic Types
     Integer(i128),
@@ -104,36 +100,42 @@ impl Token {
 
     pub fn precedence(&self) -> usize {
         match self {
-            Token::Op(Operator::VariableAssign) => 2,
-            Token::Op(Operator::And) => 6,
-            Token::Op(Operator::Or) => 7,
-            Token::Op(Operator::Not) => 8,
-            Token::Op(Operator::Equals) | Token::Op(Operator::Gtr) | Token::Op(Operator::Lss) => 9,
-            Token::Op(Operator::Add) | Token::Op(Operator::Sub) => 12,
-            Token::Op(Operator::Mul) | Token::Op(Operator::Div) | Token::Op(Operator::Mod) => 13,
-            Token::Op(Operator::Invert) => 15,
+            Token::Op(Operator::VariableAssign, _) => 2,
+            Token::Op(Operator::And, _) => 6,
+            Token::Op(Operator::Or, _) => 7,
+            Token::Op(Operator::Not, _) => 8,
+            Token::Op(Operator::Equals, _)
+            | Token::Op(Operator::Gtr, _)
+            | Token::Op(Operator::Lss, _) => 9,
+            Token::Op(Operator::Add, _) | Token::Op(Operator::Sub, _) => 12,
+            Token::Op(Operator::Mul, _)
+            | Token::Op(Operator::Div, _)
+            | Token::Op(Operator::Mod, _) => 13,
+            Token::Op(Operator::Invert, _) => 15,
             _ => 0,
         }
     }
 
     pub fn is_left_associative(&self) -> bool {
         match self {
-            Token::Op(Operator::Invert) => false,
-            Token::Op(Operator::Or) => true,
-            Token::Op(Operator::And) => true,
-            Token::Op(Operator::Not) => true,
-            Token::Op(Operator::VariableAssign) => false,
-            Token::Op(Operator::Add) | Token::Op(Operator::Sub) => true,
-            Token::Op(Operator::Mul) | Token::Op(Operator::Div) | Token::Op(Operator::Mod) => true,
+            Token::Op(Operator::Invert, _) => false,
+            Token::Op(Operator::Or, _) => true,
+            Token::Op(Operator::And, _) => true,
+            Token::Op(Operator::Not, _) => true,
+            Token::Op(Operator::VariableAssign, _) => false,
+            Token::Op(Operator::Add, _) | Token::Op(Operator::Sub, _) => true,
+            Token::Op(Operator::Mul, _)
+            | Token::Op(Operator::Div, _)
+            | Token::Op(Operator::Mod, _) => true,
             _ => true,
         }
     }
 
     pub fn to_str(&self) -> String {
         match self {
-            Token::Identifier(block) => block.to_string(),
-            Token::Function(block) => format!("Func[{}]", block),
-            Token::UserBlockCall(block) => block.to_string(),
+            Token::Id(block) => block.to_string(),
+            Token::Function(block, _) => format!("Func[{}]", block),
+            Token::BlockCall(block, _) => block.to_string(),
             Token::Integer(block) => format!("{}", block),
             Token::Float(block) => format!("{}", block),
             Token::String(block) => block.to_string(),
@@ -171,7 +173,7 @@ impl Token {
                     }
                     list.to_string()
                 }
-                Block::Function(block) => {
+                Block::Function(_, block) => {
                     let mut list = String::new();
                     list.push_str("Func{");
                     if !block.is_empty() {
@@ -219,7 +221,7 @@ impl Token {
                     list.to_string()
                 }
             },
-            Token::Op(operator) => {
+            Token::Op(operator, _) => {
                 let op = operator;
                 format!("{:?}", op)
             }
@@ -231,9 +233,9 @@ impl Token {
 
     pub fn to_str_debug(&self) -> String {
         match self {
-            Token::Identifier(_) => format!("{:?}", self),
-            Token::Function(_) => format!("{:?}", self),
-            Token::UserBlockCall(_) => format!("{:?}", self),
+            Token::Id(_) => format!("{:?}", self),
+            Token::Function(_, _) => format!("{:?}", self),
+            Token::BlockCall(_, _) => format!("{:?}", self),
             Token::Integer(_) => format!("{:?}", self),
             Token::Float(_) => format!("{:?}", self),
             Token::String(_) => format!("{:?}", self),
@@ -241,7 +243,7 @@ impl Token {
             Token::Symbol(_) => format!("{:?}", self),
             Token::Bool(_) => format!("{:?}", self),
             Token::Block(_) => format!("{:?}", self),
-            Token::Op(_) => format!("{:?}", self),
+            Token::Op(_, _) => format!("{:?}", self),
             //Token::FlowFunction(_) => format!("{:?}", self),
             //Token::FlowUserBlockCall(_) => format!("{:?}", self),
             Token::Reg(_) => format!("{:?}", self),
