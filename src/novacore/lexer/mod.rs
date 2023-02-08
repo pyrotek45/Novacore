@@ -301,7 +301,14 @@ impl Lexer {
                                             vec_last
                                                 .push(Token::Op(Operator::StoreTemp, self.line));
                                             vec_last.push(Token::Symbol(c));
-
+                                            continue;
+                                        }
+                                        Token::Op(Operator::ResolveBind,_) => {
+                                            vec_last.push(last.clone());
+                                            self.is_parsing_chain.push(true);
+                                            vec_last
+                                                .push(Token::Op(Operator::StoreTemp, self.line));
+                                            vec_last.push(Token::Symbol(c));
                                             continue;
                                         }
                                         Token::Block(Block::Literal(block)) => {
