@@ -1,20 +1,17 @@
-def( map func( [l q] {
-    def(nl [])
+map : func([l q] {
+    nl : []
     each(l {
         q()
         push(nl)
         set(nl)
     })
     return(nl)
-}))
+})
 
-def( fold func( [l s q] {
-    return(s)
-    each(l {q()})
-}))
+fold : func([l s q] {return(s) each(l {q()}) })
 
-def( filter func( [l q] {
-    def(nl [])
+filter : func([l q] {
+    nl : []
     each(l {
         dup()
         q()
@@ -26,23 +23,9 @@ def( filter func( [l q] {
         })
     })
     return(nl)
-}))
-
-def( dip func( [x y] {
-    y()
-    return(x)
 })
 
-def( keep func( [x y] { 
-    y(x) 
-    return(x)
-}))
-
-def( bi func( [p q x] {
-    x(p) 
-    x(q)
-}))
-
-def( return_num {
-    times({return()})
-})
+# combos
+dip : func([x y] {y() return(x)})
+keep : func([x y] {y(x) return(x)})
+bi : func([p q x] {x(p) x(q)})
