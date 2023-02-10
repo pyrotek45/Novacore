@@ -1,22 +1,22 @@
-map : func([l q] {
-    nl : []
+map = func([l q] {
+    nl = []
     each(l {
         q()
-        push(nl)
+        [item] -> push(nl item^) ;
         set(nl)
     })
     return(nl)
 })
 
-fold : func([l s q] {return(s) each(l {q()}) })
+fold = func([l s q] {return(s) each(l {q()}) })
 
-filter : func([l q] {
-    nl : []
+filter = func([l q] {
+    nl = []
     each(l {
         dup()
         q()
         if({
-            push(nl)
+            [item] -> push(nl item^) ;
             set(nl)
         } {
             drop()
@@ -26,6 +26,114 @@ filter : func([l q] {
 })
 
 # combos
-dip : func([x y] {y() return(x)})
-keep : func([x y] {y(x) return(x)})
-bi : func([p q x] {x(p) x(q)})
+dip  = func([x y] {y() return(x)} )
+keep = func([x y] {y(x) return(x)} )
+bi   = func([p q x] {x(p) x(q)} )
+
+# math 
+product = func([l] {fold(l 1 {*})})
+
+sum = func([l] {fold(l 0 {+} )}) 
+
+sq = func([x] {x * x})
+
+fib = func([num] {
+    ptp = 0
+    p = 1
+    sum = 0
+    if( num == 0 {
+        sum = 0
+    } {
+        if( num == 1 {
+            sum = 1 
+        } {
+            for(i range(0 (num - 2)) {
+                sum = ptp + p
+                ptp = return(p)
+                p = return(sum)
+            })
+        })
+    })
+    return(sum)
+})
+
+func [x] {x * x} , 
+factorial = func([n] {
+    result = 1
+    for(i range(1 n) {
+        result = result * i
+    })
+    return(result)
+})
+
+power = func([x y] {
+    result = 1
+    for(i range(0 ,y - 1) {
+        result = result * x
+    })
+    return(result)
+})
+
+abs = func([x] {
+    if(x < 0 {
+        return(-x)
+    } {
+        return(x)
+    })
+})
+
+length = func([l] {
+    count = 0
+    each(l {
+        count = count + 1
+        drop()
+    })
+    return(count)
+})
+
+average = func([l] {
+    sum(l) / length(l)
+})
+
+max = func([lst] {
+    max = lst(0)
+    each(lst {
+        [x] -> when(x^ > max {max = x^}) ;
+    })
+    return(max)
+})
+
+min = func([lst] {
+    min = lst(0)
+    each(lst {
+        [x] -> when(x^ < min {min = x^}) ;
+    })
+    return(min)
+})
+
+replace = func([lst index item] {
+    lst
+        remove(index)  
+        insert(index item)   
+})
+
+mean = func([l] {
+    sum(l) / length(l)
+})
+
+multiple_of = func([x y] {
+    x % y == 0
+})
+
+sort = func([lst] {
+    for(i range(0 , length(lst)) {
+        for(j range(i , length(lst) - 1) {
+            when(lst(i) > lst(j) {
+                temp = lst(i)
+                lst = replace(lst i lst(j))
+                lst = replace(lst j temp)
+            })
+        })
+    })
+    return(lst)
+})

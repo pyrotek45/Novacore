@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, vec};
 
 use hashbrown::HashMap;
 
@@ -227,7 +227,6 @@ impl Lexer {
 
                     if let Some(vec_last) = self.tokens.last_mut() {
                         match c {
-                            ':' => self.add_token(Token::Op(Operator::VariableAssign, self.line)),
                             ')' => {
                                 if !self.is_parsing_chain.is_empty() {
                                     vec_last
@@ -251,6 +250,11 @@ impl Lexer {
                                             continue;
                                         }
                                         Token::Float(_) => {
+                                            vec_last.push(last);
+                                            vec_last.push(Token::Op(Operator::Sub, self.line));
+                                            continue;
+                                        }
+                                        Token::Symbol(')') => {
                                             vec_last.push(last);
                                             vec_last.push(Token::Op(Operator::Sub, self.line));
                                             continue;
@@ -303,7 +307,7 @@ impl Lexer {
                                             vec_last.push(Token::Symbol(c));
                                             continue;
                                         }
-                                        Token::Op(Operator::ResolveBind,_) => {
+                                        Token::Op(Operator::ResolveBind, _) => {
                                             vec_last.push(last.clone());
                                             self.is_parsing_chain.push(true);
                                             vec_last
@@ -368,7 +372,16 @@ impl Lexer {
                             '*' => vec_last.push(Token::Op(Operator::Mul, self.line)),
                             '+' => vec_last.push(Token::Op(Operator::Add, self.line)),
                             '~' => vec_last.push(Token::Op(Operator::Invert, self.line)),
-                            '=' => vec_last.push(Token::Op(Operator::Equals, self.line)),
+                            '=' => {
+                                if let Some(Token::Op(Operator::VariableAssign, _)) =
+                                    vec_last.last()
+                                {
+                                    vec_last.pop();
+                                    vec_last.push(Token::Op(Operator::Equals, self.line))
+                                } else {
+                                    vec_last.push(Token::Op(Operator::VariableAssign, self.line))
+                                }
+                            }
                             _ => vec_last.push(Token::Symbol(c)),
                         }
                     }
