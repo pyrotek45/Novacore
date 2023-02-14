@@ -115,17 +115,17 @@ pub fn div(eval: &mut Evaluator) {
             (Token::Integer(ref left), Token::Float(right)) => {
                 eval.state
                     .execution_stack
-                    .push(Token::Float(*left as f64 / *right as f64));
+                    .push(Token::Float(*left as f64 / *right));
             }
             (Token::Float(left), Token::Float(right)) => {
                 eval.state
                     .execution_stack
-                    .push(Token::Float(*left as f64 / *right as f64));
+                    .push(Token::Float(*left / *right));
             }
             (Token::Float(left), Token::Integer(ref right)) => {
                 eval.state
                     .execution_stack
-                    .push(Token::Float(*left as f64 / *right as f64));
+                    .push(Token::Float(*left / *right as f64));
             }
             (a, b) => eval.state.show_error(&format!(
                 "Incorrect arguments for division. got [{:?},{:?}]",

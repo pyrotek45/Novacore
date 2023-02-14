@@ -85,9 +85,6 @@ impl Evaluator {
     pub fn evaluate(&mut self, expr: Rc<Vec<Token>>) {
         for t in &*expr {
             self.eval(t.clone());
-            // if self.state.exit {
-            //     break;
-            // }
         }
     }
 
@@ -95,9 +92,6 @@ impl Evaluator {
         self.state.call_stack.push(HashMap::new());
         for t in &*expr {
             self.eval(t.clone());
-            // if self.state.exit {
-            //     break;
-            // }
         }
         self.state.call_stack.pop();
     }
