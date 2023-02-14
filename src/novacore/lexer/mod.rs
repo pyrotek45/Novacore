@@ -33,6 +33,8 @@ pub struct Lexer {
     curly: Vec<usize>,
     paren: Vec<usize>,
     sqaure: Vec<usize>,
+    stringpair: Vec<usize>,
+
 
 }
 
@@ -53,6 +55,7 @@ pub fn new() -> Lexer {
         filename: "".to_string(),
         paren: vec![],
         sqaure: vec![],
+        stringpair: vec![],
     }
 }
 
@@ -163,6 +166,7 @@ impl Lexer {
                     }
                     continue;
                 } else {
+                    self.stringpair.pop();
                     self.is_parsing_stringdq = false;
                     if let Some(vec_last) = self.tokens.last_mut() {
                         if self.token_buffer.chars().count() == 1 {
@@ -405,6 +409,7 @@ impl Lexer {
 
                 // Double quotes (start parsing a string)
                 '"' => {
+                    self.stringpair.push(self.line);
                     self.check_token();
                     self.is_parsing_stringdq = true;
                 }
@@ -505,6 +510,18 @@ impl Lexer {
                 "LEXING ERROR".red()
             );
             if let Some(top) = self.sqaure.pop() {
+                print_line(top, &self.filename);
+            }
+            std::process::exit(1)
+        }
+
+        if !self.stringpair.is_empty() {
+            println!();
+            println!(
+                "{}: String left open, missing matching \"\" ",
+                "LEXING ERROR".red()
+            );
+            if let Some(top) = self.stringpair.pop() {
                 print_line(top, &self.filename);
             }
             std::process::exit(1)
