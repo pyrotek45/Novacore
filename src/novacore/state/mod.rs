@@ -1,3 +1,5 @@
+use crate::novacore::utilities::print_line;
+
 use super::core::Token;
 use colored::Colorize;
 use hashbrown::HashMap;
@@ -10,21 +12,6 @@ where
 {
     let file = std::fs::File::open(filename)?;
     Ok(std::io::BufRead::lines(std::io::BufReader::new(file)))
-}
-
-pub fn print_line(line: usize, file: &str) {
-    if let Ok(lines) = read_lines(file) {
-        // Consumes the iterator, returns an (Optional) String
-        let mut linenumber = 0;
-        for l in lines {
-            linenumber += 1;
-            if linenumber == line {
-                if let Ok(ip) = l {
-                    println!("{}: {} ", line, ip.white());
-                }
-            }
-        }
-    }
 }
 
 pub struct State {

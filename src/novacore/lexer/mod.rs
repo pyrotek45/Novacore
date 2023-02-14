@@ -1,5 +1,7 @@
 use std::{rc::Rc, vec};
 
+use crate::novacore::utilities::print_line;
+use colored::Colorize;
 use hashbrown::HashMap;
 
 use super::{
@@ -9,6 +11,7 @@ use super::{
 
 pub struct Lexer {
     file: String,
+    filename: String,
     token_buffer: String,
 
     function_list: HashMap<String, usize>,
@@ -25,6 +28,12 @@ pub struct Lexer {
 
     line: usize,
     _col: usize,
+
+    // Error handling
+    curly: Vec<usize>,
+    paren: Vec<usize>,
+    sqaure: Vec<usize>,
+
 }
 
 pub fn new() -> Lexer {
@@ -40,6 +49,10 @@ pub fn new() -> Lexer {
         function_list: HashMap::new(),
         line: 1,
         _col: 1,
+        curly: vec![],
+        filename: "".to_string(),
+        paren: vec![],
+        sqaure: vec![],
     }
 }
 
@@ -49,6 +62,7 @@ impl Lexer {
     }
 
     pub fn add_file(&mut self, filename: &str) {
+        self.filename = filename.to_owned();
         if let Ok(content) = std::fs::read_to_string(filename) {
             self.file = content;
         } else {
@@ -228,6 +242,7 @@ impl Lexer {
                     if let Some(vec_last) = self.tokens.last_mut() {
                         match c {
                             ')' => {
+                                self.paren.pop();
                                 if !self.is_parsing_chain.is_empty() {
                                     vec_last
                                         .push(Token::Op(Operator::UserFunctionChain, self.line));
@@ -269,6 +284,7 @@ impl Lexer {
                                 }
                             }
                             '(' => {
+                                self.paren.push(self.line);
                                 if let Some(ref last) = vec_last.pop() {
                                     match &last {
                                         Token::Id(ident) => {
@@ -401,6 +417,7 @@ impl Lexer {
 
                 // Parsing blocks
                 '{' => {
+                    self.curly.push(self.line);
                     self.check_token();
                     if let Some(Token::Op(Operator::VariableAssign, _)) = self.last_token() {
                     } else {
@@ -410,6 +427,7 @@ impl Lexer {
                 }
 
                 '}' => {
+                    self.curly.pop();
                     self.check_token();
                     if let Some(list) = self.tokens.pop() {
                         self.add_token(Token::Block(Block::Literal(Rc::new(list))));
@@ -418,6 +436,7 @@ impl Lexer {
 
                 //Parsing raw blocks
                 '[' => {
+                    self.sqaure.push(self.line);
                     self.check_token();
                     if let Some(Token::Op(Operator::VariableAssign, _)) = self.last_token() {
                     } else {
@@ -427,6 +446,7 @@ impl Lexer {
                 }
 
                 ']' => {
+                    self.sqaure.pop();
                     self.check_token();
 
                     if let Some(list) = self.tokens.pop() {
@@ -452,6 +472,43 @@ impl Lexer {
         }
 
         self.check_token();
+
+        // Error checking for missing pairs
+        if !self.curly.is_empty() {
+            println!();
+            println!(
+                "{}: Block left open, missing matching {{}}",
+                "LEXING ERROR".red()
+            );
+            if let Some(top) = self.curly.pop() {
+                print_line(top, &self.filename);
+            }
+            std::process::exit(1)
+        }
+
+        if !self.paren.is_empty() {
+            println!();
+            println!(
+                "{}: Expression left open, missing matching ()",
+                "LEXING ERROR".red()
+            );
+            if let Some(top) = self.paren.pop() {
+                print_line(top, &self.filename);
+            }
+            std::process::exit(1)
+        }
+
+        if !self.sqaure.is_empty() {
+            println!();
+            println!(
+                "{}: List left open, missing matching []",
+                "LEXING ERROR".red()
+            );
+            if let Some(top) = self.sqaure.pop() {
+                print_line(top, &self.filename);
+            }
+            std::process::exit(1)
+        }
 
         self.tokens[0].to_owned()
     }

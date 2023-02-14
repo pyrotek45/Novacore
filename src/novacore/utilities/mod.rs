@@ -1,3 +1,7 @@
+use colored::Colorize;
+
+use super::state::read_lines;
+
 pub fn _read_lines<P>(
     filename: P,
 ) -> std::io::Result<std::io::Lines<std::io::BufReader<std::fs::File>>>
@@ -40,6 +44,21 @@ pub fn is_string_number(data: &str) -> bool {
         }
     }
     true
+}
+
+pub fn print_line(line: usize, file: &str) {
+    if let Ok(lines) = read_lines(file) {
+        // Consumes the iterator, returns an (Optional) String
+        let mut linenumber = 0;
+        for l in lines {
+            linenumber += 1;
+            if linenumber == line {
+                if let Ok(ip) = l {
+                    println!("Line: {}: {} ", line, ip.white());
+                }
+            }
+        }
+    }
 }
 
 // pub fn print_error(err: &str) {
