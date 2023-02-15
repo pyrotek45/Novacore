@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, env};
 
 use hashbrown::HashMap;
 
@@ -126,12 +126,19 @@ pub fn load(eval: &mut Evaluator) {
         eval.state.execution_stack.pop(),
     ) {
         let mut vm = novacore::new_from_file(&filepath);
-        vm.evaluator.state.current_file = filepath;
-        eval.state.call_stack.push(HashMap::new());
-        eval.evaluate(Rc::new(vm.parser.parse(vm.lexer.parse())));
-        if let Some(module) = eval.state.call_stack.pop() {
-            eval.state
-                .add_varaible(&id, Token::Block(Block::Struct(Rc::new(module))))
+        vm.evaluator.state.current_file = filepath.clone();
+        vm.evaluator
+            .evaluate(vm.parser.parse(vm.lexer.parse()).into());
+        if let Some(scope) = vm.evaluator.state.call_stack.pop() {
+            eval.state.modules.insert(id, scope);
+            for (key,item) in vm.evaluator.state.modules {
+                eval.state.modules.insert(key, item);
+            }
+        } else {
+            eval.state.show_error(&format!(
+                "Incorrect argument for load, got {:?} {:?}",
+                filepath, id
+            ))
         }
     } else {
         eval.state.show_error("Not enough arguments for load");
@@ -139,11 +146,30 @@ pub fn load(eval: &mut Evaluator) {
 }
 
 pub fn import(eval: &mut Evaluator) {
-    if let Some(Token::String(filepath)) = eval.state.get_from_heap_or_pop() {
-        let mut vm = novacore::new_from_file(&filepath);
-        vm.evaluator.state.current_file = filepath;
-        eval.evaluate(Rc::new(vm.parser.parse(vm.lexer.parse())));
+    if let Some(Token::Block(Block::List(list))) = eval.state.get_from_heap_or_pop() {
+        for modules in &*list {
+            if let Token::Id(module) = modules {
+                let mut vm = novacore::new_from_file(&format!("std/{}.core", module));
+                vm.evaluator.state.current_file = format!("std/{}.core", module);
+                vm.evaluator
+                    .evaluate(vm.parser.parse(vm.lexer.parse()).into());
+                if let Some(scope) = vm.evaluator.state.call_stack.pop() {
+                    eval.state.modules.insert(module.to_string(), scope);
+                    for (key,item) in vm.evaluator.state.modules {
+                        eval.state.modules.insert(key, item);
+                    }
+                } else {
+                    eval.state
+                        .show_error(&format!("Incorrect argument for import, got {:?}", module))
+                }
+            }
+        }
     } else {
         eval.state.show_error("Not enough arguments for import");
     }
+}
+
+pub fn args(eval: &mut Evaluator) {
+    let args: Vec<String> = env::args().collect();
+    dbg!(args);
 }

@@ -20,6 +20,7 @@ pub struct State {
     pub auxiliary: Vec<Token>,
     pub call_stack: Vec<HashMap<String, Token>>,
     pub bindings: Vec<HashMap<String, Token>>,
+    pub modules: HashMap<String, HashMap<String, Token>>,
     pub error_log: Vec<String>,
     pub current_function_index: Vec<usize>,
     pub traceback: Vec<(String, usize)>,
@@ -42,7 +43,8 @@ impl State {
 
     pub fn show_error(&mut self, err: &str) {
         println!();
-        if let Some(function_call) = self.traceback.first() {
+        self.traceback.reverse();
+        while let Some(function_call) = self.traceback.pop() {
             print_line(function_call.1, &self.current_file);
             println!("Last call: {}", &function_call.0.bright_yellow());
         }
@@ -133,5 +135,6 @@ pub fn new() -> Box<State> {
         exit: false,
         bindings: vec![HashMap::new()],
         repl_mode: false,
+        modules: HashMap::new(),
     })
 }

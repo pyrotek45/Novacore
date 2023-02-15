@@ -588,6 +588,27 @@ pub fn get_access(eval: &mut Evaluator) {
     }
 }
 
+pub fn module(eval: &mut Evaluator) {
+    if let (Some(Token::Id(key)), Some(Token::Id(module))) = (
+        eval.state.execution_stack.pop(),
+        eval.state.execution_stack.pop(),
+    ) {
+        if let Some(table) = eval.state.modules.get(&module) {
+            if let Some(token) = table.get(&key) {
+                eval.state.execution_stack.push(token.clone())
+            } else {
+                eval.state
+                    .show_error(&format!("{} is not located in {} ", key, module));
+            }
+        } else {
+            eval.state
+                .show_error(&format!("{} is not a module", module));
+        }
+    } else {
+        eval.state.show_error("Not enough arguments for module");
+    }
+}
+
 pub fn store_temp(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         eval.state.auxiliary.push(token);

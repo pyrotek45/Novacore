@@ -22,6 +22,7 @@ pub enum Operator {
     BindVar,
     New,
     AccessCall,
+    ModuleCall,
     UserFunctionChain,
     StoreTemp,
     And,

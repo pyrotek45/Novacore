@@ -31,9 +31,9 @@ keep = func([x y] {y(x) return(x)} )
 bi   = func([p q x] {x(p) x(q)} )
 
 # math 
-product = func([l] {fold(l 1 {*})})
+product = func([l] {std::fold(l 1 {*})})
 
-sum = func([l] {fold(l 0 {+} )}) 
+sum = func([l] {std::fold(l 0 {+} )}) 
 
 sq = func([x] {x * x})
 
@@ -57,7 +57,6 @@ fib = func([num] {
     return(sum)
 })
 
-func [x] {x * x} , 
 factorial = func([n] {
     result = 1
     for(i range(1 n) {
@@ -92,7 +91,7 @@ length = func([l] {
 })
 
 average = func([l] {
-    sum(l) / length(l)
+    std::sum(l) / std::length(l)
 })
 
 max = func([lst] {
@@ -118,7 +117,7 @@ replace = func([lst index item] {
 })
 
 mean = func([l] {
-    sum(l) / length(l)
+    std::sum(l) / std::length(l)
 })
 
 multiple_of = func([x y] {
@@ -126,12 +125,12 @@ multiple_of = func([x y] {
 })
 
 sort = func([lst] {
-    for(i range(0 , length(lst)) {
-        for(j range(i , length(lst) - 1) {
-            when(lst(i) > lst(j) {
+    for(i range(0 , std::length(lst)) {
+        for(j range(i , std::length(lst) - 1) {
+            when( lst(i) > lst(j) {
                 temp = lst(i)
-                lst = replace(lst i lst(j))
-                lst = replace(lst j temp)
+                lst = std::replace(lst i lst(j))
+                lst = std::replace(lst j temp)
             })
         })
     })

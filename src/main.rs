@@ -8,6 +8,7 @@ use rustyline::{error::ReadlineError, validate::MatchingBracketValidator, Editor
 
 use rustyline::{Cmd, EventHandler, KeyCode, KeyEvent, Modifiers};
 use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
+use novacore::lexer;
 
 #[derive(Completer, Helper, Highlighter, Hinter, Validator)]
 struct InputValidator {
@@ -17,13 +18,14 @@ struct InputValidator {
 
 fn main() {
     // Clap setup
-    let matches = App::new("Novacore Parser")
+    let matches = App::new("Novacore")
         .version("0.1")
         .author("Pyrotek45 pyrotek45_gaming@yahoo.com")
         .about("Novacore VM")
         .arg(
             Arg::with_name("FILE")
                 .value_name("FILE")
+                .multiple_values(true)
                 .help("Sets the input file to be used")
                 .index(1),
         )
@@ -53,6 +55,14 @@ fn main() {
         if matches.is_present("DEBUG") {
             core.debug_file(filename);
         } else {
+            
+            let mut args: Vec<String> = std::env::args().collect();
+            args.remove(0);
+            args.remove(0);
+            let args = args.join(" ");
+            let mut lex = lexer::new();
+            lex.insert_string(&args);
+            core.evaluator.state.execution_stack = lex.parse();
             core.run();
         }
 

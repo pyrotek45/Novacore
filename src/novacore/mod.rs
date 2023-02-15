@@ -8,7 +8,7 @@ use self::{core::CallBack, evaluator::Evaluator};
 mod core_ops;
 mod debugger;
 mod evaluator;
-mod lexer;
+pub mod lexer;
 mod parser;
 mod state;
 

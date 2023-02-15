@@ -163,6 +163,9 @@ impl Parser {
                             // // this is for leapfrog TM parsing
                             if let Some(ref last) = self.operator_stack.pop() {
                                 match &last {
+                                    Token::Op(Operator::StoreTemp, line) => self
+                                        .output_stack
+                                        .push(Token::Op(Operator::UserFunctionChain, *line)),
                                     Token::Op(_, _) => {
                                         self.output_stack.push(last.clone());
                                     }
@@ -191,7 +194,7 @@ impl Parser {
                     if let Some(last) = self.operator_stack.last().cloned() {
                         if let Token::Op(function, _) = last.clone() {
                             match function {
-                                Operator::AccessCall => {
+                                Operator::AccessCall | Operator::ModuleCall => {
                                     self.operator_stack.pop();
                                     self.output_stack.push(last);
                                 }
@@ -254,11 +257,15 @@ impl Parser {
                         self.operator_stack.push(token);
                         continue;
                     }
-                    Operator::StoreTemp
-                    | Operator::UserFunctionChain
+
+                    Operator::UserFunctionChain
                     | Operator::New
                     | Operator::ResolveBind
                     | Operator::BindVar => self.output_stack.push(token),
+                    Operator::StoreTemp => {
+                        self.operator_stack.push(token.clone());
+                        self.output_stack.push(token)
+                    }
                     _ => self.operator_stack.push(token),
                 },
                 Token::Char(_) => self.output_stack.push(token),

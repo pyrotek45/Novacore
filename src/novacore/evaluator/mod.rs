@@ -71,6 +71,7 @@ impl Evaluator {
                     Operator::Div => core_ops::operator::div(self),
                     Operator::VariableAssign => core_ops::operator::variable_assign(self),
                     Operator::New => core_ops::operator::get_new(self),
+                    Operator::ModuleCall => core_ops::control::module(self),
                 }
                 self.state.traceback.pop();
             }

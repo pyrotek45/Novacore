@@ -1,3 +1,4 @@
+
 use std::{rc::Rc, vec};
 
 use crate::novacore::utilities::print_line;
@@ -21,7 +22,7 @@ pub struct Lexer {
     is_parsing_stringsq: bool,
     is_parsing_comment: bool,
     is_skip: bool,
-    is_parsing_chain: Vec<bool>,
+    //is_parsing_chain: Vec<bool>,
 
     // Output
     tokens: Vec<Vec<Token>>,
@@ -34,8 +35,6 @@ pub struct Lexer {
     paren: Vec<usize>,
     sqaure: Vec<usize>,
     stringpair: Vec<usize>,
-
-
 }
 
 pub fn new() -> Lexer {
@@ -47,7 +46,7 @@ pub fn new() -> Lexer {
         tokens: vec![vec![]],
         is_parsing_comment: false,
         is_skip: false,
-        is_parsing_chain: vec![],
+        //is_parsing_chain: vec![],
         function_list: HashMap::new(),
         line: 1,
         _col: 1,
@@ -245,13 +244,36 @@ impl Lexer {
 
                     if let Some(vec_last) = self.tokens.last_mut() {
                         match c {
+                            ':' => {
+                                if let Some(last) = vec_last.pop() {
+                                    match last {
+                                        Token::Symbol(':') => {
+                                            vec_last
+                                                .push(Token::Op(Operator::ModuleCall, self.line));
+                                            continue;
+                                        }
+                                        _ => {
+                                            vec_last.push(last);
+                                            vec_last.push(Token::Symbol(':'));
+                                            continue;
+                                        }
+                                    }
+                                } else {
+                                    vec_last.push(Token::Symbol(':'))
+                                }
+                            }
                             ')' => {
                                 self.paren.pop();
-                                if !self.is_parsing_chain.is_empty() {
-                                    vec_last
-                                        .push(Token::Op(Operator::UserFunctionChain, self.line));
-                                    self.is_parsing_chain.pop();
-                                }
+                                // if let Some(bool) = self.is_parsing_chain.last() {
+                                //     if *bool {
+                                //         vec_last.push(Token::Op(
+                                //             Operator::UserFunctionChain,
+                                //             self.line,
+                                //         ));
+                                //         self.is_parsing_chain.pop();
+                                //     }
+
+                                // }
 
                                 vec_last.push(Token::Symbol(c));
                             }
@@ -302,8 +324,6 @@ impl Lexer {
                                                     vec_last.last()
                                                 {
                                                     vec_last.push(Token::Id(ident.clone()));
-                                                    self.is_parsing_chain.push(true);
-                                                    //vec_last.push(Token::Op(Operator::Pass));
                                                     vec_last.push(Token::Op(
                                                         Operator::StoreTemp,
                                                         self.line,
@@ -311,6 +331,20 @@ impl Lexer {
                                                     vec_last.push(Token::Symbol(c));
                                                     continue;
                                                 }
+                                                // check if accesscall is
+                                                if let Some(Token::Op(Operator::ModuleCall, _)) =
+                                                    vec_last.last()
+                                                {
+                                                    //self.is_parsing_chain.push(true);
+                                                    vec_last.push(Token::Id(ident.clone()));
+                                                    vec_last.push(Token::Op(
+                                                        Operator::StoreTemp,
+                                                        self.line,
+                                                    ));
+                                                    vec_last.push(Token::Symbol(c));
+                                                    continue;
+                                                }
+
                                                 vec_last.push(Token::BlockCall(
                                                     ident.clone(),
                                                     self.line,
@@ -321,7 +355,6 @@ impl Lexer {
                                         }
                                         Token::Symbol(')') => {
                                             vec_last.push(last.clone());
-                                            self.is_parsing_chain.push(true);
                                             vec_last
                                                 .push(Token::Op(Operator::StoreTemp, self.line));
                                             vec_last.push(Token::Symbol(c));
@@ -329,9 +362,13 @@ impl Lexer {
                                         }
                                         Token::Op(Operator::ResolveBind, _) => {
                                             vec_last.push(last.clone());
-                                            self.is_parsing_chain.push(true);
                                             vec_last
                                                 .push(Token::Op(Operator::StoreTemp, self.line));
+                                            vec_last.push(Token::Symbol(c));
+                                            continue;
+                                        }
+                                        Token::Op(Operator::StoreTemp, _) => {
+                                            vec_last.push(last.clone());
                                             vec_last.push(Token::Symbol(c));
                                             continue;
                                         }
@@ -346,8 +383,6 @@ impl Lexer {
                                                 vec_last.last()
                                             {
                                                 vec_last.push(Token::Integer(*ident));
-                                                self.is_parsing_chain.push(true);
-                                                //vec_last.push(Token::Op(Operator::Pass));
                                                 vec_last.push(Token::Op(
                                                     Operator::StoreTemp,
                                                     self.line,
