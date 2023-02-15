@@ -35,6 +35,7 @@ pub struct Lexer {
     paren: Vec<usize>,
     sqaure: Vec<usize>,
     stringpair: Vec<usize>,
+    bindpair: Vec<usize>,
 }
 
 pub fn new() -> Lexer {
@@ -55,6 +56,7 @@ pub fn new() -> Lexer {
         paren: vec![],
         sqaure: vec![],
         stringpair: vec![],
+        bindpair: vec![],
     }
 }
 
@@ -97,7 +99,17 @@ impl Lexer {
             "and" => Token::Op(Operator::And, self.line),
             "or" => Token::Op(Operator::Or, self.line),
 
-            _ => Token::Id(self.token_buffer.to_lowercase()),
+            _ => {
+                if token.contains('.') {
+                    println!();
+                    println!(
+                        "{}: Is not a valid FLoat",
+                        "LEXING ERROR".red()
+                    );
+                    std::process::exit(1)
+                }
+                Token::Id(self.token_buffer.to_lowercase())
+            },
         }
     }
 
@@ -218,6 +230,9 @@ impl Lexer {
                 // Spaces
                 ' ' => {
                     self.check_token();
+                    // if let Some(vec_last) = self.tokens.last_mut() {
+                    //     vec_last.push(Token::Symbol(' '))
+                    // }
                 }
 
                 '.' => {
@@ -264,17 +279,6 @@ impl Lexer {
                             }
                             ')' => {
                                 self.paren.pop();
-                                // if let Some(bool) = self.is_parsing_chain.last() {
-                                //     if *bool {
-                                //         vec_last.push(Token::Op(
-                                //             Operator::UserFunctionChain,
-                                //             self.line,
-                                //         ));
-                                //         self.is_parsing_chain.pop();
-                                //     }
-
-                                // }
-
                                 vec_last.push(Token::Symbol(c));
                             }
                             '-' => {
@@ -408,8 +412,22 @@ impl Lexer {
                                 if let Some(last) = vec_last.pop() {
                                     match last {
                                         Token::Op(Operator::Neg, _) => {
-                                            vec_last.push(Token::Op(Operator::BindVar, self.line));
-                                            continue;
+                                            if let Some(Token::Block(Block::List(_))) = vec_last.last() {
+                                                self.bindpair.push(self.line);
+                                                vec_last.push(Token::Op(Operator::BindVar, self.line));
+                                                continue;
+                                            } else {
+                                                println!();
+                                                println!(
+                                                    "{}: Missing list before -> ",
+                                                    "LEXING ERROR".red()
+                                                );
+                                                if let Some(top) = self.stringpair.pop() {
+                                                    print_line(top, &self.filename);
+                                                }
+                                                std::process::exit(1)
+                                            }
+
                                         }
                                         _ => {
                                             vec_last.push(last);
@@ -427,6 +445,10 @@ impl Lexer {
                             '*' => vec_last.push(Token::Op(Operator::Mul, self.line)),
                             '+' => vec_last.push(Token::Op(Operator::Add, self.line)),
                             '~' => vec_last.push(Token::Op(Operator::Invert, self.line)),
+                            ';' => {
+                                self.bindpair.pop();
+                                vec_last.push(Token::Op(Operator::PopBindings, self.line))
+                            },
                             '=' => {
                                 if let Some(Token::Op(Operator::VariableAssign, _)) =
                                     vec_last.last()
@@ -557,6 +579,18 @@ impl Lexer {
                 "LEXING ERROR".red()
             );
             if let Some(top) = self.stringpair.pop() {
+                print_line(top, &self.filename);
+            }
+            std::process::exit(1)
+        }
+
+        if !self.bindpair.is_empty() {
+            println!();
+            println!(
+                "{}: Missing ; for -> \"\" ",
+                "LEXING ERROR".red()
+            );
+            if let Some(top) = self.bindpair.pop() {
                 print_line(top, &self.filename);
             }
             std::process::exit(1)

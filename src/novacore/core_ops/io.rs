@@ -1,6 +1,4 @@
-use std::{rc::Rc, env};
-
-use hashbrown::HashMap;
+//use std::{env};
 
 use crate::novacore::{
     self,
@@ -169,7 +167,7 @@ pub fn import(eval: &mut Evaluator) {
     }
 }
 
-pub fn args(eval: &mut Evaluator) {
-    let args: Vec<String> = env::args().collect();
-    dbg!(args);
-}
+// pub fn args(eval: &mut Evaluator) {
+//     let args: Vec<String> = env::args().collect();
+//     dbg!(args);
+// }

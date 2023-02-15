@@ -183,8 +183,7 @@ impl Parser {
                             }
                         }
                         ';' => {
-                            self.emtpy_operators();
-                            self.output_stack.push(Token::Op(Operator::PopBindings, 0))
+  
                         }
                         _ => self.operator_stack.push(token),
                     }
@@ -218,7 +217,6 @@ impl Parser {
                     | Operator::Or
                     | Operator::Gtr
                     | Operator::Lss
-                    | Operator::PopBindings
                     | Operator::Invert => {
                         //Pop off higher precedence before adding
 
@@ -257,7 +255,10 @@ impl Parser {
                         self.operator_stack.push(token);
                         continue;
                     }
-
+                    Operator::PopBindings => {
+                        self.emtpy_operators();
+                        self.output_stack.push(token)
+                    }
                     Operator::UserFunctionChain
                     | Operator::New
                     | Operator::ResolveBind
