@@ -182,9 +182,6 @@ impl Parser {
                                 }
                             }
                         }
-                        ';' => {
-  
-                        }
                         _ => self.operator_stack.push(token),
                     }
                 }
