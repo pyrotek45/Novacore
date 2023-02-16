@@ -369,10 +369,6 @@ pub fn each(eval: &mut Evaluator) {
     }
 }
 
-// pub fn break_loop(eval: &mut Evaluator) {
-//     eval.state.break_loop.push(true);
-// }
-
 pub fn for_each(eval: &mut Evaluator) {
     fn for_compute(
         eval: &mut Evaluator,
@@ -397,9 +393,6 @@ pub fn for_each(eval: &mut Evaluator) {
                                 eval.state.remove_varaible(&variable_name);
                                 continue 'out;
                             }
-                            // if eval.state.exit {
-                            //     continue 'out;
-                            // }
                         }
                         eval.state.remove_varaible(&variable_name);
                     }
@@ -530,29 +523,21 @@ pub fn get_access(eval: &mut Evaluator) {
     if let Some(Token::Block(token)) = eval.state.get_from_heap_or_pop() {
         match token {
             Block::Function(idlist, block) => {
-                let mut variable_stack: Vec<String> = Vec::with_capacity(10);
-
-                for toks in idlist.iter().rev() {
-                    if let Token::Id(ident) = &toks {
-                        variable_stack.push(ident.clone())
-                    } else {
-                        eval.state
-                            .show_error("Can only bind identifiers in a function")
+                if let Some(Token::Id(content)) = eval.state.execution_stack.pop() {
+                    match content.as_str() {
+                        "logic" => {
+                            eval.state.execution_stack.push(Token::Block(Block::Literal(block)))
+                        }
+                        "input" => {
+                            eval.state.execution_stack.push(Token::Block(Block::List(idlist)))
+                        }
+                        _ => {
+                            eval.state.show_error("Incorrect argument for function access, expected [input | logic]");
+                        }
                     }
+                } else {
+                    eval.state.show_error("Incorrect argument for function access, expected an id");
                 }
-
-                // Tie each Token into the call_stack using the tokens poped
-                let mut newscope = HashMap::new();
-                for tokens in variable_stack {
-                    if let Some(tok) = eval.state.get_from_heap_or_pop() {
-                        newscope.insert(tokens, tok.clone());
-                    } else {
-                        eval.state.show_error("Not enough arguments")
-                    }
-                }
-                eval.state.call_stack.push(newscope);
-                eval.evaluate(block);
-                eval.state.call_stack.pop();
             }
             Block::Literal(block) => eval.evaluate(block),
             Block::List(list) => {

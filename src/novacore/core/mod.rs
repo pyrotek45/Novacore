@@ -174,10 +174,21 @@ impl Token {
                     }
                     list.to_string()
                 }
-                Block::Function(_, block) => {
+                Block::Function(input, block) => {
                     let mut list = String::new();
                     list.push_str("Func{");
                     if !block.is_empty() {
+                        list.push('[');
+                        for item in input.iter() {
+                            list.push_str(&item.to_str());
+                            list.push(',');
+                        }
+                        if input.is_empty() {
+                            list.push(']');
+                        } else {
+                            list.pop();
+                            list.push(']');
+                        }
                         for item in block.iter() {
                             list.push_str(&item.to_str());
                             list.push(',');

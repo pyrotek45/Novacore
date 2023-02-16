@@ -30,8 +30,8 @@ pub fn list_push(eval: &mut Evaluator) {
 
 pub fn list_pop(eval: &mut Evaluator) {
     if let (Some(token), Some(list)) = (
-        eval.state.get_from_heap_or_pop(),
         eval.state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
     ) {
         match (list, token) {
             (Token::Block(Block::List(list)), Token::Id(ident)) => {
