@@ -196,7 +196,10 @@ pub fn include(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::Literal(Rc::new(value))))
         }
-        (Some(Token::Block(Block::Function(vars, block))), Some(Token::Block(Block::List(list)))) => {
+        (
+            Some(Token::Block(Block::Function(vars, block))),
+            Some(Token::Block(Block::List(list))),
+        ) => {
             let value = include_compute(eval, block, list);
             eval.state
                 .execution_stack

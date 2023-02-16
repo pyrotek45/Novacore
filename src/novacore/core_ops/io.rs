@@ -129,7 +129,7 @@ pub fn load(eval: &mut Evaluator) {
             .evaluate(vm.parser.parse(vm.lexer.parse()).into());
         if let Some(scope) = vm.evaluator.state.call_stack.pop() {
             eval.state.modules.insert(id, scope);
-            for (key,item) in vm.evaluator.state.modules {
+            for (key, item) in vm.evaluator.state.modules {
                 eval.state.modules.insert(key, item);
             }
         } else {
@@ -153,7 +153,7 @@ pub fn import(eval: &mut Evaluator) {
                     .evaluate(vm.parser.parse(vm.lexer.parse()).into());
                 if let Some(scope) = vm.evaluator.state.call_stack.pop() {
                     eval.state.modules.insert(module.to_string(), scope);
-                    for (key,item) in vm.evaluator.state.modules {
+                    for (key, item) in vm.evaluator.state.modules {
                         eval.state.modules.insert(key, item);
                     }
                 } else {

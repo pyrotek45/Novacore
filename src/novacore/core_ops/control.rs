@@ -233,9 +233,6 @@ pub fn while_loop(eval: &mut Evaluator) {
                             eval.state.continue_loop.pop();
                             continue 'out;
                         }
-                        // if eval.state.exit {
-                        //     continue 'out;
-                        // }
                     }
                 } else {
                     break;
@@ -284,9 +281,6 @@ pub fn times(eval: &mut Evaluator) {
                     eval.state.continue_loop.pop();
                     continue 'out;
                 }
-                // if eval.state.exit {
-                //     continue 'out;
-                // }
             }
         }
     }
@@ -337,24 +331,40 @@ pub fn each(eval: &mut Evaluator) {
                         eval.state.continue_loop.pop();
                         continue 'out;
                     }
-                    // if eval.state.exit {
-                    //     continue 'out;
-                    // }
                 }
             }
         }
-        match (items, logic) {
-            (Token::Block(items), Token::Block(logic)) => match (items, logic) {
-                (Block::Literal(items), Block::Literal(logic)) => each_compute(eval, items, logic),
-                (Block::List(items), Block::Literal(logic)) => each_compute(eval, items, logic),
-                (Block::Literal(items), Block::Function(_, logic)) => {
-                    eval.state.call_stack.push(HashMap::new());
-                    each_compute(eval, items, logic);
 
-                    eval.state.call_stack.pop();
+        fn each_compute_string(eval: &mut Evaluator, str: String, logic: Instructions) {
+            'out: for item in str.chars() {
+                eval.state.execution_stack.push(Token::Char(item));
+                for t in &*logic {
+                    eval.eval(t.clone());
+                    if !eval.state.break_loop.is_empty() {
+                        eval.state.break_loop.pop();
+                        break 'out;
+                    }
+                    if !eval.state.continue_loop.is_empty() {
+                        eval.state.continue_loop.pop();
+                        continue 'out;
+                    }
                 }
-                (Block::List(items), Block::Function(_, logic)) => each_compute(eval, items, logic),
+            }
+        }
+
+        match (&items, logic) {
+            (Token::Block(items), Token::Block(logic)) => match (items, logic) {
+                (Block::Literal(items), Block::Literal(logic)) => {
+                    each_compute(eval, items.clone(), logic)
+                }
                 (items, logic) => eval.state.show_error(&format!(
+                    "Incorrect arguments for each, got [{:?},{:?}]",
+                    items, logic
+                )),
+            },
+            (Token::String(str), Token::Block(logic)) => match logic {
+                Block::Literal(logic) => each_compute_string(eval, str.to_string(), logic),
+                logic => eval.state.show_error(&format!(
                     "Incorrect arguments for each, got [{:?},{:?}]",
                     items, logic
                 )),
@@ -421,6 +431,35 @@ pub fn for_each(eval: &mut Evaluator) {
         }
     }
 
+    fn for_compute_string(
+        eval: &mut Evaluator,
+        block: Instructions,
+        str: String,
+        variable_name: String,
+    ) {
+        'out: for variable in str.chars() {
+            eval.state
+                .add_varaible(&variable_name, Token::Char(variable));
+            for t in &*block {
+                eval.eval(t.clone());
+                if !eval.state.break_loop.is_empty() {
+                    eval.state.break_loop.pop();
+                    eval.state.remove_varaible(&variable_name);
+                    break 'out;
+                }
+                if !eval.state.continue_loop.is_empty() {
+                    eval.state.continue_loop.pop();
+                    eval.state.remove_varaible(&variable_name);
+                    continue 'out;
+                }
+                if eval.state.exit {
+                    continue 'out;
+                }
+            }
+            eval.state.remove_varaible(&variable_name);
+        }
+    }
+
     if let (Some(block), Some(list), Some(variable)) = (
         eval.state.get_from_heap_or_pop(),
         eval.state.get_from_heap_or_pop(),
@@ -432,6 +471,11 @@ pub fn for_each(eval: &mut Evaluator) {
                 Token::Block(Block::List(list)),
                 Token::Id(variable_name),
             ) => for_compute(eval, block, list, variable_name),
+            (
+                Token::Block(Block::Literal(block)),
+                Token::String(list),
+                Token::Id(variable_name),
+            ) => for_compute_string(eval, block, list, variable_name),
             (a, b, c) => eval.state.show_error(&format!(
                 "Incorrect arguments for [for], got [{:?},{:?},{:?}]",
                 a, b, c
@@ -525,18 +569,23 @@ pub fn get_access(eval: &mut Evaluator) {
             Block::Function(idlist, block) => {
                 if let Some(Token::Id(content)) = eval.state.execution_stack.pop() {
                     match content.as_str() {
-                        "logic" => {
-                            eval.state.execution_stack.push(Token::Block(Block::Literal(block)))
-                        }
-                        "input" => {
-                            eval.state.execution_stack.push(Token::Block(Block::List(idlist)))
-                        }
+                        "logic" => eval
+                            .state
+                            .execution_stack
+                            .push(Token::Block(Block::Literal(block))),
+                        "input" => eval
+                            .state
+                            .execution_stack
+                            .push(Token::Block(Block::List(idlist))),
                         _ => {
-                            eval.state.show_error("Incorrect argument for function access, expected [input | logic]");
+                            eval.state.show_error(
+                                "Incorrect argument for function access, expected [input | logic]",
+                            );
                         }
                     }
                 } else {
-                    eval.state.show_error("Incorrect argument for function access, expected an id");
+                    eval.state
+                        .show_error("Incorrect argument for function access, expected an id");
                 }
             }
             Block::Literal(block) => eval.evaluate(block),

@@ -1,4 +1,3 @@
-
 use std::{rc::Rc, vec};
 
 use crate::novacore::utilities::print_line;
@@ -102,14 +101,11 @@ impl Lexer {
             _ => {
                 if token.contains('.') {
                     println!();
-                    println!(
-                        "{}: Is not a valid FLoat",
-                        "LEXING ERROR".red()
-                    );
+                    println!("{}: Is not a valid FLoat", "LEXING ERROR".red());
                     std::process::exit(1)
                 }
                 Token::Id(self.token_buffer.to_lowercase())
-            },
+            }
         }
     }
 
@@ -412,9 +408,12 @@ impl Lexer {
                                 if let Some(last) = vec_last.pop() {
                                     match last {
                                         Token::Op(Operator::Neg, _) => {
-                                            if let Some(Token::Block(Block::List(_))) = vec_last.last() {
+                                            if let Some(Token::Block(Block::List(_))) =
+                                                vec_last.last()
+                                            {
                                                 self.bindpair.push(self.line);
-                                                vec_last.push(Token::Op(Operator::BindVar, self.line));
+                                                vec_last
+                                                    .push(Token::Op(Operator::BindVar, self.line));
                                                 continue;
                                             } else {
                                                 println!();
@@ -427,7 +426,6 @@ impl Lexer {
                                                 }
                                                 std::process::exit(1)
                                             }
-
                                         }
                                         _ => {
                                             vec_last.push(last);
@@ -448,7 +446,7 @@ impl Lexer {
                             ';' => {
                                 self.bindpair.pop();
                                 vec_last.push(Token::Op(Operator::PopBindings, self.line))
-                            },
+                            }
                             '=' => {
                                 if let Some(Token::Op(Operator::VariableAssign, _)) =
                                     vec_last.last()
@@ -586,10 +584,7 @@ impl Lexer {
 
         if !self.bindpair.is_empty() {
             println!();
-            println!(
-                "{}: Missing ; for -> \"\" ",
-                "LEXING ERROR".red()
-            );
+            println!("{}: Missing ; for -> \"\" ", "LEXING ERROR".red());
             if let Some(top) = self.bindpair.pop() {
                 print_line(top, &self.filename);
             }

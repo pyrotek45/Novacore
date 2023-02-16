@@ -6,9 +6,9 @@ use colored::Colorize;
 use crossterm::style::Stylize;
 use rustyline::{error::ReadlineError, validate::MatchingBracketValidator, Editor};
 
+use novacore::lexer;
 use rustyline::{Cmd, EventHandler, KeyCode, KeyEvent, Modifiers};
 use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
-use novacore::lexer;
 
 #[derive(Completer, Helper, Highlighter, Hinter, Validator)]
 struct InputValidator {
@@ -55,7 +55,6 @@ fn main() {
         if matches.is_present("DEBUG") {
             core.debug_file(filename);
         } else {
-            
             let mut args: Vec<String> = std::env::args().collect();
             args.remove(0);
             args.remove(0);
