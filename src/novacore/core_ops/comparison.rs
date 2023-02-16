@@ -1,4 +1,4 @@
-use crate::novacore::{core::Token, evaluator::Evaluator, utilities::print_error};
+use crate::novacore::{core::Token, evaluator::Evaluator};
 use colored::Colorize;
 
 pub fn equality_comparison(eval: &mut Evaluator) {
@@ -8,7 +8,8 @@ pub fn equality_comparison(eval: &mut Evaluator) {
     ) {
         eval.state.execution_stack.push(Token::Bool(left == right));
     } else {
-        print_error("Not enough arguments for equality_comparison");
+        eval.state
+            .show_error("Not enough arguments for equality_comparison");
     }
 }
 
@@ -32,13 +33,14 @@ pub fn less_than_comparison(eval: &mut Evaluator) {
                 let right = *right as f64;
                 eval.state.execution_stack.push(Token::Bool(left < &right));
             }
-            _ => print_error(&format!(
+            _ => eval.state.show_error(&format!(
                 "Incorrect arguments for < , got [{:?},{:?}]",
                 left, right
             )),
         }
     } else {
-        print_error("Not enough arguments for less_than_comparison");
+        eval.state
+            .show_error("Not enough arguments for less_than_comparison");
     }
 }
 
@@ -62,20 +64,21 @@ pub fn greater_than_comparison(eval: &mut Evaluator) {
                 let right = *right as f64;
                 eval.state.execution_stack.push(Token::Bool(left > &right));
             }
-            _ => print_error(&format!(
+            _ => eval.state.show_error(&format!(
                 "Incorrect arguments for > , got [{:?},{:?}]",
                 left, right
             )),
         }
     } else {
-        print_error("Not enough arguments for greater_than_comparison");
+        eval.state
+            .show_error("Not enough arguments for greater_than_comparison");
     }
 }
 
 pub fn assert_stack_test(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
-        eval.state.execution_stack.pop(),
-        eval.state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
     ) {
         if left == right {
             println!("{}: [{:?} = {:?}]", "SUCCESS".bright_green(), left, right)
@@ -83,6 +86,6 @@ pub fn assert_stack_test(eval: &mut Evaluator) {
             println!("{}: [{:?} = {:?}]", "FAIL".red(), left, right)
         }
     } else {
-        print_error("Not enough arguments for ttos");
+        eval.state.show_error("Not enough arguments for ttos");
     }
 }

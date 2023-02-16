@@ -1,23 +1,138 @@
-map = func: {[function list] -> 
-    newlist = []
-    each: list {
-        function()
-        [i] -> newlist = push: i newlist
-    }
-    get(newlist)
-}
+map = func([l q] {
+    nl = []
+    each(l {
+        q()
+        [item] -> push(nl item^) ;
+        set(nl)
+    })
+    return(nl)
+})
 
-fold = func: {[seed function list] -> 
-    seed 
-    each: list {
-        function()
-    }
-}
+fold = func([l s q] {return(s) each(l {q()}) })
 
-filter = func: {[function list] -> 
-    newlist = []
-    each: list {
-         if: dup() function() {[i] -> newlist = push: i newlist} {drop()}
-    }
-    get(newlist)
-}
+filter = func([l q] {
+    nl = []
+    each(l {
+        dup()
+        q()
+        if({
+            [item] -> push(nl item^) ;
+            set(nl)
+        } {
+            drop()
+        })
+    })
+    return(nl)
+})
+
+# combos
+dip  = func([x y] {y() return(x)} )
+keep = func([x y] {y(x) return(x)} )
+bi   = func([p q x] {x(p) x(q)} )
+
+# math 
+product = func([l] {std::fold(l 1 {*})})
+
+sum = func([l] {std::fold(l 0 {+} )}) 
+
+sq = func([x] {x * x})
+
+fib = func([num] {
+    ptp = 0
+    p = 1
+    sum = 0
+    if( num == 0 {
+        sum = 0
+    } {
+        if( num == 1 {
+            sum = 1 
+        } {
+            for(i range(0 (num - 2)) {
+                sum = ptp + p
+                ptp = return(p)
+                p = return(sum)
+            })
+        })
+    })
+    return(sum)
+})
+
+factorial = func([n] {
+    result = 1
+    for(i range(1 n) {
+        result = result * i
+    })
+    return(result)
+})
+
+power = func([x y] {
+    result = 1
+    for(i range(0 ,y - 1) {
+        result = result * x
+    })
+    return(result)
+})
+
+abs = func([x] {
+    if(x < 0 {
+        return(-x)
+    } {
+        return(x)
+    })
+})
+
+length = func([l] {
+    count = 0
+    each(l {
+        count = count + 1
+        drop()
+    })
+    return(count)
+})
+
+average = func([l] {
+    std::sum(l) / std::length(l)
+})
+
+max = func([lst] {
+    max = lst(0)
+    each(lst {
+        [x] -> when(x^ > max {max = x^}) ;
+    })
+    return(max)
+})
+
+min = func([lst] {
+    min = lst(0)
+    each(lst {
+        [x] -> when(x^ < min {min = x^}) ;
+    })
+    return(min)
+})
+
+replace = func([lst index item] {
+    lst
+        remove(index)  
+        insert(index item)   
+})
+
+mean = func([l] {
+    std::sum(l) / std::length(l)
+})
+
+multiple_of = func([x y] {
+    x % y == 0
+})
+
+sort = func([lst] {
+    for(i range(0 , std::length(lst)) {
+        for(j range(i , std::length(lst) - 1) {
+            when( lst(i) > lst(j) {
+                temp = lst(i)
+                lst = std::replace(lst i lst(j))
+                lst = std::replace(lst j temp)
+            })
+        })
+    })
+    return(lst)
+})

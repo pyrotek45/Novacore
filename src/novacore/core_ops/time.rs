@@ -7,7 +7,6 @@ use hashbrown::HashMap;
 use crate::novacore::{
     core::{Block, Token},
     evaluator::Evaluator,
-    utilities::print_error,
 };
 
 pub fn sleep(eval: &mut Evaluator) {
@@ -15,7 +14,7 @@ pub fn sleep(eval: &mut Evaluator) {
         let delay = time::Duration::from_millis(time as u64);
         thread::sleep(delay);
     } else {
-        print_error("Not enough arguments for sleep");
+        eval.state.show_error("Not enough arguments for sleep");
     }
 }
 
@@ -23,12 +22,12 @@ pub fn time(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         if let Token::Block(block) = token {
             match block {
-                Block::Function(block) => {
+                Block::Function(_, block) => {
                     let start = Instant::now();
                     // Call with new scope
                     eval.state.call_stack.push(HashMap::new());
 
-                    eval.evaluate(block.to_vec());
+                    eval.evaluate(block);
 
                     if let Some(token) = eval.state.get_from_heap_or_pop() {
                         eval.state.execution_stack.push(token)
@@ -41,14 +40,14 @@ pub fn time(eval: &mut Evaluator) {
                 Block::Literal(block) => {
                     // call in same scope
                     let start = Instant::now();
-                    eval.evaluate(block.to_vec());
+                    eval.evaluate(block);
                     let duration = start.elapsed();
                     println!("{} {:?}", ">> Execution:".bright_green(), duration);
                 }
                 Block::List(block) => {
                     // call in same scope
                     let start = Instant::now();
-                    eval.evaluate(block.to_vec());
+                    eval.evaluate(block);
                     let duration = start.elapsed();
                     println!("{} {:?}", ">> Execution:".bright_green(), duration);
                 }
@@ -57,9 +56,9 @@ pub fn time(eval: &mut Evaluator) {
                 }
             }
         } else {
-            print_error(&format!("Cannot time {:?}", token));
+            eval.state.show_error(&format!("Cannot time {:?}", token));
         }
     } else {
-        print_error("Not enough arguments for time");
+        eval.state.show_error("Not enough arguments for time");
     }
 }

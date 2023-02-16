@@ -1,10 +1,10 @@
-use crate::novacore::{evaluator::Evaluator, utilities::print_error};
+use crate::novacore::evaluator::Evaluator;
 
 pub fn dup(eval: &mut Evaluator) {
     if let Some(top) = eval.state.execution_stack.last() {
         eval.state.execution_stack.push(top.clone())
     } else {
-        print_error("Not enough arguments for dup");
+        eval.state.show_error("Not enough arguments for dup");
     }
 }
 
@@ -14,7 +14,7 @@ pub fn ddup(eval: &mut Evaluator) {
         eval.state.execution_stack.push(top.clone());
         eval.state.execution_stack.push(top);
     } else {
-        print_error("Not enough arguments for ddup");
+        eval.state.show_error("Not enough arguments for ddup");
     }
 }
 
@@ -26,13 +26,13 @@ pub fn swap(eval: &mut Evaluator) {
         eval.state.execution_stack.push(top);
         eval.state.execution_stack.push(under)
     } else {
-        print_error("Not enough arguments for swap");
+        eval.state.show_error("Not enough arguments for swap");
     }
 }
 
 pub fn drop(eval: &mut Evaluator) {
     if eval.state.execution_stack.pop().is_none() {
-        print_error("Not enough arguments for drop");
+        eval.state.show_error("Not enough arguments for drop");
     }
 }
 
@@ -43,7 +43,7 @@ pub fn nip(eval: &mut Evaluator) {
     ) {
         eval.state.execution_stack.push(top)
     } else {
-        print_error("Not enough arguments for nip");
+        eval.state.show_error("Not enough arguments for nip");
     }
 }
 
@@ -56,7 +56,7 @@ pub fn over(eval: &mut Evaluator) {
         eval.state.execution_stack.push(top);
         eval.state.execution_stack.push(under);
     } else {
-        print_error("Not enough arguments for over");
+        eval.state.show_error("Not enough arguments for over");
     }
 }
 
@@ -70,7 +70,7 @@ pub fn dover(eval: &mut Evaluator) {
         eval.state.execution_stack.push(a);
         eval.state.execution_stack.push(b);
     } else {
-        print_error("Not enough arguments for dover");
+        eval.state.show_error("Not enough arguments for dover");
     }
 }
 
@@ -84,7 +84,7 @@ pub fn rot(eval: &mut Evaluator) {
         eval.state.execution_stack.push(top);
         eval.state.execution_stack.push(bottom);
     } else {
-        print_error("Not enough arguments for rot");
+        eval.state.show_error("Not enough arguments for rot");
     }
 }
 
@@ -98,7 +98,7 @@ pub fn drot(eval: &mut Evaluator) {
         eval.state.execution_stack.push(bottom);
         eval.state.execution_stack.push(mid);
     } else {
-        print_error("Not enough arguments for drot");
+        eval.state.show_error("Not enough arguments for drot");
     }
 }
 

@@ -20,7 +20,7 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                         "{}{}{}",
                         sdep.bright_cyan(),
                         "|--".bright_cyan(),
-                        "Literal:".bright_cyan()
+                        "Block:".bright_cyan()
                     );
                     debug_output(depth + 1, block.clone());
                     continue;
@@ -35,9 +35,7 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                     debug_output(depth + 1, block.clone());
                     continue;
                 }
-                Block::Auto(_, _) => todo!(),
-                Block::Modifier(_, _) => todo!(),
-                Block::Function(block) => {
+                Block::Function(_, block) => {
                     println!(
                         "{}{}{}",
                         sdep.bright_cyan(),
@@ -53,16 +51,6 @@ pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
                         sdep.bright_cyan(),
                         "|--".bright_cyan(),
                         "List:".bright_cyan()
-                    );
-                    debug_output(depth + 1, block.clone());
-                    continue;
-                }
-                Block::ListLambda(block) => {
-                    println!(
-                        "{}{}{}",
-                        sdep.bright_cyan(),
-                        "|--".bright_cyan(),
-                        "ListLamda:".bright_cyan()
                     );
                     debug_output(depth + 1, block.clone());
                     continue;

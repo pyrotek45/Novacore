@@ -1,11 +1,11 @@
 use std::rc::Rc;
 
+use hashbrown::HashMap;
 use modulo::Mod;
 
 use crate::novacore::{
-    core::{Block, Operator, Token},
+    core::{Block, Token},
     evaluator::Evaluator,
-    utilities::print_error,
 };
 
 pub fn add(eval: &mut Evaluator) {
@@ -91,13 +91,13 @@ pub fn add(eval: &mut Evaluator) {
                     .push(Token::String(left.to_string() + &right.to_string()));
             }
 
-            (a, b) => print_error(&format!(
-                "Incorrect argument for addition. got [{:?},{:?}]",
+            (a, b) => eval.state.show_error(&format!(
+                "Incorrect arguments for addition. got [{:?},{:?}]",
                 a, b
             )),
         }
     } else {
-        print_error("Not enough arguments for addition")
+        eval.state.show_error("Not enough arguments for addition")
     }
 }
 
@@ -115,25 +115,25 @@ pub fn div(eval: &mut Evaluator) {
             (Token::Integer(ref left), Token::Float(right)) => {
                 eval.state
                     .execution_stack
-                    .push(Token::Float(*left as f64 / *right as f64));
+                    .push(Token::Float(*left as f64 / *right));
             }
             (Token::Float(left), Token::Float(right)) => {
                 eval.state
                     .execution_stack
-                    .push(Token::Float(*left as f64 / *right as f64));
+                    .push(Token::Float(*left / *right));
             }
             (Token::Float(left), Token::Integer(ref right)) => {
                 eval.state
                     .execution_stack
-                    .push(Token::Float(*left as f64 / *right as f64));
+                    .push(Token::Float(*left / *right as f64));
             }
-            (a, b) => print_error(&format!(
-                "Incorrect argument for division. got [{:?},{:?}]",
+            (a, b) => eval.state.show_error(&format!(
+                "Incorrect arguments for division. got [{:?},{:?}]",
                 a, b
             )),
         }
     } else {
-        print_error("Not enough arguments for division")
+        eval.state.show_error("Not enough arguments for division")
     }
 }
 
@@ -146,10 +146,12 @@ pub fn neg(eval: &mut Evaluator) {
             Token::Float(left) => {
                 eval.state.execution_stack.push(Token::Float(-left));
             }
-            a => print_error(&format!("Incorrect argument for division. got [{:?}]", a)),
+            a => eval
+                .state
+                .show_error(&format!("Incorrect arguments for inversion. got [{:?}]", a)),
         }
     } else {
-        print_error("Not enough arguments for division")
+        eval.state.show_error("Not enough arguments for inversion")
     }
 }
 
@@ -175,13 +177,14 @@ pub fn sub(eval: &mut Evaluator) {
                 let right = *right as f64;
                 eval.state.execution_stack.push(Token::Float(left - right));
             }
-            (a, b) => print_error(&format!(
-                "Incorrect argument for subtraction. got [{:?},{:?}]",
+            (a, b) => eval.state.show_error(&format!(
+                "Incorrect arguments for subtraction. got [{:?},{:?}]",
                 a, b
             )),
         }
     } else {
-        print_error("Not enough arguments for subtraction")
+        eval.state
+            .show_error("Not enough arguments for subtraction")
     }
 }
 
@@ -196,13 +199,13 @@ pub fn modulo(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Integer(left.modulo(right)));
             }
-            (a, b) => print_error(&format!(
-                "Incorrect argument for modulo %. got [{:?},{:?}]",
+            (a, b) => eval.state.show_error(&format!(
+                "Incorrect arguments for modulo %. got [{:?},{:?}]",
                 a, b
             )),
         }
     } else {
-        print_error("Not enough arguments for modulo %")
+        eval.state.show_error("Not enough arguments for modulo %")
     }
 }
 
@@ -228,86 +231,112 @@ pub fn mul(eval: &mut Evaluator) {
                 let right = *right as f64;
                 eval.state.execution_stack.push(Token::Float(left * right));
             }
-            (a, b) => print_error(&format!(
-                "Incorrect argument for multiplication. got [{:?},{:?}]",
+            (a, b) => eval.state.show_error(&format!(
+                "Incorrect arguments for multiplication. got [{:?},{:?}]",
                 a, b
             )),
         }
     } else {
-        print_error("Not enough arguments for multiplication")
+        eval.state
+            .show_error("Not enough arguments for multiplication")
     }
 }
 
 pub fn variable_assign(eval: &mut Evaluator) {
     if let (Some(token), Some(ident)) = (
-        eval.state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
         eval.state.execution_stack.pop(),
     ) {
         match (&token, &ident) {
-            (Token::Identifier(moved), Token::Identifier(identifier)) => {
+            (Token::Id(moved), Token::Id(identifier)) => {
                 eval.state.move_varaible(moved, identifier)
             }
-            (_, Token::Identifier(identifier)) => eval.state.add_varaible(identifier, token),
+            (_, Token::Id(identifier)) => eval.state.add_varaible(identifier, token),
             _ => {
-                print_error(&format!(
+                eval.state.show_error(&format!(
                     "Can not assign these two types [{:?},{:?}]",
                     token, ident
                 ));
             }
         }
     } else {
-        print_error("Not enough arguments for variable assignment");
+        eval.state
+            .show_error("Not enough arguments for variable assignment");
     }
 }
 
-pub fn function_variable_assign(eval: &mut Evaluator) {
+pub fn variable_assign_set(eval: &mut Evaluator) {
+    if let (Some(ident), Some(token)) = (
+        eval.state.execution_stack.pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
+        match (&token, &ident) {
+            (Token::Id(moved), Token::Id(identifier)) => {
+                eval.state.move_varaible(moved, identifier)
+            }
+            (_, Token::Id(identifier)) => eval.state.add_varaible(identifier, token),
+            _ => {
+                eval.state.show_error(&format!(
+                    "Can not assign these two types [{:?},{:?}]",
+                    token, ident
+                ));
+            }
+        }
+    } else {
+        eval.state
+            .show_error("Not enough arguments for variable assignment");
+    }
+}
+
+pub fn bind_variables(eval: &mut Evaluator) {
     let mut variable_stack: Vec<String> = Vec::with_capacity(10);
     if let Some(Token::Block(Block::List(identifiers))) = eval.state.get_from_heap_or_pop() {
         for toks in identifiers.iter().rev() {
-            if let Token::Identifier(ident) = &toks {
+            if let Token::Id(ident) = &toks {
                 variable_stack.push(ident.clone())
             }
         }
     } else {
-        print_error("Not enough arguments for function variable assign [->]");
+        eval.state.show_error("Not enough arguments for [->]");
     }
 
     // Tie each Token into the call_stack using the tokens poped
-    if let Some(mut newscope) = eval.state.call_stack.pop() {
-        for tokens in variable_stack {
-            if let Some(tok) = eval.state.get_from_heap_or_pop() {
-                newscope.insert(tokens, tok.clone());
-            }
+    let mut newscope = HashMap::new();
+    for tokens in variable_stack {
+        if let Some(tok) = eval.state.get_from_heap_or_pop() {
+            newscope.insert(tokens, tok.clone());
+        } else {
+            eval.state.show_error("Not enough arguments for -> ")
         }
-        eval.state.call_stack.push(newscope);
-    } else {
-        print_error("Not enough arguments for function variable assign  [->]");
     }
+    eval.state.bindings.push(newscope);
 }
 
-pub fn get_self(eval: &mut Evaluator) {
+pub fn pop_bindings(eval: &mut Evaluator) {
+    eval.state.bindings.pop();
+}
+
+pub fn get_new(eval: &mut Evaluator) {
     if let Some(scope) = eval.state.call_stack.last_mut() {
-        let mut core_self = vec![];
+        let mut core_self = HashMap::new();
 
         for (ident, token) in scope {
-            core_self.push(Token::Identifier(ident.clone()));
-            core_self.push(token.clone());
-            core_self.push(Token::Op(Operator::VariableAssign))
+            core_self.insert(ident.clone(), token.clone());
         }
 
         eval.state
             .execution_stack
-            .push(Token::Block(Block::Function(Rc::new(core_self))))
+            .push(Token::Block(Block::Struct(Rc::new(core_self))))
     }
 }
 
 pub fn free(eval: &mut Evaluator) {
     if let Some(token) = eval.state.execution_stack.pop() {
-        if let Token::Identifier(ident) = token {
+        if let Token::Id(ident) = token {
             eval.state.remove_varaible(&ident)
         }
     } else {
-        print_error("Not enough arguments for free");
+        eval.state.show_error("Not enough arguments for free");
     }
 }
 
@@ -315,10 +344,15 @@ pub fn resolve(eval: &mut Evaluator) {
     if let Some(top) = eval.state.get_from_heap_or_pop() {
         eval.state.execution_stack.push(top)
     } else {
-        print_error("Not enough arguments for return");
+        eval.state.show_error("Not enough arguments for return");
     }
 }
 
-// pub fn exit(eval: &mut Evaluator) {
-//     eval.state.exit_function = true
-// }
+pub fn resolve_binding(eval: &mut Evaluator) {
+    if let Some(top) = eval.state.get_from_binding() {
+        eval.state.execution_stack.push(top)
+    } else {
+        eval.state
+            .show_error("Not enough arguments for binding resolve");
+    }
+}

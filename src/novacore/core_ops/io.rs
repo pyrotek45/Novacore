@@ -1,14 +1,16 @@
+//use std::{env};
+
 use crate::novacore::{
     self,
-    core::Token,
+    core::{Block, Token},
     evaluator::Evaluator,
-    utilities::{is_string_number, print_error, trim_newline},
+    utilities::{is_string_number, trim_newline},
 };
 
 pub fn println(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
-            Token::Identifier(token) => {
+            Token::Id(token) => {
                 print!("{}\r\n", &token)
             }
             Token::Integer(token) => {
@@ -32,17 +34,19 @@ pub fn println(eval: &mut Evaluator) {
             Token::Block(_) => {
                 print!("{}\r\n", token.to_str())
             }
-            _ => print_error(&format!("Incorrect argument for println, got {:?}", token)),
+            _ => eval
+                .state
+                .show_error(&format!("Incorrect argument for println, got {:?}", token)),
         }
     } else {
-        print_error("Not enough arguments for println");
+        eval.state.show_error("Not enough arguments for println");
     }
 }
 
 pub fn print(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
-            Token::Identifier(token) => {
+            Token::Id(token) => {
                 print!("{}", &token)
             }
             Token::Integer(token) => {
@@ -66,10 +70,12 @@ pub fn print(eval: &mut Evaluator) {
             Token::Block(_) => {
                 print!("{}", token.to_str())
             }
-            _ => print_error(&format!("Incorrect argument for print, got {:?}", token)),
+            _ => eval
+                .state
+                .show_error(&format!("Incorrect argument for print, got {:?}", token)),
         }
     } else {
-        print_error("Not enough arguments for print");
+        eval.state.show_error("Not enough arguments for print");
     }
 }
 
@@ -112,11 +118,56 @@ pub fn dump(eval: &mut Evaluator) {
     }
 }
 
-pub fn import(eval: &mut Evaluator) {
-    if let Some(Token::String(filepath)) = eval.state.get_from_heap_or_pop() {
+pub fn load(eval: &mut Evaluator) {
+    if let (Some(Token::String(filepath)), Some(Token::Id(id))) = (
+        eval.state.get_from_heap_or_pop(),
+        eval.state.execution_stack.pop(),
+    ) {
         let mut vm = novacore::new_from_file(&filepath);
-        eval.evaluate(vm.parser.shunt(vm.lexer.parse()))
+        vm.evaluator.state.current_file = filepath.clone();
+        vm.evaluator
+            .evaluate(vm.parser.parse(vm.lexer.parse()).into());
+        if let Some(scope) = vm.evaluator.state.call_stack.pop() {
+            eval.state.modules.insert(id, scope);
+            for (key, item) in vm.evaluator.state.modules {
+                eval.state.modules.insert(key, item);
+            }
+        } else {
+            eval.state.show_error(&format!(
+                "Incorrect argument for load, got {:?} {:?}",
+                filepath, id
+            ))
+        }
     } else {
-        print_error("Not enough arguments for import");
+        eval.state.show_error("Not enough arguments for load");
     }
 }
+
+pub fn import(eval: &mut Evaluator) {
+    if let Some(Token::Block(Block::List(list))) = eval.state.get_from_heap_or_pop() {
+        for modules in &*list {
+            if let Token::Id(module) = modules {
+                let mut vm = novacore::new_from_file(&format!("std/{}.core", module));
+                vm.evaluator.state.current_file = format!("std/{}.core", module);
+                vm.evaluator
+                    .evaluate(vm.parser.parse(vm.lexer.parse()).into());
+                if let Some(scope) = vm.evaluator.state.call_stack.pop() {
+                    eval.state.modules.insert(module.to_string(), scope);
+                    for (key, item) in vm.evaluator.state.modules {
+                        eval.state.modules.insert(key, item);
+                    }
+                } else {
+                    eval.state
+                        .show_error(&format!("Incorrect argument for import, got {:?}", module))
+                }
+            }
+        }
+    } else {
+        eval.state.show_error("Not enough arguments for import");
+    }
+}
+
+// pub fn args(eval: &mut Evaluator) {
+//     let args: Vec<String> = env::args().collect();
+//     dbg!(args);
+// }

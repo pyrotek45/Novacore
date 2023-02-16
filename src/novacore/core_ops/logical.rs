@@ -1,4 +1,4 @@
-use crate::novacore::{core::Token, evaluator::Evaluator, utilities::print_error};
+use crate::novacore::{core::Token, evaluator::Evaluator};
 
 pub fn logical_and(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
@@ -11,13 +11,13 @@ pub fn logical_and(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Bool(*left && *right));
             }
-            _ => print_error(&format!(
+            _ => eval.state.show_error(&format!(
                 "Incorrect argument for and, got [{:?},{:?}]",
                 left, right
             )),
         }
     } else {
-        print_error("Not enough arguments for and");
+        eval.state.show_error("Not enough arguments for and");
     }
 }
 
@@ -32,13 +32,13 @@ pub fn logical_or(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Bool(*left || *right));
             }
-            _ => print_error(&format!(
+            _ => eval.state.show_error(&format!(
                 "Incorrect argument for or, got [{:?},{:?}]",
                 left, right
             )),
         }
     } else {
-        print_error("Not enough arguments for or");
+        eval.state.show_error("Not enough arguments for or");
     }
 }
 
@@ -47,9 +47,10 @@ pub fn logical_not(eval: &mut Evaluator) {
         if let Token::Bool(bool) = token {
             eval.state.execution_stack.push(Token::Bool(!bool));
         } else {
-            print_error(&format!("Incorrect argument for not, got [{:?}]", token))
+            eval.state
+                .show_error(&format!("Incorrect argument for not, got [{:?}]", token))
         }
     } else {
-        print_error("Not enough arguments for not");
+        eval.state.show_error("Not enough arguments for not");
     }
 }

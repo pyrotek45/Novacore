@@ -11,20 +11,18 @@ pub type Instructions = Rc<Vec<Token>>;
 pub enum Block {
     Literal(Instructions),
     Lambda(Instructions),
-    Function(Instructions),
-    Auto(Instructions, Instructions),
-    Modifier(Option<String>, Instructions),
+    Function(Instructions, Instructions),
     List(Instructions),
-    ListLambda(Instructions),
-    Struct(HashMap<String, Token>),
+    Struct(Rc<HashMap<String, Token>>),
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Operator {
     VariableAssign,
-    FunctionVariableAssign,
-    SelfId,
-    AccessCall, // the dot Token::operator
+    BindVar,
+    New,
+    AccessCall,
+    ModuleCall,
     UserFunctionChain,
     StoreTemp,
     And,
@@ -33,30 +31,36 @@ pub enum Operator {
     Equals,
     Gtr,
     Lss,
-    Neg,
+    Invert,
     Mod,
     Add,
     Sub,
     Mul,
     Div,
-    PopStack,
+    PopBindings,
+    Neg,
+    Break,
+    Continue,
+    ResolveBind,
 }
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Token {
     // Variables
-    Identifier(String),
+    Id(String),
 
     // built in functions
-    Function(usize),
-    FlowFunction(usize),
+    Function(usize, usize),
 
-    // symbols
-    Op(Operator),
+    //FlowFunction(usize),
 
     // user defined functions
-    UserBlockCall(String),
-    FlowUserBlockCall(String), // Block calls
+    BlockCall(String, usize),
+
+    //FlowUserBlockCall(String), // Block calls
+
+    // symbols
+    Op(Operator, usize),
 
     // Basic Types
     Integer(i128),
@@ -97,42 +101,48 @@ impl Token {
 
     pub fn precedence(&self) -> usize {
         match self {
-            Token::Op(Operator::VariableAssign) => 2,
-            Token::Op(Operator::And) => 6,
-            Token::Op(Operator::Or) => 7,
-            Token::Op(Operator::Not) => 8,
-            Token::Op(Operator::Equals) | Token::Op(Operator::Gtr) | Token::Op(Operator::Lss) => 9,
-            Token::Op(Operator::Add) | Token::Op(Operator::Sub) => 12,
-            Token::Op(Operator::Mul) | Token::Op(Operator::Div) | Token::Op(Operator::Mod) => 13,
-            Token::Op(Operator::Neg) => 15,
+            Token::Op(Operator::VariableAssign, _) => 2,
+            Token::Op(Operator::And, _) => 6,
+            Token::Op(Operator::Or, _) => 7,
+            Token::Op(Operator::Not, _) => 8,
+            Token::Op(Operator::Equals, _)
+            | Token::Op(Operator::Gtr, _)
+            | Token::Op(Operator::Lss, _) => 9,
+            Token::Op(Operator::Add, _) | Token::Op(Operator::Sub, _) => 12,
+            Token::Op(Operator::Mul, _)
+            | Token::Op(Operator::Div, _)
+            | Token::Op(Operator::Mod, _) => 13,
+            Token::Op(Operator::Invert, _) => 15,
             _ => 0,
         }
     }
 
     pub fn is_left_associative(&self) -> bool {
         match self {
-            Token::Op(Operator::Neg) => false,
-            Token::Op(Operator::Or) => true,
-            Token::Op(Operator::And) => true,
-            Token::Op(Operator::Not) => true,
-            Token::Op(Operator::VariableAssign) => false,
-            Token::Op(Operator::Add) | Token::Op(Operator::Sub) => true,
-            Token::Op(Operator::Mul) | Token::Op(Operator::Div) | Token::Op(Operator::Mod) => true,
+            Token::Op(Operator::Invert, _) => false,
+            Token::Op(Operator::Or, _) => true,
+            Token::Op(Operator::And, _) => true,
+            Token::Op(Operator::Not, _) => true,
+            Token::Op(Operator::VariableAssign, _) => false,
+            Token::Op(Operator::Add, _) | Token::Op(Operator::Sub, _) => true,
+            Token::Op(Operator::Mul, _)
+            | Token::Op(Operator::Div, _)
+            | Token::Op(Operator::Mod, _) => true,
             _ => true,
         }
     }
 
     pub fn to_str(&self) -> String {
         match self {
-            Token::Identifier(block) => block.to_string(),
-            Token::Function(block) => format!("FUNC[{}]", block),
-            Token::UserBlockCall(block) => block.to_string(),
+            Token::Id(block) => block.to_string(),
+            Token::Function(block, _) => format!("Func[{}]", block),
+            Token::BlockCall(block, _) => block.to_string(),
             Token::Integer(block) => format!("{}", block),
-            Token::Float(block) => format!("{:?}", block),
-            Token::String(block) => format!("{:?}", block),
-            Token::Char(block) => format!("{:?}", block),
-            Token::Symbol(block) => format!("{:?}", block),
-            Token::Bool(_) => format!("{:?}", self),
+            Token::Float(block) => format!("{}", block),
+            Token::String(block) => block.to_string(),
+            Token::Char(block) => format!("{}", block),
+            Token::Symbol(block) => format!("{}", block),
+            Token::Bool(block) => format!("Bool[{}]", block),
             Token::Block(block) => match block {
                 Block::Literal(block) => {
                     let mut list = String::new();
@@ -151,7 +161,7 @@ impl Token {
                 }
                 Block::Lambda(block) => {
                     let mut list = String::new();
-                    list.push_str("LF{");
+                    list.push_str("L{");
                     if !block.is_empty() {
                         for item in block.iter() {
                             list.push_str(&item.to_str());
@@ -164,10 +174,21 @@ impl Token {
                     }
                     list.to_string()
                 }
-                Block::Function(block) => {
+                Block::Function(input, block) => {
                     let mut list = String::new();
-                    list.push_str("FUNC{");
+                    list.push_str("Func{");
                     if !block.is_empty() {
+                        list.push('[');
+                        for item in input.iter() {
+                            list.push_str(&item.to_str());
+                            list.push(',');
+                        }
+                        if input.is_empty() {
+                            list.push(']');
+                        } else {
+                            list.pop();
+                            list.push(']');
+                        }
                         for item in block.iter() {
                             list.push_str(&item.to_str());
                             list.push(',');
@@ -179,26 +200,9 @@ impl Token {
                     }
                     list.to_string()
                 }
-                Block::Auto(_, _) => "Auto".to_string(),
-                Block::Modifier(_, _) => "Modifier".to_string(),
                 Block::List(block) => {
                     let mut list = String::new();
                     list.push('[');
-                    if !block.is_empty() {
-                        for item in block.iter() {
-                            list.push_str(&item.to_str());
-                            list.push(',');
-                        }
-                        list.pop();
-                        list.push(']');
-                    } else {
-                        list.push(']');
-                    }
-                    list.to_string()
-                }
-                Block::ListLambda(block) => {
-                    let mut list = String::new();
-                    list.push_str("LLF[");
                     if !block.is_empty() {
                         for item in block.iter() {
                             list.push_str(&item.to_str());
@@ -229,21 +233,21 @@ impl Token {
                     list.to_string()
                 }
             },
-            Token::Op(operator) => {
+            Token::Op(operator, _) => {
                 let op = operator;
                 format!("{:?}", op)
             }
-            Token::FlowFunction(block) => format!("{}", block),
-            Token::FlowUserBlockCall(block) => format!("{:?}", block),
+            //Token::FlowFunction(block) => format!("{}", block),
+            //Token::FlowUserBlockCall(block) => format!("{:?}", block),
             Token::Reg(block) => format!("R{:?}", block),
         }
     }
 
     pub fn to_str_debug(&self) -> String {
         match self {
-            Token::Identifier(_) => format!("{:?}", self),
-            Token::Function(_) => format!("{:?}", self),
-            Token::UserBlockCall(_) => format!("{:?}", self),
+            Token::Id(_) => format!("{:?}", self),
+            Token::Function(_, _) => format!("{:?}", self),
+            Token::BlockCall(_, _) => format!("{:?}", self),
             Token::Integer(_) => format!("{:?}", self),
             Token::Float(_) => format!("{:?}", self),
             Token::String(_) => format!("{:?}", self),
@@ -251,9 +255,9 @@ impl Token {
             Token::Symbol(_) => format!("{:?}", self),
             Token::Bool(_) => format!("{:?}", self),
             Token::Block(_) => format!("{:?}", self),
-            Token::Op(_) => format!("{:?}", self),
-            Token::FlowFunction(_) => format!("{:?}", self),
-            Token::FlowUserBlockCall(_) => format!("{:?}", self),
+            Token::Op(_, _) => format!("{:?}", self),
+            //Token::FlowFunction(_) => format!("{:?}", self),
+            //Token::FlowUserBlockCall(_) => format!("{:?}", self),
             Token::Reg(_) => format!("{:?}", self),
         }
     }

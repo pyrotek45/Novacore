@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use hashbrown::HashMap;
 
 use super::{
@@ -6,7 +8,7 @@ use super::{
 };
 
 pub struct Evaluator {
-    functions: Vec<CallBack>,
+    functions: Vec<(CallBack, String)>,
     pub state: state::State,
 }
 
@@ -18,85 +20,79 @@ impl Evaluator {
         }
     }
 
-    pub fn add_function(&mut self, function: CallBack) -> usize {
-        self.functions.push(function);
+    pub fn add_function(&mut self, name: String, function: CallBack) -> usize {
+        self.functions.push((function, name));
         self.functions.len() - 1
     }
 
     pub fn eval(&mut self, expr: Token) {
         match expr {
             Token::Reg(opcodes) => core_ops::reg::register_operation(self, opcodes),
-            Token::Function(index) => {
+            Token::Function(index, line) => {
                 self.state.current_function_index.push(index);
-                self.functions[index](self);
+                self.state
+                    .traceback
+                    .push((self.functions[index].1.clone(), line));
+                self.functions[index].0(self);
                 self.state.current_function_index.pop();
+                self.state.traceback.pop();
             }
-            Token::FlowFunction(index) => {
-                self.state.current_function_index.push(index);
-                self.functions[index](self);
-                self.state.current_function_index.pop();
-            }
-            Token::UserBlockCall(function) => core_ops::control::user_block_call(self, &function),
-            Token::FlowUserBlockCall(function) => {
-                core_ops::control::user_block_call(self, &function)
+            Token::BlockCall(function, line) => {
+                self.state.traceback.push((function.clone(), line));
+                core_ops::control::user_block_call(self, &function);
+                self.state.traceback.pop();
             }
             Token::Block(Block::Lambda(block)) => {
-                self.state.call_stack.push(HashMap::new());
-                self.evaluate(block.to_vec());
-                if let Some(token) = self.state.get_from_heap_or_pop() {
-                    self.state.execution_stack.push(token)
-                }
-
-                self.state.call_stack.pop();
+                self.evaluate_function(block);
             }
-            Token::Block(Block::ListLambda(list)) => {
-                if let Some(Token::Integer(index)) = self.state.get_from_heap_or_pop() {
-                    if let Some(value) = list.get(index as usize) {
-                        self.state.execution_stack.push(value.clone())
-                    }
+            Token::Op(ref operator, line) => {
+                self.state.traceback.push((expr.to_str(), line));
+                match operator {
+                    Operator::BindVar => core_ops::operator::bind_variables(self),
+                    Operator::ResolveBind => core_ops::operator::resolve_binding(self),
+                    Operator::PopBindings => core_ops::operator::pop_bindings(self),
+                    Operator::Break => core_ops::control::break_loop(self),
+                    Operator::Continue => core_ops::control::continue_loop(self),
+                    Operator::Neg => core_ops::operator::neg(self),
+                    Operator::AccessCall => core_ops::control::get_access(self),
+                    Operator::UserFunctionChain => core_ops::control::user_chain_call(self),
+                    Operator::StoreTemp => core_ops::control::store_temp(self),
+                    Operator::And => core_ops::logical::logical_and(self),
+                    Operator::Or => core_ops::logical::logical_or(self),
+                    Operator::Not => core_ops::logical::logical_not(self),
+                    Operator::Equals => core_ops::comparison::equality_comparison(self),
+                    Operator::Gtr => core_ops::comparison::greater_than_comparison(self),
+                    Operator::Lss => core_ops::comparison::less_than_comparison(self),
+                    Operator::Invert => core_ops::operator::neg(self),
+                    Operator::Mod => core_ops::operator::modulo(self),
+                    Operator::Add => core_ops::operator::add(self),
+                    Operator::Sub => core_ops::operator::sub(self),
+                    Operator::Mul => core_ops::operator::mul(self),
+                    Operator::Div => core_ops::operator::div(self),
+                    Operator::VariableAssign => core_ops::operator::variable_assign(self),
+                    Operator::New => core_ops::operator::get_new(self),
+                    Operator::ModuleCall => core_ops::control::module(self),
                 }
+                self.state.traceback.pop();
             }
-            Token::Op(operator) => match operator {
-                Operator::AccessCall => core_ops::control::get_access(self),
-                Operator::UserFunctionChain => core_ops::control::user_chain_call(self),
-                Operator::StoreTemp => core_ops::control::store_temp(self),
-                //Operator::Break => core_ops::control::break_loop(self),
-                Operator::And => core_ops::logical::logical_and(self),
-                Operator::Or => core_ops::logical::logical_or(self),
-                Operator::Not => core_ops::logical::logical_not(self),
-                Operator::Equals => core_ops::comparison::equality_comparison(self),
-                Operator::Gtr => core_ops::comparison::greater_than_comparison(self),
-                Operator::Lss => core_ops::comparison::less_than_comparison(self),
-                Operator::Neg => core_ops::operator::neg(self),
-                Operator::Mod => core_ops::operator::modulo(self),
-                Operator::Add => core_ops::operator::add(self),
-                Operator::Sub => core_ops::operator::sub(self),
-                Operator::Mul => core_ops::operator::mul(self),
-                Operator::Div => core_ops::operator::div(self),
-                Operator::VariableAssign => core_ops::operator::variable_assign(self),
-                Operator::FunctionVariableAssign => {
-                    core_ops::operator::function_variable_assign(self)
-                }
-                Operator::SelfId => core_ops::operator::get_self(self),
-                _ => {}
-            },
             Token::Symbol(_) => {}
+            Token::Id(_) => self.state.execution_stack.push(expr),
             _ => {
                 self.state.execution_stack.push(expr);
             }
         }
     }
 
-    pub fn evaluate(&mut self, expr: Vec<Token>) {
-        for t in expr {
-            self.eval(t);
+    pub fn evaluate(&mut self, expr: Rc<Vec<Token>>) {
+        for t in &*expr {
+            self.eval(t.clone());
         }
     }
 
-    pub fn evaluate_function(&mut self, expr: Vec<Token>) {
+    pub fn evaluate_function(&mut self, expr: Rc<Vec<Token>>) {
         self.state.call_stack.push(HashMap::new());
-        for t in expr {
-            self.eval(t);
+        for t in &*expr {
+            self.eval(t.clone());
         }
         self.state.call_stack.pop();
     }

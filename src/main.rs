@@ -6,6 +6,7 @@ use colored::Colorize;
 use crossterm::style::Stylize;
 use rustyline::{error::ReadlineError, validate::MatchingBracketValidator, Editor};
 
+use novacore::lexer;
 use rustyline::{Cmd, EventHandler, KeyCode, KeyEvent, Modifiers};
 use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
 
@@ -17,13 +18,14 @@ struct InputValidator {
 
 fn main() {
     // Clap setup
-    let matches = App::new("Novacore Parser")
+    let matches = App::new("Novacore")
         .version("0.1")
         .author("Pyrotek45 pyrotek45_gaming@yahoo.com")
         .about("Novacore VM")
         .arg(
             Arg::with_name("FILE")
                 .value_name("FILE")
+                .multiple_values(true)
                 .help("Sets the input file to be used")
                 .index(1),
         )
@@ -53,6 +55,13 @@ fn main() {
         if matches.is_present("DEBUG") {
             core.debug_file(filename);
         } else {
+            let mut args: Vec<String> = std::env::args().collect();
+            args.remove(0);
+            args.remove(0);
+            let args = args.join(" ");
+            let mut lex = lexer::new();
+            lex.insert_string(&args);
+            core.evaluator.state.execution_stack = lex.parse();
             core.run();
         }
 
@@ -80,10 +89,13 @@ fn main() {
         let _repl = String::new();
         let mut repl_debug: bool = false;
         let mut core = novacore::new();
+        core.evaluator.state.repl_mode = true;
+        // core.lexer = Lexer::new();
+        // core.init();
 
         loop {
             // Repl prompt
-            let readline = rl.readline("Nova :: $ ");
+            let readline = rl.readline("Nova $ ");
             match readline {
                 Ok(line) => {
                     // Rustlyline History support
@@ -100,6 +112,11 @@ fn main() {
                         continue;
                     };
 
+                    if line.to_lowercase() == "reset" {
+                        core = novacore::new();
+                        core.evaluator.state.repl_mode = true;
+                        continue;
+                    };
                     // Enable vm debug
                     if repl_debug {
                         core.debug_string(&line)
