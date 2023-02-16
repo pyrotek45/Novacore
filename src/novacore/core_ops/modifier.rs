@@ -196,12 +196,12 @@ pub fn include(eval: &mut Evaluator) {
                 .execution_stack
                 .push(Token::Block(Block::Literal(Rc::new(value))))
         }
-        // (Some(Token::Block(Block::Function(block))), Some(Token::Block(Block::List(list)))) => {
-        //     let value = include_compute(eval, block, list);
-        //     eval.state
-        //         .execution_stack
-        //         .push(Token::Block(Block::Function(Rc::new(value))))
-        // }
+        (Some(Token::Block(Block::Function(vars, block))), Some(Token::Block(Block::List(list)))) => {
+            let value = include_compute(eval, block, list);
+            eval.state
+                .execution_stack
+                .push(Token::Block(Block::Function(vars, Rc::new(value))))
+        }
         (a, b) => eval.state.show_error(&format!(
             "Incorrect argument for include, got [{:?},{:?}]",
             a, b
