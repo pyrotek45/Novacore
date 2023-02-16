@@ -50,9 +50,7 @@ impl State {
         }
         println!("{}: {}", "Error".red(), &err.bright_yellow());
 
-        if self.repl_mode {
-            //self.exit = true;
-        } else {
+        if !self.repl_mode {
             std::process::exit(1);
         }
     }

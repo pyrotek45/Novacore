@@ -62,6 +62,7 @@ impl Vm {
     }
 
     pub fn init(&mut self) {
+        
         // io
         self.add_function("println", core_ops::io::println);
         self.add_function("echo", core_ops::io::println);
@@ -121,12 +122,6 @@ impl Vm {
         self.add_function("last", core_ops::list::list_last);
         self.add_function("insert", core_ops::list::list_insert);
         self.add_function("remove", core_ops::list::list_remove);
-        // last
-        // pop
-        // remove
-        // extract
-        // insert
-        // append
 
         // //modifier
         // self.add_function("let", core_ops::modifier::closure_let);

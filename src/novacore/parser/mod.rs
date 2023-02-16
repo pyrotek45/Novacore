@@ -1,7 +1,5 @@
 use std::rc::Rc;
-
 use crate::novacore::core::Block;
-
 use super::core::{Operator, Token};
 
 pub struct Parser {
@@ -72,20 +70,6 @@ impl Parser {
         self.output_stack.retain(|x| *x != Token::Symbol(','));
         self.output_stack.to_owned()
     }
-
-    // if let Some(last) = self.operator_stack.last().cloned() {
-    //     if let Token::Op(function) = last.clone() {
-    //         match function {
-    //             Operator::AccessCall => {
-    //                 self.operator_stack.pop();
-    //                 self.output_stack.push(last);
-    //             }
-    //             _ => {
-    //                 continue;
-    //             }
-    //         }
-    //     }
-    // }
 
     pub fn parse(&mut self, input: Vec<Token>) -> Vec<Token> {
         for token in input {

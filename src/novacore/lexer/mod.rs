@@ -21,7 +21,6 @@ pub struct Lexer {
     is_parsing_stringsq: bool,
     is_parsing_comment: bool,
     is_skip: bool,
-    //is_parsing_chain: Vec<bool>,
 
     // Output
     tokens: Vec<Vec<Token>>,
@@ -46,7 +45,6 @@ pub fn new() -> Lexer {
         tokens: vec![vec![]],
         is_parsing_comment: false,
         is_skip: false,
-        //is_parsing_chain: vec![],
         function_list: HashMap::new(),
         line: 1,
         _col: 1,
@@ -158,6 +156,7 @@ impl Lexer {
             None
         }
     }
+
     // // Going through each char in the file or string
     pub fn parse(&mut self) -> Vec<Token> {
         for c in self.file.clone().chars() {
@@ -226,9 +225,6 @@ impl Lexer {
                 // Spaces
                 ' ' => {
                     self.check_token();
-                    // if let Some(vec_last) = self.tokens.last_mut() {
-                    //     vec_last.push(Token::Symbol(' '))
-                    // }
                 }
 
                 '.' => {
