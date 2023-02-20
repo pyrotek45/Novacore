@@ -354,7 +354,7 @@ pub fn each(eval: &mut Evaluator) {
 
         match (&items, logic) {
             (Token::Block(items), Token::Block(logic)) => match (items, logic) {
-                (Block::Literal(items), Block::Literal(logic)) => {
+                (Block::List(items), Block::Literal(logic)) => {
                     each_compute(eval, items.clone(), logic)
                 }
                 (items, logic) => eval.state.show_error(&format!(
