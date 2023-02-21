@@ -96,7 +96,7 @@ average = func([l] {
 
 max = func([lst] {
     max = lst(0)
-    each(lst {
+    each( lst {
         [x] -> when(x^ > max {max = x^}) ;
     })
     return(max)

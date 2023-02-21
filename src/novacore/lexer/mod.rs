@@ -494,10 +494,6 @@ impl Lexer {
                 '[' => {
                     self.sqaure.push(self.line);
                     self.check_token();
-                    if let Some(Token::Op(Operator::VariableAssign, _)) = self.last_token() {
-                    } else {
-                        self.add_token(Token::Symbol(','));
-                    }
                     self.tokens.push(vec![]);
                 }
 
