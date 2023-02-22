@@ -11,3 +11,4 @@ pub mod random;
 pub mod reg;
 pub mod shuffle;
 pub mod time;
+pub mod casting;

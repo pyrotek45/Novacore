@@ -53,3 +53,24 @@ pub fn pow(eval: &mut Evaluator) {
         }
     }
 }
+
+pub fn round(eval: &mut Evaluator) {
+    match eval.state.get_from_heap_or_pop() {
+        Some(left) => match &left {
+            Token::Integer(left) => {
+                eval.state
+                    .execution_stack
+                    .push(Token::Float((*left as f64).round()));
+            }
+            Token::Float(left) => {
+                eval.state.execution_stack.push(Token::Float(left.round()));
+            }
+            _ => eval
+                .state
+                .show_error(&format!("Incorrect argument for round, got [{:?}]", left)),
+        },
+        None => {
+            eval.state.show_error("Not enough arguments for round");
+        }
+    }
+}

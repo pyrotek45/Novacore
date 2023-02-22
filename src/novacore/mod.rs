@@ -86,11 +86,12 @@ impl Vm {
         // rawread
         // clear
 
+        // type cast
+        self.add_function("int", core_ops::casting::as_int);
         // math
         self.add_function("sqrt", core_ops::math::sqrt);
         self.add_function("pow", core_ops::math::pow);
-
-        // pow
+        self.add_function("round", core_ops::math::round);
 
         // create
         self.add_function("range", core_ops::create::create_range);
@@ -128,6 +129,7 @@ impl Vm {
         // self.add_function("rec", core_ops::modifier::closure_rec);
         // self.add_function("auto", core_ops::modifier::closure_auto);
         // self.add_function("mod", core_ops::modifier::modifier);
+
         self.add_function("func", core_ops::modifier::func);
         self.add_function("list", core_ops::modifier::list);
         self.add_function("struct", core_ops::modifier::create_struct);
