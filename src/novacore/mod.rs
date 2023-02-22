@@ -62,7 +62,6 @@ impl Vm {
     }
 
     pub fn init(&mut self) {
-        
         // io
         self.add_function("println", core_ops::io::println);
         self.add_function("echo", core_ops::io::println);
@@ -89,6 +88,7 @@ impl Vm {
 
         // math
         self.add_function("sqrt", core_ops::math::sqrt);
+        self.add_function("pow", core_ops::math::pow);
 
         // pow
 

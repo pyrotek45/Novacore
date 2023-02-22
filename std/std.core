@@ -38,8 +38,8 @@ sum = func([l] {std::fold(l 0 {+} )})
 sq = func([x] {x * x})
 
 fib = func([num] {
-    ptp = 0
-    p = 1
+    ptp = 0.0
+    p = 1.0
     sum = 0
     if( num == 0 {
         sum = 0
@@ -66,7 +66,7 @@ factorial = func([n] {
 })
 
 power = func([x y] {
-    result = 1
+    result = 1.0
     for(i range(0 ,y - 1) {
         result = result * x
     })

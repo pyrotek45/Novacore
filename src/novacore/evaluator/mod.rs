@@ -10,6 +10,7 @@ use super::{
 pub struct Evaluator {
     functions: Vec<(CallBack, String)>,
     pub state: state::State,
+    pub debug: bool,
 }
 
 impl Evaluator {
@@ -17,6 +18,7 @@ impl Evaluator {
         Evaluator {
             functions: vec![],
             state: *state::new(),
+            debug: false,
         }
     }
 
@@ -25,28 +27,40 @@ impl Evaluator {
         self.functions.len() - 1
     }
 
+    #[inline(always)]
     pub fn eval(&mut self, expr: Token) {
         match expr {
             Token::Reg(opcodes) => core_ops::reg::register_operation(self, opcodes),
             Token::Function(index, line) => {
                 self.state.current_function_index.push(index);
-                self.state
-                    .traceback
-                    .push((self.functions[index].1.clone(), line));
+                if self.debug {
+                    self.state
+                        .traceback
+                        .push((self.functions[index].1.clone(), line));
+                }
                 self.functions[index].0(self);
                 self.state.current_function_index.pop();
-                self.state.traceback.pop();
+                if self.debug {
+                    self.state.traceback.pop();
+                }
             }
             Token::BlockCall(function, line) => {
-                self.state.traceback.push((function.clone(), line));
+                if self.debug {
+                    self.state.traceback.push((function.clone(), line));
+                }
+
                 core_ops::control::user_block_call(self, &function);
-                self.state.traceback.pop();
+                if self.debug {
+                    self.state.traceback.pop();
+                }
             }
             Token::Block(Block::Lambda(block)) => {
                 self.evaluate_function(block);
             }
             Token::Op(ref operator, line) => {
-                self.state.traceback.push((expr.to_str(), line));
+                if self.debug {
+                    self.state.traceback.push((expr.to_str(), line));
+                }
                 match operator {
                     Operator::BindVar => core_ops::operator::bind_variables(self),
                     Operator::ResolveBind => core_ops::operator::resolve_binding(self),
@@ -73,7 +87,9 @@ impl Evaluator {
                     Operator::New => core_ops::operator::get_new(self),
                     Operator::ModuleCall => core_ops::control::module(self),
                 }
-                self.state.traceback.pop();
+                if self.debug {
+                    self.state.traceback.pop();
+                }
             }
             Token::Symbol(_) => {}
             Token::Id(_) => self.state.execution_stack.push(expr),
@@ -85,7 +101,7 @@ impl Evaluator {
 
     pub fn evaluate(&mut self, expr: Rc<Vec<Token>>) {
         for t in &*expr {
-            self.eval(t.clone());
+            self.eval(t.clone())
         }
     }
 

@@ -68,6 +68,7 @@ impl State {
         }
     }
 
+    #[inline(always)]
     pub fn get_from_heap_or_pop(&mut self) -> Option<Token> {
         let tok = self.execution_stack.pop()?;
 
@@ -87,6 +88,7 @@ impl State {
         }
     }
 
+    #[inline(always)]
     pub fn get_from_binding(&mut self) -> Option<Token> {
         let tok = self.execution_stack.pop()?;
 
@@ -102,7 +104,8 @@ impl State {
             Some(tok)
         }
     }
-
+    
+    #[inline(always)]
     pub fn get_from_heap(&mut self, ident: &str) -> Option<Token> {
         for scopes in self.call_stack.iter().rev() {
             if let Some(func) = self.function_list.get(ident) {

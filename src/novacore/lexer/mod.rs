@@ -158,6 +158,7 @@ impl Lexer {
     }
 
     // // Going through each char in the file or string
+    #[inline(always)]
     pub fn parse(&mut self) -> Vec<Token> {
         for c in self.file.clone().chars() {
             if self.is_parsing_stringdq {

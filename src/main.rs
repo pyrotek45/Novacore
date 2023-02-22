@@ -30,12 +30,12 @@ fn main() {
                 .index(1),
         )
         .arg(
-            Arg::with_name("DEBUG")
-                .value_name("DEBUG")
-                .long("debug")
+            Arg::with_name("DEBUGOUTPUT")
+                .value_name("DEBUGOUTPUT")
+                .long("debugoutput")
                 .takes_value(false)
-                .short('d')
-                .help("displays debug information"),
+                .short('o')
+                .help("disassembles file"),
         )
         .arg(
             Arg::with_name("TIME")
@@ -45,6 +45,14 @@ fn main() {
                 .short('t')
                 .help("displays how long novacore takes to run"),
         )
+        .arg(
+            Arg::with_name("DEBUG")
+                .value_name("DEBUG")
+                .long("debug")
+                .takes_value(false)
+                .short('d')
+                .help("runs file with debug mode"),
+        )
         .get_matches();
 
     // Repl or File
@@ -52,8 +60,20 @@ fn main() {
         let start = Instant::now();
         let mut core = novacore::new_from_file(filename);
 
-        if matches.is_present("DEBUG") {
+        if matches.is_present("DEBUGOUTPUT") {
+            core.evaluator.debug = true;
             core.debug_file(filename);
+        } else if matches.is_present("DEBUG") {
+            println!("RUNNING DEBUG...");
+            let mut args: Vec<String> = std::env::args().collect();
+            args.remove(0);
+            args.remove(0);
+            let args = args.join(" ");
+            let mut lex = lexer::new();
+            lex.insert_string(&args);
+            core.evaluator.debug = true;
+            core.evaluator.state.execution_stack = lex.parse();
+            core.run();
         } else {
             let mut args: Vec<String> = std::env::args().collect();
             args.remove(0);
@@ -79,7 +99,7 @@ fn main() {
         let mut rl = Editor::new().unwrap();
         rl.set_helper(Some(h));
         rl.bind_sequence(
-            KeyEvent(KeyCode::Char('s'), Modifiers::CTRL),
+            KeyEvent(KeyCode::Enter, Modifiers::CTRL),
             EventHandler::Simple(Cmd::Newline),
         );
         if rl.load_history("history.txt").is_err() {
@@ -107,8 +127,13 @@ fn main() {
                         break;
                     };
 
-                    if line.to_lowercase() == "debug" {
+                    if line.to_lowercase() == "dis" {
                         repl_debug = !repl_debug;
+                        continue;
+                    };
+
+                    if line.to_lowercase() == "debug" {
+                        core.evaluator.debug = true;
                         continue;
                     };
 

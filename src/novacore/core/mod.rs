@@ -78,6 +78,8 @@ pub enum Token {
 }
 
 impl Token {
+
+    #[inline(always)]
     pub fn get_int(&self) -> i128 {
         match self {
             Token::Integer(num) => *num,
@@ -85,6 +87,7 @@ impl Token {
         }
     }
 
+    #[inline(always)]
     pub fn _get_string(&self) -> &str {
         match self {
             Token::String(value) => value,
@@ -92,6 +95,7 @@ impl Token {
         }
     }
 
+    #[inline(always)]
     pub fn get_float(&self) -> f64 {
         match self {
             Token::Float(num) => *num,
@@ -99,6 +103,7 @@ impl Token {
         }
     }
 
+    #[inline(always)]
     pub fn precedence(&self) -> usize {
         match self {
             Token::Op(Operator::VariableAssign, _) => 2,
@@ -117,6 +122,7 @@ impl Token {
         }
     }
 
+    #[inline(always)]
     pub fn is_left_associative(&self) -> bool {
         match self {
             Token::Op(Operator::Invert, _) => false,
@@ -132,6 +138,7 @@ impl Token {
         }
     }
 
+    #[inline(always)]
     pub fn to_str(&self) -> String {
         match self {
             Token::Id(block) => block.to_string(),

@@ -69,6 +69,11 @@ pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>) {
 
             eval.state.execution_stack[offset - opcodes[2]] = temp
         }
+        // copy index destination
+        9 => {
+            eval.state.execution_stack[offset - opcodes[2]] =
+                eval.state.execution_stack[offset - opcodes[1]].clone();
+        }
         a => eval
             .state
             .show_error(&format!("Incorrect reg operation, got  [{:?}]", a)),

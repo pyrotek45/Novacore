@@ -1,6 +1,6 @@
-use std::rc::Rc;
-use crate::novacore::core::Block;
 use super::core::{Operator, Token};
+use crate::novacore::core::Block;
+use std::rc::Rc;
 
 pub struct Parser {
     pub operator_stack: Vec<Token>,
@@ -22,6 +22,7 @@ impl Parser {
         self.output_stack.clear();
     }
 
+    #[inline(always)]
     pub fn parse_list(&mut self, input: Vec<Token>) -> Vec<Token> {
         for token in input {
             match &token {
@@ -71,6 +72,7 @@ impl Parser {
         self.output_stack.to_owned()
     }
 
+    #[inline(always)]
     pub fn parse(&mut self, input: Vec<Token>) -> Vec<Token> {
         for token in input {
             match &token {
@@ -150,9 +152,6 @@ impl Parser {
                                     Token::Op(Operator::StoreTemp, line) => self
                                         .output_stack
                                         .push(Token::Op(Operator::UserFunctionChain, *line)),
-                                    Token::Op(_, _) => {
-                                        self.output_stack.push(last.clone());
-                                    }
                                     Token::BlockCall(_, _) => self.output_stack.push(last.clone()),
                                     Token::Block(block) => match block {
                                         Block::Literal(_) => todo!(),
