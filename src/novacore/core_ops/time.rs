@@ -23,12 +23,6 @@ pub fn time(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         if let Token::Block(block) = token {
             match block {
-                Block::Function(_, block) => {
-                    let start = Instant::now();
-                    eval.evaluate_function(block);
-                    let duration = start.elapsed();
-                    println!("{} {:?}", ">> Execution:".bright_green(), duration);
-                }
                 Block::Literal(block) => {
                     // call in same scope
                     let start = Instant::now();
@@ -36,15 +30,8 @@ pub fn time(eval: &mut Evaluator) {
                     let duration = start.elapsed();
                     println!("{} {:?}", ">> Execution:".bright_green(), duration);
                 }
-                Block::List(block) => {
-                    // call in same scope
-                    let start = Instant::now();
-                    eval.evaluate(block);
-                    let duration = start.elapsed();
-                    println!("{} {:?}", ">> Execution:".bright_green(), duration);
-                }
-                _ => {
-                    todo!()
+                a => {
+                    eval.state.show_error(&format!("Cannot time {:?}", a));
                 }
             }
         } else {

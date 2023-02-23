@@ -37,6 +37,7 @@ impl Evaluator {
                         .traceback
                         .push((self.functions[index].1.clone(), line));
                 }
+
                 self.functions[index].0(self);
                 self.state.current_function_index.pop();
                 if self.debug {
@@ -60,6 +61,7 @@ impl Evaluator {
                 if self.debug {
                     self.state.traceback.push((expr.to_str(), line));
                 }
+
                 match operator {
                     Operator::BindVar => core_ops::operator::bind_variables(self),
                     Operator::ResolveBind => core_ops::operator::resolve_binding(self),
@@ -100,7 +102,7 @@ impl Evaluator {
 
     pub fn evaluate(&mut self, expr: Rc<Vec<Token>>) {
         for t in &*expr {
-            self.eval(t.clone())
+            self.eval(t.clone());
         }
     }
 

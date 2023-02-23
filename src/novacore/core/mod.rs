@@ -52,12 +52,8 @@ pub enum Token {
     // built in functions
     Function(usize, usize),
 
-    //FlowFunction(usize),
-
     // user defined functions
     BlockCall(String, usize),
-
-    //FlowUserBlockCall(String), // Block calls
 
     // symbols
     Op(Operator, usize),
