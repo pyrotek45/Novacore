@@ -72,7 +72,11 @@ fn main() {
             let mut lex = lexer::new();
             lex.insert_string(&args);
             core.evaluator.debug = true;
-            core.evaluator.state.execution_stack = lex.parse();
+            let parsed = match lex.parse() {
+                Ok(parsed) => parsed,
+                Err(_) => todo!(),
+            };
+            core.evaluator.state.execution_stack = parsed;
             core.run();
         } else {
             let mut args: Vec<String> = std::env::args().collect();
@@ -81,7 +85,11 @@ fn main() {
             let args = args.join(" ");
             let mut lex = lexer::new();
             lex.insert_string(&args);
-            core.evaluator.state.execution_stack = lex.parse();
+            let parsed = match lex.parse() {
+                Ok(parsed) => parsed,
+                Err(_) => todo!(),
+            };
+            core.evaluator.state.execution_stack = parsed;
             core.run();
         }
 

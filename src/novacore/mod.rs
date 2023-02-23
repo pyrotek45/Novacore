@@ -20,8 +20,11 @@ pub struct Vm {
 
 impl Vm {
     pub fn run(&mut self) {
-        self.evaluator
-            .evaluate(Rc::new(self.parser.parse(self.lexer.parse())));
+        let parsed = match self.lexer.parse() {
+            Ok(parsed) => parsed,
+            Err(_) => todo!(),
+        };
+        self.evaluator.evaluate(Rc::new(self.parser.parse(parsed)));
     }
 
     pub fn run_string(&mut self, input: &str) {
@@ -29,8 +32,11 @@ impl Vm {
         self.lexer.insert_string(input);
         self.parser = parser::new();
         self.init();
-        self.evaluator
-            .evaluate(Rc::new(self.parser.parse(self.lexer.parse())))
+        let parsed = match self.lexer.parse() {
+            Ok(parsed) => parsed,
+            Err(_) => todo!(),
+        };
+        self.evaluator.evaluate(Rc::new(self.parser.parse(parsed)));
     }
 
     pub fn _get_last_in_state(&mut self) -> Option<String> {
@@ -161,11 +167,19 @@ impl Vm {
         core.lexer.add_file(filename);
         core.init();
         println!("Lexer:");
-        debugger::debug_output(0, Rc::new(core.lexer.parse()));
+        let parsed = match self.lexer.parse() {
+            Ok(parsed) => parsed,
+            Err(_) => todo!(),
+        };
+        debugger::debug_output(0, Rc::new(parsed));
         println!("Parser:");
         core.lexer.clear();
         core.parser.clear();
-        debugger::debug_output(0, Rc::new(core.parser.parse(core.lexer.parse())));
+        let parsed = match self.lexer.parse() {
+            Ok(parsed) => parsed,
+            Err(_) => todo!(),
+        };
+        debugger::debug_output(0, Rc::new(core.parser.parse(parsed)));
     }
 
     pub fn debug_string(&mut self, filename: &str) {
@@ -176,12 +190,20 @@ impl Vm {
         };
         core.lexer.insert_string(filename);
         core.init();
-        println!("Lexer Debug");
-        debugger::debug_output(0, Rc::new(core.lexer.parse()));
-        println!("Parser Debug");
+        println!("Lexer dis:");
+        let parsed = match core.lexer.parse() {
+            Ok(parsed) => parsed,
+            Err(_) => todo!(),
+        };
+        debugger::debug_output(0, Rc::new(parsed));
+        println!("Parser dis:");
         core.lexer.clear();
         core.parser.clear();
-        debugger::debug_output(0, Rc::new(core.parser.parse(core.lexer.parse())));
+        let parsed = match core.lexer.parse() {
+            Ok(parsed) => parsed,
+            Err(_) => todo!(),
+        };
+        debugger::debug_output(0, Rc::new(core.parser.parse(parsed)));
     }
 }
 

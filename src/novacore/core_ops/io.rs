@@ -119,8 +119,11 @@ pub fn load(eval: &mut Evaluator) {
     ) {
         let mut vm = novacore::new_from_file(&filepath);
         vm.evaluator.state.current_file = filepath.clone();
-        vm.evaluator
-            .evaluate(vm.parser.parse(vm.lexer.parse()).into());
+        let parsed = match vm.lexer.parse() {
+            Ok(parsed) => parsed,
+            Err(_) => todo!(),
+        };
+        vm.evaluator.evaluate(vm.parser.parse(parsed).into());
         if let Some(scope) = vm.evaluator.state.call_stack.pop() {
             eval.state.modules.insert(id, scope);
             for (key, item) in vm.evaluator.state.modules {
@@ -143,8 +146,11 @@ pub fn import(eval: &mut Evaluator) {
             if let Token::Id(module) = modules {
                 let mut vm = novacore::new_from_file(&format!("std/{}.core", module));
                 vm.evaluator.state.current_file = format!("std/{}.core", module);
-                vm.evaluator
-                    .evaluate(vm.parser.parse(vm.lexer.parse()).into());
+                let parsed = match vm.lexer.parse() {
+                    Ok(parsed) => parsed,
+                    Err(_) => todo!(),
+                };
+                vm.evaluator.evaluate(vm.parser.parse(parsed).into());
                 if let Some(scope) = vm.evaluator.state.call_stack.pop() {
                     eval.state.modules.insert(module.to_string(), scope);
                     for (key, item) in vm.evaluator.state.modules {

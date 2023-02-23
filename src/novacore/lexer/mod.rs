@@ -96,6 +96,7 @@ impl Lexer {
             "and" => Token::Op(Operator::And, self.line),
             "or" => Token::Op(Operator::Or, self.line),
 
+            "-" => Token::Op(Operator::Sub, self.line),
             _ => {
                 if token.contains('.') {
                     println!();
@@ -113,7 +114,6 @@ impl Lexer {
 
     // // This Op is used to check to see if the current
     // // buffer is either a (number,Op,bool,identifier)
-
     fn check_token_buffer(&self) -> Option<Token> {
         if !self.token_buffer.is_empty() {
             if is_string_number(&self.token_buffer) {
@@ -150,7 +150,7 @@ impl Lexer {
         }
     }
 
-    fn _last_token(&self) -> Option<&Token> {
+    fn last_token(&self) -> Option<&Token> {
         if let Some(vec_last) = self.tokens.last() {
             vec_last.last()
         } else {
@@ -159,8 +159,7 @@ impl Lexer {
     }
 
     // // Going through each char in the file or string
-
-    pub fn parse(&mut self) -> Vec<Token> {
+    pub fn parse(&mut self) -> Result<Vec<Token>, &str> {
         for c in self.file.clone().chars() {
             if self.is_parsing_stringdq {
                 if c == '\\' {
@@ -220,7 +219,7 @@ impl Lexer {
                 }
 
                 // Letters and numbers
-                'a'..='z' | 'A'..='Z' | '_' | '0'..='9' => {
+                'a'..='z' | 'A'..='Z' | '_' | '0'..='9' | '-' => {
                     self.token_buffer.push(c);
                 }
 
@@ -247,8 +246,8 @@ impl Lexer {
                 }
 
                 // Symbols
-                '+' | '-' | '*' | '/' | '(' | ')' | '<' | '>' | '`' | '~' | '@' | '%' | '^'
-                | '&' | ',' | '?' | ';' | ':' | '=' | '!' | '$' | '|' => {
+                '+' | '*' | '/' | '(' | ')' | '<' | '>' | '`' | '~' | '@' | '%' | '^' | '&'
+                | ',' | '?' | ';' | ':' | '=' | '!' | '$' | '|' => {
                     self.check_token();
 
                     if let Some(vec_last) = self.tokens.last_mut() {
@@ -477,6 +476,10 @@ impl Lexer {
                 '{' => {
                     self.curly.push(self.line);
                     self.check_token();
+                    if let Some(Token::Op(Operator::VariableAssign, _)) = self.last_token() {
+                    } else {
+                        self.add_token(Token::Symbol(','));
+                    }
                     self.tokens.push(vec![]);
                 }
 
@@ -581,6 +584,6 @@ impl Lexer {
             std::process::exit(1)
         }
 
-        self.tokens[0].to_owned()
+        Ok(self.tokens[0].to_owned())
     }
 }
