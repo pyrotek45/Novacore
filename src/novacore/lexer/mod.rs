@@ -58,10 +58,13 @@ pub fn new() -> Lexer {
 }
 
 impl Lexer {
+
+    #[inline(always)]
     pub fn get_function_list(&self) -> HashMap<String, usize> {
         self.function_list.clone()
     }
 
+    #[inline(always)]
     pub fn add_file(&mut self, filename: &str) {
         self.filename = filename.to_owned();
         if let Ok(content) = std::fs::read_to_string(filename) {
@@ -75,14 +78,17 @@ impl Lexer {
         }
     }
 
+    #[inline(always)]
     pub fn insert_string(&mut self, input: &str) {
         self.file += input
     }
 
+    #[inline(always)]
     pub fn add_function(&mut self, name: &str, index: usize) {
         self.function_list.insert(name.to_string(), index);
     }
 
+    #[inline(always)]
     fn match_token(&self, token: &str) -> Token {
         match token {
             "break" => Token::Op(Operator::Break, self.line),
@@ -107,12 +113,14 @@ impl Lexer {
         }
     }
 
+    #[inline(always)]
     pub fn clear(&mut self) {
         self.tokens = vec![vec![]];
     }
 
     // // This Op is used to check to see if the current
     // // buffer is either a (number,Op,bool,identifier)
+    #[inline(always)]
     fn check_token_buffer(&self) -> Option<Token> {
         if !self.token_buffer.is_empty() {
             if is_string_number(&self.token_buffer) {
@@ -134,6 +142,7 @@ impl Lexer {
         Option::None
     }
 
+    #[inline(always)]
     pub fn check_token(&mut self) {
         if let Some(t) = self.check_token_buffer() {
             if let Some(vec_last) = self.tokens.last_mut() {
@@ -143,13 +152,15 @@ impl Lexer {
         }
     }
 
+    #[inline(always)]
     fn add_token(&mut self, token: Token) {
         if let Some(vec_last) = self.tokens.last_mut() {
             vec_last.push(token)
         }
     }
 
-    fn last_token(&self) -> Option<&Token> {
+    #[inline(always)]
+    fn _last_token(&self) -> Option<&Token> {
         if let Some(vec_last) = self.tokens.last() {
             vec_last.last()
         } else {
@@ -476,10 +487,6 @@ impl Lexer {
                 '{' => {
                     self.curly.push(self.line);
                     self.check_token();
-                    if let Some(Token::Op(Operator::VariableAssign, _)) = self.last_token() {
-                    } else {
-                        self.add_token(Token::Symbol(','));
-                    }
                     self.tokens.push(vec![]);
                 }
 

@@ -5,6 +5,7 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
+#[inline(always)]
 pub fn create_range(eval: &mut Evaluator) {
     if let (Some(ref end), Some(ref start)) = (
         eval.state.get_from_heap_or_pop(),
@@ -30,6 +31,7 @@ pub fn create_range(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn collect(eval: &mut Evaluator) {
     let mut newlist = vec![];
     if let Some(list) = eval.state.get_from_heap_or_pop() {
@@ -95,6 +97,7 @@ pub fn collect(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn iota(eval: &mut Evaluator) {
     if let Some(ref end) = eval.state.get_from_heap_or_pop() {
         match end {

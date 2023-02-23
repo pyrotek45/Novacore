@@ -9,6 +9,7 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
+#[inline(always)]
 pub fn sleep(eval: &mut Evaluator) {
     if let Some(Token::Integer(time)) = eval.state.get_from_heap_or_pop() {
         let delay = time::Duration::from_millis(time as u64);
@@ -18,6 +19,7 @@ pub fn sleep(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn time(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         if let Token::Block(block) = token {

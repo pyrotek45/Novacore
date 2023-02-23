@@ -250,6 +250,7 @@ impl Token {
         }
     }
 
+    #[inline(always)]
     pub fn to_str_debug(&self) -> String {
         match self {
             Token::Id(_) => format!("{:?}", self),

@@ -1,5 +1,6 @@
 use crate::novacore::evaluator::Evaluator;
 
+#[inline(always)]
 pub fn dup(eval: &mut Evaluator) {
     if let Some(top) = eval.state.execution_stack.last() {
         eval.state.execution_stack.push(top.clone())
@@ -8,6 +9,7 @@ pub fn dup(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn ddup(eval: &mut Evaluator) {
     if let Some(top) = eval.state.execution_stack.pop() {
         eval.state.execution_stack.push(top.clone());
@@ -18,6 +20,7 @@ pub fn ddup(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn swap(eval: &mut Evaluator) {
     if let (Some(top), Some(under)) = (
         eval.state.execution_stack.pop(),
@@ -30,12 +33,14 @@ pub fn swap(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn drop(eval: &mut Evaluator) {
     if eval.state.execution_stack.pop().is_none() {
         eval.state.show_error("Not enough arguments for drop");
     }
 }
 
+#[inline(always)]
 pub fn nip(eval: &mut Evaluator) {
     if let (Some(top), Some(_)) = (
         eval.state.execution_stack.pop(),
@@ -47,6 +52,7 @@ pub fn nip(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn over(eval: &mut Evaluator) {
     if let (Some(top), Some(under)) = (
         eval.state.execution_stack.pop(),
@@ -60,6 +66,7 @@ pub fn over(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn dover(eval: &mut Evaluator) {
     if let (Some(b), Some(a)) = (
         eval.state.execution_stack.pop(),
@@ -74,6 +81,7 @@ pub fn dover(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn rot(eval: &mut Evaluator) {
     if let (Some(top), Some(mid), Some(bottom)) = (
         eval.state.execution_stack.pop(),
@@ -88,6 +96,7 @@ pub fn rot(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn drot(eval: &mut Evaluator) {
     if let (Some(top), Some(mid), Some(bottom)) = (
         eval.state.execution_stack.pop(),
@@ -102,6 +111,7 @@ pub fn drot(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn wipe(eval: &mut Evaluator) {
     eval.state.execution_stack.clear()
 }

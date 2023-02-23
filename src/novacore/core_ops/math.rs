@@ -1,5 +1,6 @@
 use crate::novacore::{core::Token, evaluator::Evaluator};
 
+#[inline(always)]
 pub fn sqrt(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(left) => match &left {
@@ -21,6 +22,7 @@ pub fn sqrt(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn pow(eval: &mut Evaluator) {
     match (eval.state.get_from_heap_or_pop(),eval.state.get_from_heap_or_pop()) {
         (Some(left),Some(right)) => match (&right ,&left) {

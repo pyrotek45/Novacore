@@ -1,5 +1,6 @@
 use crate::novacore::{core::Token, evaluator::Evaluator};
 
+#[inline(always)]
 pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>) {
     let offset = eval.state.execution_stack.len() - 1;
     match opcodes[0] {

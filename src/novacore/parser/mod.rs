@@ -259,6 +259,7 @@ impl Parser {
         self.output_stack.to_owned()
     }
 
+    #[inline(always)]
     fn emtpy_operators(&mut self) {
         while let Some(last) = self.operator_stack.last().cloned() {
             if last != Token::Symbol('(') {
@@ -271,6 +272,7 @@ impl Parser {
         }
     }
 
+    #[inline(always)]
     fn emtpy_all_operators(&mut self) {
         while let Some(t) = self.operator_stack.pop() {
             self.output_stack.push(t);

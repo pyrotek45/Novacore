@@ -5,14 +5,17 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
+#[inline(always)]
 pub fn break_loop(eval: &mut Evaluator) {
     eval.state.break_loop.push(true);
 }
 
+#[inline(always)]
 pub fn continue_loop(eval: &mut Evaluator) {
     eval.state.continue_loop.push(true);
 }
 
+#[inline(always)]
 pub fn block_call(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         if let Token::Block(block) = token {
@@ -80,6 +83,7 @@ pub fn block_call(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
     if let Some(token) = eval.state.get_from_heap(function_name) {
         if let Token::Block(block) = token {
@@ -144,6 +148,7 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
     }
 }
 
+#[inline(always)]
 pub fn if_statement(eval: &mut Evaluator) {
     if let (Some(elseblock), Some(trueblock), Some(bool)) = (
         eval.state.get_from_heap_or_pop(),
@@ -172,6 +177,7 @@ pub fn if_statement(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn when_statement(eval: &mut Evaluator) {
     if let (Some(trueblock), Some(bool)) = (
         eval.state.get_from_heap_or_pop(),
@@ -193,6 +199,7 @@ pub fn when_statement(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn unless_statement(eval: &mut Evaluator) {
     if let (Some(trueblock), Some(bool)) = (
         eval.state.get_from_heap_or_pop(),
@@ -214,7 +221,9 @@ pub fn unless_statement(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn while_loop(eval: &mut Evaluator) {
+    #[inline(always)]
     fn while_compute(eval: &mut Evaluator, test: Instructions, logic: Instructions) {
         'out: loop {
             // run test block
@@ -268,7 +277,9 @@ pub fn while_loop(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn times(eval: &mut Evaluator) {
+    #[inline(always)]
     fn times_compute(eval: &mut Evaluator, logic: Instructions, times: usize) {
         'out: for _ in 0..times {
             for t in &*logic {
@@ -313,11 +324,13 @@ pub fn times(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn each(eval: &mut Evaluator) {
     if let (Some(logic), Some(items)) = (
         eval.state.get_from_heap_or_pop(),
         eval.state.get_from_heap_or_pop(),
     ) {
+        #[inline(always)]
         fn each_compute(eval: &mut Evaluator, items: Instructions, logic: Instructions) {
             'out: for item in items.iter() {
                 eval.state.execution_stack.push(item.clone());
@@ -334,7 +347,8 @@ pub fn each(eval: &mut Evaluator) {
                 }
             }
         }
-
+        
+        #[inline(always)]
         fn each_compute_string(eval: &mut Evaluator, str: String, logic: Instructions) {
             'out: for item in str.chars() {
                 eval.state.execution_stack.push(Token::Char(item));
@@ -379,7 +393,9 @@ pub fn each(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn for_each(eval: &mut Evaluator) {
+    #[inline(always)]
     fn for_compute(
         eval: &mut Evaluator,
         block: Instructions,
@@ -431,6 +447,7 @@ pub fn for_each(eval: &mut Evaluator) {
         }
     }
 
+    #[inline(always)]
     fn for_compute_string(
         eval: &mut Evaluator,
         block: Instructions,
@@ -486,6 +503,7 @@ pub fn for_each(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn user_chain_call(eval: &mut Evaluator) {
     if let Some(token) = eval.state.auxiliary.last().cloned() {
         if let Token::Block(block) = token {
@@ -553,6 +571,7 @@ pub fn user_chain_call(eval: &mut Evaluator) {
     eval.state.auxiliary.pop();
 }
 
+#[inline(always)]
 pub fn get_access(eval: &mut Evaluator) {
     if let (Some(top), Some(under)) = (
         eval.state.execution_stack.pop(),
@@ -622,6 +641,7 @@ pub fn get_access(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn module(eval: &mut Evaluator) {
     if let (Some(Token::Id(key)), Some(Token::Id(module))) = (
         eval.state.execution_stack.pop(),
@@ -643,6 +663,7 @@ pub fn module(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn store_temp(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         eval.state.auxiliary.push(token);
@@ -651,6 +672,7 @@ pub fn store_temp(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn eval_top(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         eval.eval(token)
@@ -659,6 +681,7 @@ pub fn eval_top(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn exe(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {

@@ -5,6 +5,7 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
+#[inline(always)]
 pub fn list_push(eval: &mut Evaluator) {
     if let (Some(token), Some(list)) = (
         eval.state.get_from_heap_or_pop(),
@@ -28,6 +29,7 @@ pub fn list_push(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn list_pop(eval: &mut Evaluator) {
     if let (Some(token), Some(list)) = (
         eval.state.execution_stack.pop(),
@@ -53,6 +55,7 @@ pub fn list_pop(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn list_last(eval: &mut Evaluator) {
     if let Some(list) = eval.state.get_from_heap_or_pop() {
         match list {
@@ -70,6 +73,7 @@ pub fn list_last(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn list_insert(eval: &mut Evaluator) {
     if let (Some(item), Some(index), Some(list)) = (
         eval.state.get_from_heap_or_pop(),
@@ -101,6 +105,7 @@ pub fn list_insert(eval: &mut Evaluator) {
     }
 }
 
+#[inline(always)]
 pub fn list_remove(eval: &mut Evaluator) {
     if let (Some(index), Some(list)) = (
         eval.state.get_from_heap_or_pop(),
