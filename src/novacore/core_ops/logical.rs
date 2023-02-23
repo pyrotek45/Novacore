@@ -1,6 +1,6 @@
 use crate::novacore::{core::Token, evaluator::Evaluator};
 
-#[inline(always)]
+
 pub fn logical_and(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -22,7 +22,7 @@ pub fn logical_and(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn logical_or(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -44,7 +44,7 @@ pub fn logical_or(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn logical_not(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         if let Token::Bool(bool) = token {

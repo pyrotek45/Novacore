@@ -15,7 +15,7 @@ pub struct Evaluator {
 
 impl Evaluator {
 
-    #[inline(always)]
+    
     pub fn new() -> Self {
         Evaluator {
             functions: vec![],
@@ -24,13 +24,13 @@ impl Evaluator {
         }
     }
 
-    #[inline(always)]
+    
     pub fn add_function(&mut self, name: String, function: CallBack) -> usize {
         self.functions.push((function, name));
         self.functions.len() - 1
     }
 
-    #[inline(always)]
+    
     pub fn eval(&mut self, expr: Token) {
         match expr {
             Token::Reg(opcodes) => core_ops::reg::register_operation(self, opcodes),
@@ -102,14 +102,14 @@ impl Evaluator {
         }
     }
 
-    #[inline(always)]
+    
     pub fn evaluate(&mut self, expr: Rc<Vec<Token>>) {
         for t in &*expr {
             self.eval(t.clone())
         }
     }
 
-    #[inline(always)]
+    
     pub fn evaluate_function(&mut self, expr: Rc<Vec<Token>>) {
         self.state.call_stack.push(HashMap::new());
         for t in &*expr {

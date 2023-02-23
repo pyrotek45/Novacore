@@ -3,7 +3,7 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
-#[inline(always)]
+
 pub fn as_int(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(Token::Float(value)) => {

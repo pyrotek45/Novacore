@@ -16,7 +16,7 @@ struct InputValidator {
     brackets: MatchingBracketValidator,
 }
 
-#[inline(always)]
+
 fn main() {
     // Clap setup
     let matches = App::new("Novacore")

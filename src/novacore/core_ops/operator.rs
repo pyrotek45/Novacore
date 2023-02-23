@@ -8,7 +8,7 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
-#[inline(always)]
+
 pub fn add(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -102,7 +102,7 @@ pub fn add(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn div(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -139,7 +139,7 @@ pub fn div(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn neg(eval: &mut Evaluator) {
     if let Some(left) = eval.state.get_from_heap_or_pop() {
         match &left {
@@ -158,7 +158,7 @@ pub fn neg(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn sub(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -192,7 +192,7 @@ pub fn sub(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn modulo(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -214,7 +214,7 @@ pub fn modulo(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn mul(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -248,7 +248,7 @@ pub fn mul(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn variable_assign(eval: &mut Evaluator) {
     if let (Some(token), Some(ident)) = (
         eval.state.get_from_heap_or_pop(),
@@ -272,7 +272,7 @@ pub fn variable_assign(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn variable_assign_set(eval: &mut Evaluator) {
     if let (Some(ident), Some(token)) = (
         eval.state.execution_stack.pop(),
@@ -296,7 +296,7 @@ pub fn variable_assign_set(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn bind_variables(eval: &mut Evaluator) {
     let mut variable_stack: Vec<String> = Vec::with_capacity(10);
     if let Some(Token::Block(Block::List(identifiers))) = eval.state.get_from_heap_or_pop() {
@@ -321,12 +321,12 @@ pub fn bind_variables(eval: &mut Evaluator) {
     eval.state.bindings.push(newscope);
 }
 
-#[inline(always)]
+
 pub fn pop_bindings(eval: &mut Evaluator) {
     eval.state.bindings.pop();
 }
 
-#[inline(always)]
+
 pub fn get_new(eval: &mut Evaluator) {
     if let Some(scope) = eval.state.call_stack.last_mut() {
         let mut core_self = HashMap::new();
@@ -341,7 +341,7 @@ pub fn get_new(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn free(eval: &mut Evaluator) {
     if let Some(token) = eval.state.execution_stack.pop() {
         if let Token::Id(ident) = token {
@@ -352,7 +352,7 @@ pub fn free(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn resolve(eval: &mut Evaluator) {
     if let Some(top) = eval.state.get_from_heap_or_pop() {
         eval.state.execution_stack.push(top)
@@ -361,7 +361,7 @@ pub fn resolve(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn resolve_binding(eval: &mut Evaluator) {
     if let Some(top) = eval.state.get_from_binding() {
         eval.state.execution_stack.push(top)

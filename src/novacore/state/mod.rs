@@ -33,7 +33,7 @@ pub struct State {
 }
 
 impl State {
-    #[inline(always)]
+    
     pub fn add_varaible(&mut self, ident: &str, item: Token) {
         if ident != "_" {
             if let Some(scope) = self.call_stack.last_mut() {
@@ -42,7 +42,7 @@ impl State {
         }
     }
 
-    #[inline(always)]
+    
     pub fn show_error(&mut self, err: &str) {
         println!();
         self.traceback.reverse();
@@ -57,14 +57,14 @@ impl State {
         }
     }
 
-    #[inline(always)]
+    
     pub fn remove_varaible(&mut self, ident: &str) {
         if let Some(scope) = self.call_stack.last_mut() {
             scope.remove(ident);
         }
     }
 
-    #[inline(always)]
+    
     pub fn move_varaible(&mut self, ident: &str, newident: &str) {
         if let Some(scope) = self.call_stack.last_mut() {
             if let Some(moved) = scope.remove(ident) {
@@ -73,7 +73,7 @@ impl State {
         }
     }
 
-    #[inline(always)]
+    
     pub fn get_from_heap_or_pop(&mut self) -> Option<Token> {
         let tok = self.execution_stack.pop()?;
 
@@ -93,7 +93,7 @@ impl State {
         }
     }
 
-    #[inline(always)]
+    
     pub fn get_from_binding(&mut self) -> Option<Token> {
         let tok = self.execution_stack.pop()?;
 
@@ -110,7 +110,7 @@ impl State {
         }
     }
 
-    #[inline(always)]
+    
     pub fn get_from_heap(&mut self, ident: &str) -> Option<Token> {
         for scopes in self.call_stack.iter().rev() {
             if let Some(func) = self.function_list.get(ident) {

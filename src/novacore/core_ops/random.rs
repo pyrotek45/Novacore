@@ -2,7 +2,7 @@ use rand::Rng;
 
 use crate::novacore::{core::Token, evaluator::Evaluator};
 
-#[inline(always)]
+
 pub fn random(eval: &mut Evaluator) {
     if let (Some(ref end), Some(ref start)) = (
         eval.state.get_from_heap_or_pop(),

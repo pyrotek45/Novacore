@@ -7,7 +7,7 @@ use crate::novacore::{
     utilities::{is_string_number, trim_newline},
 };
 
-#[inline(always)]
+
 pub fn println(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
@@ -41,7 +41,7 @@ pub fn println(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn print(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         match token {
@@ -75,7 +75,7 @@ pub fn print(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn readln(eval: &mut Evaluator) {
     let mut line = String::new();
     std::io::stdin().read_line(&mut line).unwrap();
@@ -101,7 +101,7 @@ pub fn readln(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn dump(eval: &mut Evaluator) {
     let mut output_string = String::new();
     output_string.push('[');
@@ -116,7 +116,7 @@ pub fn dump(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn load(eval: &mut Evaluator) {
     if let (Some(Token::String(filepath)), Some(Token::Id(id))) = (
         eval.state.get_from_heap_or_pop(),
@@ -142,7 +142,7 @@ pub fn load(eval: &mut Evaluator) {
     }
 }
 
-#[inline(always)]
+
 pub fn import(eval: &mut Evaluator) {
     if let Some(Token::Block(Block::List(list))) = eval.state.get_from_heap_or_pop() {
         for modules in &*list {

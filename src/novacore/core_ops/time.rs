@@ -1,5 +1,5 @@
 use core::time;
-use std::{thread, time::Instant};
+use std::{thread, time::{Instant, Duration}, ops::Add};
 
 use colored::Colorize;
 use hashbrown::HashMap;
@@ -26,16 +26,7 @@ pub fn time(eval: &mut Evaluator) {
             match block {
                 Block::Function(_, block) => {
                     let start = Instant::now();
-                    // Call with new scope
-                    eval.state.call_stack.push(HashMap::new());
-
-                    eval.evaluate(block);
-
-                    if let Some(token) = eval.state.get_from_heap_or_pop() {
-                        eval.state.execution_stack.push(token)
-                    }
-                    eval.state.call_stack.pop();
-
+                    eval.evaluate_function(block);
                     let duration = start.elapsed();
                     println!("{} {:?}", ">> Execution:".bright_green(), duration);
                 }
@@ -62,5 +53,52 @@ pub fn time(eval: &mut Evaluator) {
         }
     } else {
         eval.state.show_error("Not enough arguments for time");
+    }
+}
+
+#[inline(always)]
+pub fn time_avg(eval: &mut Evaluator) {
+    let mut timeslist = vec![];
+    if let (Some(token), Some(times)) = (eval.state.get_from_heap_or_pop(),eval.state.get_from_heap_or_pop()) {
+        if let Token::Integer(times) = times {
+            if let Token::Block(block) = token {
+                match block {
+                    Block::Function(_, block) => {
+                        let start = Instant::now();
+                        eval.evaluate_function(block);
+                        let duration = start.elapsed();
+                        println!("{} {:?}", ">> Execution:".bright_green(), duration);
+                    }
+                    Block::Literal(block) => {
+                        
+                        for _i in 0..times {
+                            let start = Instant::now();
+                            eval.evaluate(block.clone());
+                            let duration = start.elapsed();
+                            timeslist.push(duration.as_nanos());
+                        }
+                        
+                        let mut ave = 0;
+                        for i in timeslist.iter() {
+                            ave += i
+                        }
+                        println!("{} {:?}", ">> Execution average:".bright_green(), ave / timeslist.len() as u128);
+                    }
+                    a => {
+                        eval.state.show_error(&format!(
+                            "Incorrect arguments for timeave, got [{:?},{:?}]",
+                            a, times
+                        ))
+                    }
+                }
+            } else {
+                eval.state.show_error(&format!("Cannot timeave {:?}", token));
+            }
+        } else {
+            eval.state.show_error(&format!("Cannot timeave {:?}, is not an integer", times));
+        }
+
+    } else {
+        eval.state.show_error("Not enough arguments for timeave");
     }
 }
