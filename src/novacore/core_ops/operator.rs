@@ -8,7 +8,6 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
-
 pub fn add(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -102,7 +101,6 @@ pub fn add(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn div(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -139,7 +137,6 @@ pub fn div(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn neg(eval: &mut Evaluator) {
     if let Some(left) = eval.state.get_from_heap_or_pop() {
         match &left {
@@ -157,7 +154,6 @@ pub fn neg(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for inversion")
     }
 }
-
 
 pub fn sub(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
@@ -192,7 +188,6 @@ pub fn sub(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn modulo(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -213,7 +208,6 @@ pub fn modulo(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for modulo %")
     }
 }
-
 
 pub fn mul(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
@@ -248,7 +242,6 @@ pub fn mul(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn variable_assign(eval: &mut Evaluator) {
     if let (Some(token), Some(ident)) = (
         eval.state.get_from_heap_or_pop(),
@@ -272,7 +265,6 @@ pub fn variable_assign(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn variable_assign_set(eval: &mut Evaluator) {
     if let (Some(ident), Some(token)) = (
         eval.state.execution_stack.pop(),
@@ -295,7 +287,6 @@ pub fn variable_assign_set(eval: &mut Evaluator) {
             .show_error("Not enough arguments for variable assignment");
     }
 }
-
 
 pub fn bind_variables(eval: &mut Evaluator) {
     let mut variable_stack: Vec<String> = Vec::with_capacity(10);
@@ -321,11 +312,9 @@ pub fn bind_variables(eval: &mut Evaluator) {
     eval.state.bindings.push(newscope);
 }
 
-
 pub fn pop_bindings(eval: &mut Evaluator) {
     eval.state.bindings.pop();
 }
-
 
 pub fn get_new(eval: &mut Evaluator) {
     if let Some(scope) = eval.state.call_stack.last_mut() {
@@ -341,7 +330,6 @@ pub fn get_new(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn free(eval: &mut Evaluator) {
     if let Some(token) = eval.state.execution_stack.pop() {
         if let Token::Id(ident) = token {
@@ -352,7 +340,6 @@ pub fn free(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn resolve(eval: &mut Evaluator) {
     if let Some(top) = eval.state.get_from_heap_or_pop() {
         eval.state.execution_stack.push(top)
@@ -360,7 +347,6 @@ pub fn resolve(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for return");
     }
 }
-
 
 pub fn resolve_binding(eval: &mut Evaluator) {
     if let Some(top) = eval.state.get_from_binding() {

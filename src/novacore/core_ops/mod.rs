@@ -1,3 +1,4 @@
+pub mod casting;
 pub mod comparison;
 pub mod control;
 pub mod create;
@@ -11,4 +12,3 @@ pub mod random;
 pub mod reg;
 pub mod shuffle;
 pub mod time;
-pub mod casting;

@@ -4,7 +4,6 @@ use colored::Colorize;
 
 use crate::novacore::core::{Block, Token};
 
-
 pub fn debug_output(depth: usize, block: Rc<Vec<Token>>) {
     for t in block.iter() {
         //let ty = format!("{:?}", &t.Token);

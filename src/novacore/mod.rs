@@ -19,14 +19,11 @@ pub struct Vm {
 }
 
 impl Vm {
-
-    
     pub fn run(&mut self) {
         self.evaluator
             .evaluate(Rc::new(self.parser.parse(self.lexer.parse())));
     }
 
-    
     pub fn run_string(&mut self, input: &str) {
         self.lexer = lexer::new();
         self.lexer.insert_string(input);
@@ -36,7 +33,6 @@ impl Vm {
             .evaluate(Rc::new(self.parser.parse(self.lexer.parse())))
     }
 
-    
     pub fn _get_last_in_state(&mut self) -> Option<String> {
         self.evaluator
             .state
@@ -44,7 +40,6 @@ impl Vm {
             .map(|tok| format!(" ---> [{}]", tok.to_str_debug()))
     }
 
-    
     pub fn get_stack_output(&mut self) -> Option<String> {
         let mut output_string = String::new();
         output_string.push('[');
@@ -61,13 +56,11 @@ impl Vm {
         }
     }
 
-    
     pub fn add_function(&mut self, name: &str, function: CallBack) {
         self.lexer
             .add_function(name, self.evaluator.add_function(name.to_owned(), function));
     }
 
-    
     pub fn init(&mut self) {
         // io
         self.add_function("println", core_ops::io::println);
@@ -159,7 +152,6 @@ impl Vm {
         self.add_function("eval", core_ops::control::eval_top);
     }
 
-    
     pub fn debug_file(&mut self, filename: &str) {
         let mut core = Vm {
             lexer: lexer::new(),
@@ -176,7 +168,6 @@ impl Vm {
         debugger::debug_output(0, Rc::new(core.parser.parse(core.lexer.parse())));
     }
 
-    
     pub fn debug_string(&mut self, filename: &str) {
         let mut core = Vm {
             lexer: lexer::new(),
@@ -194,7 +185,6 @@ impl Vm {
     }
 }
 
-
 pub fn new_from_file(filename: &str) -> Vm {
     let mut core = Vm {
         lexer: lexer::new(),
@@ -207,7 +197,6 @@ pub fn new_from_file(filename: &str) -> Vm {
     core.evaluator.state.function_list = core.lexer.get_function_list();
     core
 }
-
 
 pub fn new() -> Vm {
     let mut core = Vm {

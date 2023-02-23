@@ -5,7 +5,6 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
-
 pub fn list_push(eval: &mut Evaluator) {
     if let (Some(token), Some(list)) = (
         eval.state.get_from_heap_or_pop(),
@@ -28,7 +27,6 @@ pub fn list_push(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for push");
     }
 }
-
 
 pub fn list_pop(eval: &mut Evaluator) {
     if let (Some(token), Some(list)) = (
@@ -55,7 +53,6 @@ pub fn list_pop(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn list_last(eval: &mut Evaluator) {
     if let Some(list) = eval.state.get_from_heap_or_pop() {
         match list {
@@ -72,7 +69,6 @@ pub fn list_last(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for last");
     }
 }
-
 
 pub fn list_insert(eval: &mut Evaluator) {
     if let (Some(item), Some(index), Some(list)) = (
@@ -104,7 +100,6 @@ pub fn list_insert(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for insert");
     }
 }
-
 
 pub fn list_remove(eval: &mut Evaluator) {
     if let (Some(index), Some(list)) = (

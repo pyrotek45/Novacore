@@ -1,6 +1,5 @@
 use crate::novacore::{core::Token, evaluator::Evaluator};
 
-
 pub fn sqrt(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(left) => match &left {
@@ -22,26 +21,28 @@ pub fn sqrt(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn pow(eval: &mut Evaluator) {
-    match (eval.state.get_from_heap_or_pop(),eval.state.get_from_heap_or_pop()) {
-        (Some(left),Some(right)) => match (&right ,&left) {
-            (Token::Integer(left),Token::Integer(right)) => {
+    match (
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
+        (Some(left), Some(right)) => match (&right, &left) {
+            (Token::Integer(left), Token::Integer(right)) => {
                 eval.state
                     .execution_stack
                     .push(Token::Integer(i128::pow(*left, *right as u32)));
             }
-            (Token::Integer(left),Token::Float(right)) => {
+            (Token::Integer(left), Token::Float(right)) => {
                 eval.state
                     .execution_stack
                     .push(Token::Float(i128::pow(*left, *right as u32) as f64));
             }
-            (Token::Float(left),Token::Integer(right)) => {
+            (Token::Float(left), Token::Integer(right)) => {
                 eval.state
                     .execution_stack
                     .push(Token::Float(f64::powf(*left, *right as f64)));
             }
-            (Token::Float(left),Token::Float(right)) => {
+            (Token::Float(left), Token::Float(right)) => {
                 eval.state
                     .execution_stack
                     .push(Token::Float(f64::powf(*left, *right)));
@@ -50,7 +51,7 @@ pub fn pow(eval: &mut Evaluator) {
                 .state
                 .show_error(&format!("Incorrect argument for power, got [{:?}]", left)),
         },
-        (_,_) => {
+        (_, _) => {
             eval.state.show_error("Not enough arguments for power");
         }
     }

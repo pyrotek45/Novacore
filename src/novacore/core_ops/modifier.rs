@@ -7,7 +7,6 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
-
 pub fn create_struct(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(Token::Block(Block::Literal(block))) => {
@@ -26,7 +25,6 @@ pub fn create_struct(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn block(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(Token::Block(Block::List(block))) => {
@@ -41,7 +39,6 @@ pub fn block(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn list(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(Token::Block(Block::Literal(block))) => {
@@ -55,7 +52,6 @@ pub fn list(eval: &mut Evaluator) {
         )),
     }
 }
-
 
 pub fn func(eval: &mut Evaluator) {
     if let (Some(block), Some(list)) = (
@@ -165,7 +161,6 @@ pub fn func(eval: &mut Evaluator) {
 //         )),
 //     }
 // }
-
 
 pub fn include(eval: &mut Evaluator) {
     fn include_compute(

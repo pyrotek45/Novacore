@@ -58,13 +58,10 @@ pub fn new() -> Lexer {
 }
 
 impl Lexer {
-
-    
     pub fn get_function_list(&self) -> HashMap<String, usize> {
         self.function_list.clone()
     }
 
-    
     pub fn add_file(&mut self, filename: &str) {
         self.filename = filename.to_owned();
         if let Ok(content) = std::fs::read_to_string(filename) {
@@ -78,17 +75,14 @@ impl Lexer {
         }
     }
 
-    
     pub fn insert_string(&mut self, input: &str) {
         self.file += input
     }
 
-    
     pub fn add_function(&mut self, name: &str, index: usize) {
         self.function_list.insert(name.to_string(), index);
     }
 
-    
     fn match_token(&self, token: &str) -> Token {
         match token {
             "break" => Token::Op(Operator::Break, self.line),
@@ -113,14 +107,13 @@ impl Lexer {
         }
     }
 
-    
     pub fn clear(&mut self) {
         self.tokens = vec![vec![]];
     }
 
     // // This Op is used to check to see if the current
     // // buffer is either a (number,Op,bool,identifier)
-    
+
     fn check_token_buffer(&self) -> Option<Token> {
         if !self.token_buffer.is_empty() {
             if is_string_number(&self.token_buffer) {
@@ -142,7 +135,6 @@ impl Lexer {
         Option::None
     }
 
-    
     pub fn check_token(&mut self) {
         if let Some(t) = self.check_token_buffer() {
             if let Some(vec_last) = self.tokens.last_mut() {
@@ -152,14 +144,12 @@ impl Lexer {
         }
     }
 
-    
     fn add_token(&mut self, token: Token) {
         if let Some(vec_last) = self.tokens.last_mut() {
             vec_last.push(token)
         }
     }
 
-    
     fn _last_token(&self) -> Option<&Token> {
         if let Some(vec_last) = self.tokens.last() {
             vec_last.last()
@@ -169,7 +159,7 @@ impl Lexer {
     }
 
     // // Going through each char in the file or string
-    
+
     pub fn parse(&mut self) -> Vec<Token> {
         for c in self.file.clone().chars() {
             if self.is_parsing_stringdq {

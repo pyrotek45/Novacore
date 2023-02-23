@@ -1,8 +1,7 @@
 use core::time;
-use std::{thread, time::{Instant, Duration}, ops::Add};
+use std::{thread, time::Instant};
 
 use colored::Colorize;
-use hashbrown::HashMap;
 
 use crate::novacore::{
     core::{Block, Token},
@@ -58,46 +57,58 @@ pub fn time(eval: &mut Evaluator) {
 
 #[inline(always)]
 pub fn time_avg(eval: &mut Evaluator) {
-    let mut timeslist = vec![];
-    if let (Some(token), Some(times)) = (eval.state.get_from_heap_or_pop(),eval.state.get_from_heap_or_pop()) {
+    if let (Some(token), Some(times)) = (
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
         if let Token::Integer(times) = times {
             if let Token::Block(block) = token {
                 match block {
-                    Block::Function(_, block) => {
-                        let start = Instant::now();
-                        eval.evaluate_function(block);
-                        let duration = start.elapsed();
-                        println!("{} {:?}", ">> Execution:".bright_green(), duration);
-                    }
                     Block::Literal(block) => {
-                        
+                        let mut timeslistseconds = vec![];
+                        let mut timeslistmilli = vec![];
+                        let mut timeslistnano = vec![];
                         for _i in 0..times {
                             let start = Instant::now();
                             eval.evaluate(block.clone());
                             let duration = start.elapsed();
-                            timeslist.push(duration.as_nanos());
+                            timeslistseconds.push(duration.as_secs());
+                            timeslistmilli.push(duration.as_millis());
+                            timeslistnano.push(duration.as_nanos());
                         }
-                        
-                        let mut ave = 0;
-                        for i in timeslist.iter() {
-                            ave += i
+                        let mut secave = 1;
+                        for i in timeslistseconds.iter() {
+                            secave += i
                         }
-                        println!("{} {:?}", ">> Execution average:".bright_green(), ave / timeslist.len() as u128);
+                        let mut milave = 1;
+                        for i in timeslistmilli.iter() {
+                            milave += i
+                        }
+                        let mut nanave = 1;
+                        for i in timeslistnano.iter() {
+                            nanave += i
+                        }
+                        println!(
+                            "{} {}s {}ms {}n ",
+                            ">> Execution average:".bright_green(),
+                            secave / timeslistseconds.len() as u64,
+                            milave / timeslistmilli.len() as u128,
+                            nanave / timeslistnano.len() as u128
+                        );
                     }
-                    a => {
-                        eval.state.show_error(&format!(
-                            "Incorrect arguments for timeave, got [{:?},{:?}]",
-                            a, times
-                        ))
-                    }
+                    a => eval.state.show_error(&format!(
+                        "Incorrect arguments for timeave, got [{:?},{:?}]",
+                        a, times
+                    )),
                 }
             } else {
-                eval.state.show_error(&format!("Cannot timeave {:?}", token));
+                eval.state
+                    .show_error(&format!("Cannot timeave {:?}", token));
             }
         } else {
-            eval.state.show_error(&format!("Cannot timeave {:?}, is not an integer", times));
+            eval.state
+                .show_error(&format!("Cannot timeave {:?}, is not an integer", times));
         }
-
     } else {
         eval.state.show_error("Not enough arguments for timeave");
     }

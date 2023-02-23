@@ -1,7 +1,6 @@
 use crate::novacore::{core::Token, evaluator::Evaluator};
 use colored::Colorize;
 
-
 pub fn equality_comparison(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -13,7 +12,6 @@ pub fn equality_comparison(eval: &mut Evaluator) {
             .show_error("Not enough arguments for equality_comparison");
     }
 }
-
 
 pub fn less_than_comparison(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
@@ -46,7 +44,6 @@ pub fn less_than_comparison(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn greater_than_comparison(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (
         eval.state.get_from_heap_or_pop(),
@@ -77,7 +74,6 @@ pub fn greater_than_comparison(eval: &mut Evaluator) {
             .show_error("Not enough arguments for greater_than_comparison");
     }
 }
-
 
 pub fn assert_stack_test(eval: &mut Evaluator) {
     if let (Some(right), Some(left)) = (

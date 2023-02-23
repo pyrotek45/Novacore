@@ -5,16 +5,13 @@ use crate::novacore::{
     evaluator::Evaluator,
 };
 
-
 pub fn break_loop(eval: &mut Evaluator) {
     eval.state.break_loop.push(true);
 }
 
-
 pub fn continue_loop(eval: &mut Evaluator) {
     eval.state.continue_loop.push(true);
 }
-
 
 pub fn block_call(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
@@ -83,7 +80,6 @@ pub fn block_call(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
     if let Some(token) = eval.state.get_from_heap(function_name) {
         if let Token::Block(block) = token {
@@ -148,7 +144,6 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
     }
 }
 
-
 pub fn if_statement(eval: &mut Evaluator) {
     if let (Some(elseblock), Some(trueblock), Some(bool)) = (
         eval.state.get_from_heap_or_pop(),
@@ -177,7 +172,6 @@ pub fn if_statement(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn when_statement(eval: &mut Evaluator) {
     if let (Some(trueblock), Some(bool)) = (
         eval.state.get_from_heap_or_pop(),
@@ -198,7 +192,6 @@ pub fn when_statement(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for when");
     }
 }
-
 
 pub fn unless_statement(eval: &mut Evaluator) {
     if let (Some(trueblock), Some(bool)) = (
@@ -221,9 +214,7 @@ pub fn unless_statement(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn while_loop(eval: &mut Evaluator) {
-    
     fn while_compute(eval: &mut Evaluator, test: Instructions, logic: Instructions) {
         'out: loop {
             // run test block
@@ -277,9 +268,7 @@ pub fn while_loop(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn times(eval: &mut Evaluator) {
-    
     fn times_compute(eval: &mut Evaluator, logic: Instructions, times: usize) {
         'out: for _ in 0..times {
             for t in &*logic {
@@ -324,13 +313,11 @@ pub fn times(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn each(eval: &mut Evaluator) {
     if let (Some(logic), Some(items)) = (
         eval.state.get_from_heap_or_pop(),
         eval.state.get_from_heap_or_pop(),
     ) {
-        
         fn each_compute(eval: &mut Evaluator, items: Instructions, logic: Instructions) {
             'out: for item in items.iter() {
                 eval.state.execution_stack.push(item.clone());
@@ -347,8 +334,7 @@ pub fn each(eval: &mut Evaluator) {
                 }
             }
         }
-        
-        
+
         fn each_compute_string(eval: &mut Evaluator, str: String, logic: Instructions) {
             'out: for item in str.chars() {
                 eval.state.execution_stack.push(Token::Char(item));
@@ -393,9 +379,7 @@ pub fn each(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn for_each(eval: &mut Evaluator) {
-    
     fn for_compute(
         eval: &mut Evaluator,
         block: Instructions,
@@ -447,7 +431,6 @@ pub fn for_each(eval: &mut Evaluator) {
         }
     }
 
-    
     fn for_compute_string(
         eval: &mut Evaluator,
         block: Instructions,
@@ -502,7 +485,6 @@ pub fn for_each(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for [for]");
     }
 }
-
 
 pub fn user_chain_call(eval: &mut Evaluator) {
     if let Some(token) = eval.state.auxiliary.last().cloned() {
@@ -570,7 +552,6 @@ pub fn user_chain_call(eval: &mut Evaluator) {
     }
     eval.state.auxiliary.pop();
 }
-
 
 pub fn get_access(eval: &mut Evaluator) {
     if let (Some(top), Some(under)) = (
@@ -641,7 +622,6 @@ pub fn get_access(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn module(eval: &mut Evaluator) {
     if let (Some(Token::Id(key)), Some(Token::Id(module))) = (
         eval.state.execution_stack.pop(),
@@ -663,7 +643,6 @@ pub fn module(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn store_temp(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         eval.state.auxiliary.push(token);
@@ -672,7 +651,6 @@ pub fn store_temp(eval: &mut Evaluator) {
     }
 }
 
-
 pub fn eval_top(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {
         eval.eval(token)
@@ -680,7 +658,6 @@ pub fn eval_top(eval: &mut Evaluator) {
         eval.state.show_error("Not enough arguments for eval");
     }
 }
-
 
 pub fn exe(eval: &mut Evaluator) {
     if let Some(token) = eval.state.get_from_heap_or_pop() {

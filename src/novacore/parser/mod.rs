@@ -22,7 +22,6 @@ impl Parser {
         self.output_stack.clear();
     }
 
-    
     pub fn parse_list(&mut self, input: Vec<Token>) -> Vec<Token> {
         for token in input {
             match &token {
@@ -72,7 +71,6 @@ impl Parser {
         self.output_stack.to_owned()
     }
 
-    
     pub fn parse(&mut self, input: Vec<Token>) -> Vec<Token> {
         for token in input {
             match &token {
@@ -259,7 +257,6 @@ impl Parser {
         self.output_stack.to_owned()
     }
 
-    
     fn emtpy_operators(&mut self) {
         while let Some(last) = self.operator_stack.last().cloned() {
             if last != Token::Symbol('(') {
@@ -272,7 +269,6 @@ impl Parser {
         }
     }
 
-    
     fn emtpy_all_operators(&mut self) {
         while let Some(t) = self.operator_stack.pop() {
             self.output_stack.push(t);
