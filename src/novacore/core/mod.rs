@@ -1,7 +1,6 @@
 use std::rc::Rc;
 
 use hashbrown::HashMap;
-use num_bigint::{BigInt, ToBigInt};
 
 use super::evaluator::Evaluator;
 

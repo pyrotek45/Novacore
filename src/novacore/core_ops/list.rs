@@ -37,7 +37,7 @@ pub fn list_push(eval: &mut Evaluator) {
 }
 
 pub fn list_pop(eval: &mut Evaluator) {
-    if let Some(list) = (eval.state.get_from_heap_or_pop()) {
+    if let Some(list) = eval.state.get_from_heap_or_pop() {
         match list {
             Token::Block(Block::List(list)) => {
                 let mut newlist = list.to_vec();

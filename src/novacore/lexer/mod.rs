@@ -586,16 +586,21 @@ impl Lexer {
                                                             }
                                                         }
                                                     }
-                                                    _ => todo!(),
                                                 }
                                             }
                                             vec_last.push(Token::Reg(opcodes));
                                         } else {
-                                            todo!()
+                                            println!();
+                                            println!(
+                                                "{}: Missing list before :",
+                                                "LEXING ERROR".red()
+                                            );
+                                            if let Some(top) = self.curly.pop() {
+                                                print_line(top, &self.filename);
+                                            }
+                                            std::process::exit(1)
                                         }
-                                    } else {
-                                        todo!()
-                                    }
+                                    } 
                                 } else {
                                     let mut opcodes = vec![];
                                     for rso in list {
@@ -611,7 +616,7 @@ impl Lexer {
                         }
                     }
                 }
-                _ => println!("what the FRICK is a {}", c),
+                _ => println!("Unknown char {}", c),
             }
         }
 
