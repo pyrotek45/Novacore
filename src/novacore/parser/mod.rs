@@ -120,6 +120,17 @@ impl Parser {
                             np.parse_list(shunted.to_vec()),
                         ))));
                     }
+                    Block::Function(inputs, shunted) => {
+                        let mut np = new();
+                        if self.debug {
+                            np.debug = true;
+                        }
+
+                        self.operator_stack.push(Token::Block(Block::Function(
+                            inputs.clone(),
+                            Rc::new(np.parse(shunted.to_vec())),
+                        )));
+                    }
                     _ => {
                         todo!()
                     }

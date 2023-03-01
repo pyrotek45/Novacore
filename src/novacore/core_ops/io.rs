@@ -1,5 +1,7 @@
 //use std::{env};
 
+use std::io::{self, Write};
+
 use crate::novacore::{
     self,
     core::{Block, Token},
@@ -35,6 +37,7 @@ pub fn println(eval: &mut Evaluator) {
                 .state
                 .show_error(&format!("Incorrect argument for println, got {:?}", token)),
         }
+        io::stdout().flush();
     } else {
         eval.state.show_error("Not enough arguments for println");
     }
@@ -68,6 +71,7 @@ pub fn print(eval: &mut Evaluator) {
                 .state
                 .show_error(&format!("Incorrect argument for print, got {:?}", token)),
         }
+        io::stdout().flush();
     } else {
         eval.state.show_error("Not enough arguments for print");
     }
@@ -96,6 +100,7 @@ pub fn readln(eval: &mut Evaluator) {
     } else {
         eval.state.execution_stack.push(Token::String(line));
     }
+    
 }
 
 pub fn dump(eval: &mut Evaluator) {

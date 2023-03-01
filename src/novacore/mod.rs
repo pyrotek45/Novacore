@@ -94,6 +94,12 @@ impl Vm {
 
         // type cast
         self.add_function("int", core_ops::casting::as_int);
+        self.add_function("isint", core_ops::casting::is_int);
+
+        self.add_function("char", core_ops::casting::as_char);
+        self.add_function("ischar", core_ops::casting::is_char);
+
+        self.add_function("str", core_ops::casting::as_string);
         // math
         self.add_function("sqrt", core_ops::math::sqrt);
         self.add_function("pow", core_ops::math::pow);
@@ -146,6 +152,7 @@ impl Vm {
         // //control flow
         self.add_function("if", core_ops::control::if_statement);
         self.add_function("when", core_ops::control::when_statement);
+        self.add_function("con", core_ops::control::con_statement);
         self.add_function("unless", core_ops::control::unless_statement);
         self.add_function("for", core_ops::control::for_each);
 
@@ -167,7 +174,7 @@ impl Vm {
         core.lexer.add_file(filename);
         core.init();
         println!("Lexer:");
-        let parsed = match self.lexer.parse() {
+        let parsed = match core.lexer.parse() {
             Ok(parsed) => parsed,
             Err(_) => todo!(),
         };
@@ -175,7 +182,7 @@ impl Vm {
         println!("Parser:");
         core.lexer.clear();
         core.parser.clear();
-        let parsed = match self.lexer.parse() {
+        let parsed = match core.lexer.parse() {
             Ok(parsed) => parsed,
             Err(_) => todo!(),
         };

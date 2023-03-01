@@ -18,6 +18,14 @@ pub fn list_push(eval: &mut Evaluator) {
                     .execution_stack
                     .push(Token::Block(Block::List(Rc::new(newlist))))
             }
+            (Token::String(mut string1), Token::Char(char)) => {
+                string1.push(char);
+                eval.state.execution_stack.push(Token::String(string1))
+            }
+            (Token::String(mut string1), Token::String(string2)) => {
+                string1 = string1 + &string2;
+                eval.state.execution_stack.push(Token::String(string1))
+            }
             (list, token) => eval.state.show_error(&format!(
                 "Incorrect arguments for push, got [{:?},{:?}]",
                 list, token
@@ -29,24 +37,35 @@ pub fn list_push(eval: &mut Evaluator) {
 }
 
 pub fn list_pop(eval: &mut Evaluator) {
-    if let (Some(token), Some(list)) = (
-        eval.state.execution_stack.pop(),
-        eval.state.get_from_heap_or_pop(),
-    ) {
-        match (list, token) {
-            (Token::Block(Block::List(list)), Token::Id(ident)) => {
+    if let Some(list) = (eval.state.get_from_heap_or_pop()) {
+        match list {
+            Token::Block(Block::List(list)) => {
                 let mut newlist = list.to_vec();
-                if let Some(value) = newlist.pop() {
-                    eval.state.add_varaible(&ident, value)
+                if newlist.is_empty() {
+                    eval
+                    .state
+                    .show_error("Pop failed, List is empty, ") 
+                } else {
+                    newlist.pop();
+                    eval.state
+                        .execution_stack
+                        .push(Token::Block(Block::List(Rc::new(newlist))))
                 }
-                eval.state
-                    .execution_stack
-                    .push(Token::Block(Block::List(Rc::new(newlist))))
+
             }
-            (list, token) => eval.state.show_error(&format!(
-                "Incorrect arguments for pop, got [{:?},{:?}]",
-                list, token
-            )),
+            Token::String(mut string1) => {
+                if string1.is_empty() {
+                    eval
+                    .state
+                    .show_error("Pop failed, String is empty, ") 
+                } else {
+                    string1.pop();
+                    eval.state.execution_stack.push(Token::String(string1))
+                }
+            }
+            list => eval
+                .state
+                .show_error(&format!("Incorrect arguments for pop, got [{:?}]", list)),
         }
     } else {
         eval.state.show_error("Not enough arguments for pop");
@@ -59,6 +78,19 @@ pub fn list_last(eval: &mut Evaluator) {
             Token::Block(Block::List(list)) => {
                 if let Some(token) = list.last() {
                     eval.state.execution_stack.push(token.clone())
+                } else {
+                    eval
+                    .state
+                    .show_error("Last failed, List is empty, ") 
+                }
+            }
+            Token::String(mut string1) => {
+                if let Some(last) = string1.pop() {
+                    eval.state.execution_stack.push(Token::Char(last))
+                }else {
+                    eval
+                    .state
+                    .show_error("Last failed, String is empty, ") 
                 }
             }
             list => eval
@@ -91,6 +123,26 @@ pub fn list_insert(eval: &mut Evaluator) {
                         .push(Token::Block(Block::List(Rc::new(newlist))))
                 }
             }
+            (Token::String(string), Token::Integer(index), Token::Char(item)) => {
+                let mut newlist = string;
+                if index as usize <= newlist.len() {
+                    newlist.insert(index as usize, item);
+                    eval.state.execution_stack.push(Token::String(newlist))
+                } else {
+                    newlist.push(item);
+                    eval.state.execution_stack.push(Token::String(newlist))
+                }
+            }
+            (Token::String(string), Token::Integer(index), Token::String(item)) => {
+                let mut newlist = string;
+                if index as usize <= newlist.len() {
+                    newlist.insert_str(index as usize, &item);
+                    eval.state.execution_stack.push(Token::String(newlist))
+                } else {
+                    newlist.push_str(&item);
+                    eval.state.execution_stack.push(Token::String(newlist))
+                }
+            }
             (list, index, item) => eval.state.show_error(&format!(
                 "Incorrect arguments for insert, got [{:?},{:?},{:?}]",
                 list, index, item
@@ -119,6 +171,16 @@ pub fn list_remove(eval: &mut Evaluator) {
                     eval.state
                         .execution_stack
                         .push(Token::Block(Block::List(Rc::new(newlist))))
+                }
+            }
+            (Token::String(list), Token::Integer(index)) => {
+                let mut newlist = list;
+                if index as usize <= newlist.len() {
+                    newlist.remove(index as usize);
+                    eval.state.execution_stack.push(Token::String(newlist))
+                } else {
+                    newlist.pop();
+                    eval.state.execution_stack.push(Token::String(newlist))
                 }
             }
             (list, index) => eval.state.show_error(&format!(

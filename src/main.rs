@@ -68,6 +68,7 @@ fn main() {
             let mut args: Vec<String> = std::env::args().collect();
             args.remove(0);
             args.remove(0);
+            args.remove(0);
             let args = args.join(" ");
             let mut lex = lexer::new();
             lex.insert_string(&args);
@@ -107,7 +108,7 @@ fn main() {
         let mut rl = Editor::new().unwrap();
         rl.set_helper(Some(h));
         rl.bind_sequence(
-            KeyEvent(KeyCode::Enter, Modifiers::CTRL),
+            KeyEvent(KeyCode::Char('n'), Modifiers::CTRL),
             EventHandler::Simple(Cmd::Newline),
         );
         if rl.load_history("history.txt").is_err() {

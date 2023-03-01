@@ -172,6 +172,30 @@ pub fn if_statement(eval: &mut Evaluator) {
     }
 }
 
+pub fn con_statement(eval: &mut Evaluator) {
+    if let (Some(trueblock), Some(bool)) = (
+        eval.state.get_from_heap_or_pop(),
+        eval.state.get_from_heap_or_pop(),
+    ) {
+        match (bool, trueblock) {
+            (Token::Bool(bool), Token::Block(Block::Literal(trueblock))) => {
+                if bool {
+                    eval.evaluate(trueblock);
+                    eval.state.execution_stack.push(Token::Bool(true));
+                } else {
+                    eval.state.execution_stack.push(Token::Bool(false));
+                }
+            }
+            (a, b) => eval.state.show_error(&format!(
+                "Incorrect arguments for con, got [{:?},{:?}]",
+                a, b
+            )),
+        }
+    } else {
+        eval.state.show_error("Not enough arguments for con");
+    }
+}
+
 pub fn when_statement(eval: &mut Evaluator) {
     if let (Some(trueblock), Some(bool)) = (
         eval.state.get_from_heap_or_pop(),

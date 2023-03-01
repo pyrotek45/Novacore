@@ -404,7 +404,7 @@ impl Lexer {
                             '>' => {
                                 if let Some(last) = vec_last.pop() {
                                     match last {
-                                        Token::Op(Operator::Neg, _) => {
+                                        Token::Op(Operator::Sub, _) => {
                                             if let Some(Token::Block(Block::List(_))) =
                                                 vec_last.last()
                                             {
@@ -476,9 +476,10 @@ impl Lexer {
                 '{' => {
                     self.curly.push(self.line);
                     self.check_token();
-                    if let Some(Token::Op(Operator::VariableAssign, _)) = self.last_token() {
-                    } else {
-                        self.add_token(Token::Symbol(','));
+                    match self.last_token() {
+                        Some(Token::Op(Operator::VariableAssign, _)) => {}
+                        Some(Token::Symbol(':')) => {}
+                        _ => self.add_token(Token::Symbol(',')),
                     }
                     self.tokens.push(vec![]);
                 }
@@ -487,7 +488,21 @@ impl Lexer {
                     self.curly.pop();
                     self.check_token();
                     if let Some(list) = self.tokens.pop() {
-                        self.add_token(Token::Block(Block::Literal(Rc::new(list))));
+                        if let Some(Token::Symbol(':')) = self.last_token() {
+                            if let Some(vec_last) = self.tokens.last_mut() {
+                                vec_last.pop();
+                                if let Some(Token::Block(Block::List(inputs))) = vec_last.pop() {
+                                    vec_last
+                                        .push(Token::Block(Block::Function(inputs, Rc::new(list))))
+                                } else {
+                                    todo!()
+                                }
+                            } else {
+                                todo!()
+                            }
+                        } else {
+                            self.add_token(Token::Block(Block::Literal(Rc::new(list))));
+                        }
                     }
                 }
 
@@ -505,15 +520,91 @@ impl Lexer {
                     if let Some(list) = self.tokens.pop() {
                         if let Some(vec_last) = self.tokens.last_mut() {
                             if let Some(Token::Symbol('$')) = vec_last.last() {
-                                let mut opcodes = vec![];
-                                for rso in list {
-                                    match rso {
-                                        Token::Integer(number) => opcodes.push(number as usize),
-                                        _ => todo!(),
-                                    }
-                                }
                                 vec_last.pop();
-                                vec_last.push(Token::Reg(opcodes));
+                                if let Some(Token::Symbol(':')) = vec_last.last() {
+                                    vec_last.pop();
+                                    if let Some(vec_last) = self.tokens.last_mut() {
+                                        if let Some(Token::Block(Block::List(inputs))) =
+                                            vec_last.pop()
+                                        {
+                                            let mut opcodes = vec![];
+                                            for rso in list {
+                                                match rso {
+                                                    Token::Integer(number) => {
+                                                        opcodes.push(number as usize)
+                                                    }
+                                                    id => {
+                                                        let mut index = inputs.len();
+                                                        for var in inputs.iter() {
+                                                            if *var == id {
+                                                                opcodes.push(index - 1);
+                                                                break;
+                                                            }
+                                                            index -= 1;
+                                                        }
+                                                        if let Token::Id(id) = id {
+                                                            match id.as_str() {
+                                                                "end" => opcodes.push(0),
+
+                                                                "iadd" => opcodes.push(1),
+                                                                "isub" => opcodes.push(2),
+                                                                "imul" => opcodes.push(3),
+
+                                                                "fadd" => opcodes.push(4),
+                                                                "fsub" => opcodes.push(5),
+                                                                "fmul" => opcodes.push(6),
+                                                                "fdiv" => opcodes.push(7),
+
+                                                                "swap" => opcodes.push(8),
+                                                                "copy" => opcodes.push(9),
+                                                                "jmp" => opcodes.push(10),
+
+                                                                "jeq" => opcodes.push(11),
+                                                                "jnq" => opcodes.push(12),
+
+                                                                "ijgt" => opcodes.push(13),
+                                                                "fjgt" => opcodes.push(14),
+
+                                                                "mod" => opcodes.push(15),
+                                                                "out" => opcodes.push(16),
+
+                                                                "inc" => opcodes.push(17),
+                                                                "dec" => opcodes.push(18),
+
+                                                                "set" => opcodes.push(19),
+
+                                                                "rjeq" => opcodes.push(20),
+                                                                "rjnq" => opcodes.push(21),
+
+                                                                "jmpb" => opcodes.push(22),
+
+                                                                "rjeqb" => opcodes.push(23),
+                                                                "rjnqb" => opcodes.push(24),
+
+                                                                // this should error if not an id or instruction
+                                                                _ => {}
+                                                            }
+                                                        }
+                                                    }
+                                                    _ => todo!(),
+                                                }
+                                            }
+                                            vec_last.push(Token::Reg(opcodes));
+                                        } else {
+                                            todo!()
+                                        }
+                                    } else {
+                                        todo!()
+                                    }
+                                } else {
+                                    let mut opcodes = vec![];
+                                    for rso in list {
+                                        if let Token::Integer(number) = rso {
+                                            opcodes.push(number as usize)
+                                        }
+                                    }
+                                    vec_last.push(Token::Reg(opcodes));
+                                }
                             } else {
                                 vec_last.push(Token::Block(Block::List(Rc::new(list))));
                             }
@@ -527,10 +618,10 @@ impl Lexer {
         self.check_token();
 
         // Error checking for missing pairs
-        if !self.curly.is_empty() {
+        if self.is_parsing_stringdq {
             println!();
             println!(
-                "{}: Block left open, missing matching {{}}",
+                "{}: String left open, missing matching \"\" : still parsing string",
                 "LEXING ERROR".red()
             );
             if let Some(top) = self.curly.pop() {

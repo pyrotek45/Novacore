@@ -13,13 +13,11 @@ modulo = "0.1.2"
 hashbrown = "0.13.2"
 rustyline-derive = "0.7.0"
 crossterm = "0.25.0"
+num-bigint = "0.4.3"
 
-[profile.dev]
-opt-level = 3
 
 [profile.release]
 opt-level = 3
-debug = true
 
 [build]
 rustflags = ["-Awarnings"]
