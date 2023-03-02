@@ -6,6 +6,9 @@ buildword = false
 word = []
 dict = []
 ifcondition = [1]
+loopstack = [0]
+doloops = []
+docount = []
 
 current = ""
 worditem = [name logic]:{new}
@@ -50,9 +53,34 @@ stackeq = [input]: {
     })
 }
 
+checkstack = [x command]: {
+    if(std::length(stack) < x {
+        println("ERROR: Not enough arguments for " + command)
+        false
+    }{
+        true
+    })
+}
+
 compute = {
     for( b swap() {
         current = return(b)
+
+        when( b == "loop" {
+            loopstack = pop(loopstack)
+            t = last(docount)
+            docount = pop(docount)
+            times( t {
+                compute(doloops)
+            })
+            doloops = []
+            continue
+        })
+
+        when( last(loopstack) == 1 {
+            doloops = push(doloops b)
+        })
+
         if( last(ifcondition) == 1 {
             if( buildword {
                 case({
@@ -100,6 +128,7 @@ compute = {
 
                     when( b == "then" {
                         ifcondition = pop(ifcondition)
+                        break
                     })
 
                     when( b == "else" {
@@ -111,6 +140,7 @@ compute = {
                             ifcondition = pop(ifcondition)
                             ifcondition = push(ifcondition 1)
                         })
+                        break
                     })
 
                     # add top of stack, push result
@@ -150,36 +180,56 @@ compute = {
                     })
 
                     when( b == "dup" {
-                        top = last(stack)
-                        stack = push(stack top)
+                        when( checkstack(1 "dup") {
+                            top = last(stack)
+                            stack = push(stack top)
+                        })
                         break
                     })
 
                     when( b == "swap" {
-                        a = last(stack)
-                        stack = pop(stack)
-                        b = last(stack)
-                        stack = pop(stack)
-                        stack = push(stack a)
-                        stack = push(stack b)
+                        when( checkstack(2 "swap") {
+                            a = last(stack)
+                            stack = pop(stack)
+                            b = last(stack)
+                            stack = pop(stack)
+                            stack = push(stack a)
+                            stack = push(stack b)
+                        })
                         break
                     })
 
                     when( b == "drop" {
-                        stack = pop(stack)
+                        when( checkstack(1 "drop") {
+                            stack = pop(stack)
+                        })
                         break
                     })
 
+                    when( b == "do" {
+                        when( checkstack(1 "do") {
+                            count = last(stack)
+                            docount = push(docount count)
+                            loopstack = push(loopstack 1)
+                            stack = pop(stack)
+                        })
+                        break
+                    })
+
+
+
                     when( b == "rot" {
-                        a = last(stack)
-                        stack = pop(stack)
-                        b = last(stack)
-                        stack = pop(stack)
-                        c = last(stack)
-                        stack = pop(stack)
-                        stack = push(stack b)
-                        stack = push(stack a)
-                        stack = push(stack c)
+                        when( checkstack(3 "rot") {
+                            a = last(stack)
+                            stack = pop(stack)
+                            b = last(stack)
+                            stack = pop(stack)
+                            c = last(stack)
+                            stack = pop(stack)
+                            stack = push(stack b)
+                            stack = push(stack a)
+                            stack = push(stack c)
+                        })
                         break
                     })
 
@@ -194,7 +244,7 @@ compute = {
             when( b == "then" {
                 ifcondition = pop(ifcondition)
             })
-            
+
             when( b == "else" {
                 test = last(ifcondition)
                 if( test == 1 {
