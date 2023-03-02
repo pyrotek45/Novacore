@@ -11,4 +11,5 @@ pub mod operator;
 pub mod random;
 pub mod reg;
 pub mod shuffle;
+pub mod terminal;
 pub mod time;

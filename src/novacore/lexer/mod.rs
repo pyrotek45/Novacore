@@ -163,7 +163,6 @@ impl Lexer {
     // // Going through each char in the file or string
     pub fn parse(&mut self) -> Result<Vec<Token>, &str> {
         for c in self.file.clone().chars() {
-
             if self.is_parsing_stringsq {
                 if c == '\\' {
                     self.is_skip = true;
@@ -185,7 +184,10 @@ impl Lexer {
                             }
                         } else {
                             println!();
-                            println!("{}: Char cannot have more than one character", "LEXING ERROR".red());
+                            println!(
+                                "{}: Char cannot have more than one character",
+                                "LEXING ERROR".red()
+                            );
                             if let Some(top) = self.bindpair.pop() {
                                 print_line(top, &self.filename);
                             }
@@ -217,7 +219,7 @@ impl Lexer {
                         //         vec_last.push(Token::Char(mychar))
                         //     }
                         // } else {
-                            vec_last.push(Token::String(self.token_buffer.clone()))
+                        vec_last.push(Token::String(self.token_buffer.clone()))
                         //}
                     }
                     self.token_buffer.clear();
@@ -637,7 +639,7 @@ impl Lexer {
                                             }
                                             std::process::exit(1)
                                         }
-                                    } 
+                                    }
                                 } else {
                                     let mut opcodes = vec![];
                                     for rso in list {

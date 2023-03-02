@@ -2,10 +2,8 @@ use crate::novacore::{core::Token, evaluator::Evaluator};
 
 pub fn as_int(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
-        Some(Token::Integer (value)) => {
-            eval.state
-                .execution_stack
-                .push(Token::Integer(value));
+        Some(Token::Integer(value)) => {
+            eval.state.execution_stack.push(Token::Integer(value));
         }
         Some(Token::Float(value)) => {
             eval.state
@@ -48,9 +46,7 @@ pub fn as_char(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(Token::String(value)) => {
             if let Some(value) = value.chars().next() {
-                eval.state
-                .execution_stack
-                .push(Token::Char(value));
+                eval.state.execution_stack.push(Token::Char(value));
             }
         }
         a => eval
@@ -77,16 +73,22 @@ pub fn is_char(eval: &mut Evaluator) {
 pub fn as_string(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(Token::Integer(value)) => {
-            eval.state.execution_stack.push(Token::String(value.to_string()));
+            eval.state
+                .execution_stack
+                .push(Token::String(value.to_string()));
         }
         Some(Token::Float(value)) => {
-            eval.state.execution_stack.push(Token::String(value.to_string()));
+            eval.state
+                .execution_stack
+                .push(Token::String(value.to_string()));
         }
         Some(Token::String(value)) => {
             eval.state.execution_stack.push(Token::String(value));
         }
         Some(Token::Char(value)) => {
-            eval.state.execution_stack.push(Token::String(value.to_string()));
+            eval.state
+                .execution_stack
+                .push(Token::String(value.to_string()));
         }
         a => eval
             .state

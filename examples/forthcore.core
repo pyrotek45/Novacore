@@ -102,6 +102,17 @@ compute = {
                         ifcondition = pop(ifcondition)
                     })
 
+                    when( b == "else" {
+                        test = last(ifcondition)
+                        if( test == 1 {
+                            ifcondition = pop(ifcondition)
+                            ifcondition = push(ifcondition 0)
+                        } {
+                            ifcondition = pop(ifcondition)
+                            ifcondition = push(ifcondition 1)
+                        })
+                    })
+
                     # add top of stack, push result
                     when( b == "+" {
                         result = stackadd(stack)
@@ -182,6 +193,17 @@ compute = {
         } {
             when( b == "then" {
                 ifcondition = pop(ifcondition)
+            })
+            
+            when( b == "else" {
+                test = last(ifcondition)
+                if( test == 1 {
+                    ifcondition = pop(ifcondition)
+                    ifcondition = push(ifcondition 0)
+                } {
+                    ifcondition = pop(ifcondition)
+                    ifcondition = push(ifcondition 1)
+                })
             })
         })
     }) 

@@ -77,6 +77,12 @@ impl Vm {
         self.add_function("load", core_ops::io::load);
         self.add_function("import", core_ops::io::import);
 
+        // Terminal
+        self.add_function("rawmode", core_ops::terminal::rawmode);
+        self.add_function("clearscreen", core_ops::terminal::clearscreen);
+        self.add_function("getch", core_ops::terminal::getch);
+        self.add_function("rawread", core_ops::terminal::rawread);
+
         // Operations
         self.add_function("free", core_ops::operator::free);
         self.add_function("return", core_ops::operator::resolve);

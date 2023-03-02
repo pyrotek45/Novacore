@@ -98,7 +98,6 @@ pub fn readln(eval: &mut Evaluator) {
     } else {
         eval.state.execution_stack.push(Token::String(line));
     }
-
 }
 
 pub fn dump(eval: &mut Evaluator) {

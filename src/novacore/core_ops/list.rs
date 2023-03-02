@@ -42,22 +42,17 @@ pub fn list_pop(eval: &mut Evaluator) {
             Token::Block(Block::List(list)) => {
                 let mut newlist = list.to_vec();
                 if newlist.is_empty() {
-                    eval
-                    .state
-                    .show_error("Pop failed, List is empty, ") 
+                    eval.state.show_error("Pop failed, List is empty, ")
                 } else {
                     newlist.pop();
                     eval.state
                         .execution_stack
                         .push(Token::Block(Block::List(Rc::new(newlist))))
                 }
-
             }
             Token::String(mut string1) => {
                 if string1.is_empty() {
-                    eval
-                    .state
-                    .show_error("Pop failed, String is empty, ") 
+                    eval.state.show_error("Pop failed, String is empty, ")
                 } else {
                     string1.pop();
                     eval.state.execution_stack.push(Token::String(string1))
@@ -79,18 +74,14 @@ pub fn list_last(eval: &mut Evaluator) {
                 if let Some(token) = list.last() {
                     eval.state.execution_stack.push(token.clone())
                 } else {
-                    eval
-                    .state
-                    .show_error("Last failed, List is empty, ") 
+                    eval.state.show_error("Last failed, List is empty, ")
                 }
             }
             Token::String(mut string1) => {
                 if let Some(last) = string1.pop() {
                     eval.state.execution_stack.push(Token::Char(last))
-                }else {
-                    eval
-                    .state
-                    .show_error("Last failed, String is empty, ") 
+                } else {
+                    eval.state.show_error("Last failed, String is empty, ")
                 }
             }
             list => eval

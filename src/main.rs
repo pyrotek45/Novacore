@@ -1,9 +1,14 @@
 mod novacore;
-use std::time::Instant;
+use std::{io::stdout, time::Instant};
 
 use clap::{App, Arg};
 use colored::Colorize;
-use crossterm::style::Stylize;
+use crossterm::{
+    cursor::MoveTo,
+    execute,
+    style::Stylize,
+    terminal::{self, ClearType},
+};
 use rustyline::{error::ReadlineError, validate::MatchingBracketValidator, Editor};
 
 use novacore::lexer;
@@ -61,7 +66,6 @@ fn main() {
         let mut core = novacore::new_from_file(filename);
 
         if matches.is_present("DEBUGOUTPUT") {
-            core.evaluator.debug = true;
             core.debug_file(filename);
         } else if matches.is_present("DEBUG") {
             println!("RUNNING DEBUG...");
@@ -128,7 +132,7 @@ fn main() {
             match readline {
                 Ok(line) => {
                     // Rustlyline History support
-                    rl.add_history_entry(line.as_str());
+                    rl.add_history_entry(line.as_str()).unwrap();
                     rl.save_history("history.txt").unwrap();
 
                     // Basic repl commands to check
@@ -151,6 +155,12 @@ fn main() {
                         core.evaluator.state.repl_mode = true;
                         continue;
                     };
+
+                    if line.to_lowercase() == "clear" {
+                        execute!(stdout(), terminal::Clear(ClearType::All)).unwrap();
+                        execute!(stdout(), MoveTo(0, 0)).unwrap();
+                        continue;
+                    }
                     // Enable vm debug
                     if repl_debug {
                         core.debug_string(&line)
