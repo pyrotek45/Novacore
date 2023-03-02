@@ -1,14 +1,12 @@
 import([std])
 
-buffer = ""
-instructions = []
 stack = []
 buildword = false
 
 word = []
 dict = []
 current = ""
-wordmap = [name logic]:{new}
+worditem = [name logic]:{new}
 
 case = {
     times( 1 swap() ) 
@@ -39,21 +37,19 @@ stackmul = [input]: {
 }
 
 compute = {
-    [ins] -> for( b ins^ {
+    for( b swap() {
         current = return(b)
         if( buildword {
             case({
                 word = push(word b)
-                when( ischar(b) {
-                    when( char(b) == ";" {
-                        buildword = false
-                        word = pop(word)
-                        name = word(0)
-                        word = remove(word 0)
-                        dict = push(dict wordmap(str(name) word))
-                        word = []
-                        break
-                    })
+                when( b == ";" {
+                    buildword = false
+                    word = pop(word)
+                    name = word(0)
+                    word = remove(word 0)
+                    dict = push(dict worditem(str(name) word))
+                    word = []
+                    break
                 })
             })
         } {
@@ -63,128 +59,115 @@ compute = {
                     break
                 })
 
-                case({
-
-
-                    when( ischar(b) {
-
-                        # print top of stack
-                        when( char(b) == "." {
-                            println(last(stack))
-                            stack = pop(stack)
-                            break
-                        })
-
-                        # build word
-                        when( char(b) == ":" {
-                            buildword = true
-                            break
-                        })
-
-                        # add top of stack, push result
-                        when( char(b) == "+" {
-                            result = stackadd(stack)
-                            stack = pop(stack)
-                            stack = pop(stack)
-                            stack = push(stack result)
-                            break
-                        })
-
-                        # sub top of stack, push result
-                        when( char(b) == "-" {
-                            result = stacksub(stack)
-                            stack = pop(stack)
-                            stack = pop(stack)
-                            stack = push(stack result)
-                            break
-                        })
-
-                        # mul top of stack, push result
-                        when( char(b) == "*" {
-                            result = stackmul(stack)
-                            stack = pop(stack)
-                            stack = pop(stack)
-                            stack = push(stack result)
-                            break
-                        })
-
-                        break
-                    })
+                # print top of stack
+                when( b == "." {
+                    println(last(stack))
+                    stack = pop(stack)
+                    break
                 })
 
-                case({
-                    when( b == "dup" {
-                        top = last(stack)
-                        stack = push(stack top)
-                        break
-                    })
+                # build word
+                when( b == ":" {
+                    buildword = true
+                    break
+                })
 
-                    when( b == "swap" {
-                        a = last(stack)
-                        stack = pop(stack)
-                        b = last(stack)
-                        stack = pop(stack)
-                        stack = push(stack a)
-                        stack = push(stack b)
-                        break
-                    })
+                # add top of stack, push result
+                when( b == "+" {
+                    result = stackadd(stack)
+                    stack = pop(stack)
+                    stack = pop(stack)
+                    stack = push(stack result)
+                    break
+                })
 
-                    when( b == "drop" {
-                        stack = pop(stack)
-                        break
-                    })
+                # sub top of stack, push result
+                when( b == "-" {
+                    result = stacksub(stack)
+                    stack = pop(stack)
+                    stack = pop(stack)
+                    stack = push(stack result)
+                    break
+                })
 
-                    when( b == "rot" {
-                        a = last(stack)
-                        stack = pop(stack)
-                        b = last(stack)
-                        stack = pop(stack)
-                        c = last(stack)
-                        stack = pop(stack)
-                        stack = push(stack b)
-                        stack = push(stack a)
-                        stack = push(stack c)
-                        break
-                    })
+                # mul top of stack, push result
+                when( b == "*" {
+                    result = stackmul(stack)
+                    stack = pop(stack)
+                    stack = pop(stack)
+                    stack = push(stack result)
+                    break
+                })
 
-                    for( w dict {
-                        when( w.name == current {
-                            compute(w.logic)
-                        })
+                when( b == "dup" {
+                    top = last(stack)
+                    stack = push(stack top)
+                    break
+                })
+
+                when( b == "swap" {
+                    a = last(stack)
+                    stack = pop(stack)
+                    b = last(stack)
+                    stack = pop(stack)
+                    stack = push(stack a)
+                    stack = push(stack b)
+                    break
+                })
+
+                when( b == "drop" {
+                    stack = pop(stack)
+                    break
+                })
+
+                when( b == "rot" {
+                    a = last(stack)
+                    stack = pop(stack)
+                    b = last(stack)
+                    stack = pop(stack)
+                    c = last(stack)
+                    stack = pop(stack)
+                    stack = push(stack b)
+                    stack = push(stack a)
+                    stack = push(stack c)
+                    break
+                })
+
+                for( w dict {
+                    when( w.name == current {
+                        compute(w.logic)
                     })
                 })
             })
         })
-    }) ;
+    }) 
 }
 
-main = {
-
+parse = [input]: {
+    buffer = ""
+    instructions = []
     for( c str(input) {
         case({
-            when( c == " " {
-                instructions = push(instructions return(buffer)))
+            when( c == ' ' {
+                instructions = push(instructions buffer))
                 buffer = ""
                 break
             })
             buffer = push(buffer c)
         })
     })
-
     when(std::length(buffer) > 0 {
-        instructions = push(instructions return(buffer)))
+        instructions = push(instructions buffer))
         buffer = ""
     })
-
-    compute(instructions)
+    return(instructions)
 }
 
 while({true} {
     print("ForthCore $ ")
     input = readln()
     when( input == "exit" {break})
-
-    main()
+    compute(parse(input))
     when( std::length(stack) > 0 {    
         print(" --> ")
         for( i stack {

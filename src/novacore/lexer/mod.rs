@@ -33,6 +33,7 @@ pub struct Lexer {
     paren: Vec<usize>,
     sqaure: Vec<usize>,
     stringpair: Vec<usize>,
+    charpair: Vec<usize>,
     bindpair: Vec<usize>,
 }
 
@@ -54,6 +55,7 @@ pub fn new() -> Lexer {
         sqaure: vec![],
         stringpair: vec![],
         bindpair: vec![],
+        charpair: vec![],
     }
 }
 
@@ -161,6 +163,40 @@ impl Lexer {
     // // Going through each char in the file or string
     pub fn parse(&mut self) -> Result<Vec<Token>, &str> {
         for c in self.file.clone().chars() {
+
+            if self.is_parsing_stringsq {
+                if c == '\\' {
+                    self.is_skip = true;
+                    continue;
+                }
+                if c != '\'' || self.is_skip {
+                    self.token_buffer.push(c);
+                    if self.is_skip {
+                        self.is_skip = false;
+                    }
+                    continue;
+                } else {
+                    self.charpair.pop();
+                    self.is_parsing_stringsq = false;
+                    if let Some(vec_last) = self.tokens.last_mut() {
+                        if self.token_buffer.chars().count() == 1 {
+                            if let Some(mychar) = self.token_buffer.chars().next() {
+                                vec_last.push(Token::Char(mychar))
+                            }
+                        } else {
+                            println!();
+                            println!("{}: Char cannot have more than one character", "LEXING ERROR".red());
+                            if let Some(top) = self.bindpair.pop() {
+                                print_line(top, &self.filename);
+                            }
+                            std::process::exit(1)
+                        }
+                    }
+                    self.token_buffer.clear();
+                    continue;
+                }
+            }
+
             if self.is_parsing_stringdq {
                 if c == '\\' {
                     self.is_skip = true;
@@ -176,13 +212,13 @@ impl Lexer {
                     self.stringpair.pop();
                     self.is_parsing_stringdq = false;
                     if let Some(vec_last) = self.tokens.last_mut() {
-                        if self.token_buffer.chars().count() == 1 {
-                            if let Some(mychar) = self.token_buffer.chars().next() {
-                                vec_last.push(Token::Char(mychar))
-                            }
-                        } else {
+                        // if self.token_buffer.chars().count() == 1 {
+                        //     if let Some(mychar) = self.token_buffer.chars().next() {
+                        //         vec_last.push(Token::Char(mychar))
+                        //     }
+                        // } else {
                             vec_last.push(Token::String(self.token_buffer.clone()))
-                        }
+                        //}
                     }
                     self.token_buffer.clear();
                     continue;
@@ -468,6 +504,7 @@ impl Lexer {
 
                 // Single quotes (starts parsing a string)
                 '\'' => {
+                    self.charpair.push(self.line);
                     self.check_token();
                     self.is_parsing_stringsq = true;
                 }
