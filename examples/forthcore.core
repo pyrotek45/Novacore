@@ -5,6 +5,8 @@ buildword = false
 
 word = []
 dict = []
+ifcondition = [1]
+
 current = ""
 worditem = [name logic]:{new}
 
@@ -36,108 +38,150 @@ stackmul = [input]: {
     a * b
 }
 
+stackeq = [input]: {
+    a = last(input)
+    input = pop(input)
+    b = last(input)
+    input = pop(input)
+    if( a == b {
+        1
+    } {
+        0
+    })
+}
+
 compute = {
     for( b swap() {
         current = return(b)
-        if( buildword {
-            case({
-                word = push(word b)
-                when( b == ";" {
-                    buildword = false
-                    word = pop(word)
-                    name = word(0)
-                    word = remove(word 0)
-                    dict = push(dict worditem(str(name) word))
-                    word = []
-                    break
+        if( last(ifcondition) == 1 {
+            if( buildword {
+                case({
+                    word = push(word b)
+                    when( b == ";" {
+                        buildword = false
+                        word = pop(word)
+                        name = word(0)
+                        word = remove(word 0)
+                        dict = push(dict worditem(str(name) word))
+                        word = []
+                        break
+                    })
+                })
+            } {
+                case({
+                    when( isint(b) {
+                        stack = push(stack int(b))
+                        break
+                    })
+
+                    # print top of stack
+                    when( b == "." {
+                        println(last(stack))
+                        stack = pop(stack)
+                        break
+                    })
+
+                    # build word
+                    when( b == ":" {
+                        buildword = true
+                        break
+                    })
+
+                    # if branching
+                    when( b == "if" {
+                        if( last(stack) == 1 {
+                            ifcondition = push(ifcondition 1)
+                        } {
+                            ifcondition = push(ifcondition 0)
+                        })
+                        stack = pop(stack)
+                        break
+                    })
+
+                    when( b == "then" {
+                        ifcondition = pop(ifcondition)
+                    })
+
+                    # add top of stack, push result
+                    when( b == "+" {
+                        result = stackadd(stack)
+                        stack = pop(stack)
+                        stack = pop(stack)
+                        stack = push(stack result)
+                        break
+                    })
+
+                    # sub top of stack, push result
+                    when( b == "-" {
+                        result = stacksub(stack)
+                        stack = pop(stack)
+                        stack = pop(stack)
+                        stack = push(stack result)
+                        break
+                    })
+
+                    # mul top of stack, push result
+                    when( b == "*" {
+                        result = stackmul(stack)
+                        stack = pop(stack)
+                        stack = pop(stack)
+                        stack = push(stack result)
+                        break
+                    })
+
+                    # mul top of stack, push result
+                    when( b == "=" {
+                        result = stackeq(stack)
+                        stack = pop(stack)
+                        stack = pop(stack)
+                        stack = push(stack result)
+                        break
+                    })
+
+                    when( b == "dup" {
+                        top = last(stack)
+                        stack = push(stack top)
+                        break
+                    })
+
+                    when( b == "swap" {
+                        a = last(stack)
+                        stack = pop(stack)
+                        b = last(stack)
+                        stack = pop(stack)
+                        stack = push(stack a)
+                        stack = push(stack b)
+                        break
+                    })
+
+                    when( b == "drop" {
+                        stack = pop(stack)
+                        break
+                    })
+
+                    when( b == "rot" {
+                        a = last(stack)
+                        stack = pop(stack)
+                        b = last(stack)
+                        stack = pop(stack)
+                        c = last(stack)
+                        stack = pop(stack)
+                        stack = push(stack b)
+                        stack = push(stack a)
+                        stack = push(stack c)
+                        break
+                    })
+
+                    for( w dict {
+                        when( w.name == current {
+                            compute(w.logic)
+                        })
+                    })
                 })
             })
         } {
-            case({
-                when( isint(b) {
-                    stack = push(stack int(b))
-                    break
-                })
-
-                # print top of stack
-                when( b == "." {
-                    println(last(stack))
-                    stack = pop(stack)
-                    break
-                })
-
-                # build word
-                when( b == ":" {
-                    buildword = true
-                    break
-                })
-
-                # add top of stack, push result
-                when( b == "+" {
-                    result = stackadd(stack)
-                    stack = pop(stack)
-                    stack = pop(stack)
-                    stack = push(stack result)
-                    break
-                })
-
-                # sub top of stack, push result
-                when( b == "-" {
-                    result = stacksub(stack)
-                    stack = pop(stack)
-                    stack = pop(stack)
-                    stack = push(stack result)
-                    break
-                })
-
-                # mul top of stack, push result
-                when( b == "*" {
-                    result = stackmul(stack)
-                    stack = pop(stack)
-                    stack = pop(stack)
-                    stack = push(stack result)
-                    break
-                })
-
-                when( b == "dup" {
-                    top = last(stack)
-                    stack = push(stack top)
-                    break
-                })
-
-                when( b == "swap" {
-                    a = last(stack)
-                    stack = pop(stack)
-                    b = last(stack)
-                    stack = pop(stack)
-                    stack = push(stack a)
-                    stack = push(stack b)
-                    break
-                })
-
-                when( b == "drop" {
-                    stack = pop(stack)
-                    break
-                })
-
-                when( b == "rot" {
-                    a = last(stack)
-                    stack = pop(stack)
-                    b = last(stack)
-                    stack = pop(stack)
-                    c = last(stack)
-                    stack = pop(stack)
-                    stack = push(stack b)
-                    stack = push(stack a)
-                    stack = push(stack c)
-                    break
-                })
-
-                for( w dict {
-                    when( w.name == current {
-                        compute(w.logic)
-                    })
-                })
+            when( b == "then" {
+                ifcondition = pop(ifcondition)
             })
         })
     }) 
@@ -156,9 +200,8 @@ parse = [input]: {
             buffer = push(buffer c)
         })
     })
-    when(std::length(buffer) > 0 {
+    when( std::length(buffer) > 0 {
         instructions = push(instructions buffer))
-        buffer = ""
     })
     return(instructions)
 }
