@@ -65,22 +65,6 @@ checkstack = [x command]: {
 compute = {
     for( b swap() {
         current = return(b)
-
-        when( b == "loop" {
-            loopstack = pop(loopstack)
-            t = last(docount)
-            docount = pop(docount)
-            times( t {
-                compute(doloops)
-            })
-            doloops = []
-            continue
-        })
-
-        when( last(loopstack) == 1 {
-            doloops = push(doloops b)
-        })
-
         if( last(ifcondition) == 1 {
             if( buildword {
                 case({
@@ -96,12 +80,41 @@ compute = {
                     })
                 })
             } {
+                when( last(loopstack) == 1 {
+                    if( b == "loop" {
+
+                    } {
+                        doloops = push(doloops current)
+                    })
+                    
+                })
                 case({
                     when( isint(b) {
                         stack = push(stack int(b))
                         break
                     })
+                    when( b == "loop" {
+                        loopstack = pop(loopstack)
+                        t = last(docount)
+                        docount = pop(docount)
+                        for(n range(1 , t - 1) {
+                            compute(doloops)
+                        })
+                        doloops = []
+                        
+                        break
+                    })
 
+                    when( b == "do" {
+                        when( checkstack(1 "do") {
+                            count = last(stack)
+                            stack = pop(stack)
+                            docount = push(docount count)
+                            loopstack = push(loopstack 1)
+                            
+                        })
+                        break
+                    })
                     # print top of stack
                     when( b == "." {
                         println(last(stack))
@@ -206,18 +219,6 @@ compute = {
                         break
                     })
 
-                    when( b == "do" {
-                        when( checkstack(1 "do") {
-                            count = last(stack)
-                            docount = push(docount count)
-                            loopstack = push(loopstack 1)
-                            stack = pop(stack)
-                        })
-                        break
-                    })
-
-
-
                     when( b == "rot" {
                         when( checkstack(3 "rot") {
                             a = last(stack)
@@ -233,10 +234,14 @@ compute = {
                         break
                     })
 
-                    for( w dict {
-                        when( w.name == current {
-                            compute(w.logic)
-                        })
+                })
+
+                for( w dict {
+                    when( w.name == current {
+                        loopstack = push(loopstack 0)
+                        compute(w.logic)
+                        loopstack = pop(loopstack)
+                        break
                     })
                 })
             })
@@ -278,7 +283,7 @@ parse = [input]: {
     return(instructions)
 }
 
-while({true} {
+while( {true} {
     print("ForthCore $ ")
     input = readln()
     when( input == "exit" {break})
