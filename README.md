@@ -23,22 +23,31 @@ Novacore is a programming language that utilizes a functional programming paradi
 Here are a few examples to get you started. 
 
 ```
-when( true { println("this will print!") } )
+when( true { 
+  println("this will print!") 
+})
 ```
-As you can see, `when` is a function. it takes a bool and a block {}. anything between {} are considered blocks. blocks are like list but contain 
+As you can see, `when` is a function. It takes a bool and a block `{}`. Anything between `{}` are considered blocks. Blocks are like list, but contain 
 code that can be stored in variables, passed around, or executed later.
 
 If, is another control flow function, unlike when however, it takes two blocks.
 
 ```
-if( false { prinlnt("this will not print") } { println("this will") } )
+if( false { 
+  prinlnt("this will not print") 
+} { 
+  println("this will") 
+})
 ```
 
-If will execute the first block if its first argument is true, otherwise, it wille execute the second.
+If will execute the first block if its first argument is true, otherwise, it will execute the second.
 
 Blocks can be stored as data and passed around. 
 ```
-x = {println("im in x")}
+x = {
+  println("im in x") 
+}
+
 when( true x )
 ```
 
