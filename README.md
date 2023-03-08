@@ -18,7 +18,7 @@ If everything compiles ( and I hope it does! ), Novacores Repl should open. You 
 
 # Using Novacore
 
-Novacore is a programming language that utilizes a functional programming paradigm. Its syntax is based on a series of functions that can be used to manipulate data in various ways. Novacore functions are defined using square brackets that indicate the function's arguments, followed by a colon and the function body enclosed in curly braces. For example, to define a function that squares a number, you could write: ``` square = [x]:{x*x}```. The language can create higher order functions for common tasks such as mapping, filtering, and folding lists, as well as math functions like sum, product, and power. Novacore also includes control flow functions like when, if, and for, which can be used to conditionally execute code and iterate over lists. Overall, Novacore offers a concise and powerful syntax for functional programming that is easy to learn and use.
+Novacore is a programming language that utilizes a functional programming paradigm. Its syntax is based on a series of functions that can be used to manipulate data in various ways. Novacore functions are defined using square brackets that indicate the function's arguments, followed by a colon and the function body enclosed in curly braces. For example, to define a function that squares a number, you could write: ``` square = [x]:{x*x}```. Novacore can create higher order functions for common tasks such as mapping, filtering, and folding lists, as well as math functions like sum, product, and power using a simple syntax. Novacore also includes control flow functions like when, if, and for, which can be used to conditionally execute code and iterate over lists. Overall, Novacore offers a concise and powerful syntax for functional programming that is easy to learn and use.
 
 Here are a few examples to get you started. 
 
@@ -53,4 +53,5 @@ for( i mylist {
 ```
 
 Try this one out for yourself!
+
 
