@@ -13,7 +13,8 @@ Novacore is designed to make programming fun and experimenting with code easy. W
 Novacore is built in Rust, which means that you'll need to have Rust installed on your computer in order to run it. If you don't already have Rust installed, you can download it from rust-lang.org.
 
 Once you have Rust installed, you can use Cargo to easily build and run Novacore. Cargo is Rust's package manager and build tool, and it comes bundled with Rust.
-Installing Novacore
+
+# Installing Novacore
 
 To install Novacore using Cargo, follow these steps:
 
