@@ -88,13 +88,13 @@ In each case, the two 5's are placed on the stack first and the function `add` i
 
 Novacore's syntax is unlike any other programming language out there, making it unique and exciting to use. The language is designed around a series of functions that can be combined in various ways to manipulate data.
 
-One of the key features of Novacore's syntax is its ability to use both postfix and infix styles of programming. This means that you can write code in a way that makes the most sense to you. For example, if you want to square a number, you can write it as square(2) or 2 square(). In both cases, the number 2 is placed on the stack first, and then the square() function is executed.
+One of the key features of Novacore's syntax is its ability to use both postfix and infix styles of programming. This means that you can write code in a way that makes the most sense to you. For example, if you want to square a number, you can write it as `square(2)` or `2 square()`. In both cases, the number 2 is placed on the stack first, and then the square() function is executed.
 
 # How it works 
 
 To achieve this flexibility, Novacore uses a shunting yard algorithm. This algorithm allows Novacore to interpret expressions in a way that supports both postfix and infix notations. The shunting yard algorithm works by parsing expressions from left to right, placing numbers and variables on a stack, and operators on an operator stack. When a new operator is encountered, it is compared to the operator on top of the operator stack. If the new operator has higher precedence, it is pushed onto the operator stack. If the new operator has lower precedence, operators on the operator stack are popped off and executed until an operator of lower precedence is encountered.
 
-Novacore's use of the shunting yard algorithm also extends to function calls, with the placement of a function's matching brace indicating where it will be executed. For example, square(2) will get converted to 2 square, since the matching brace for square comes after the 2.
+Novacore's use of the shunting yard algorithm also extends to function calls, with the placement of a function's matching brace indicating where it will be executed. For example, `square(2)` will get converted to `2 square()` before execution, since the matching brace for square comes after the 2.
 
 # Quick Start
 
