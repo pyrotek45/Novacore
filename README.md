@@ -22,7 +22,7 @@ Clone the Novacore repository to your local machine by running the following com
 
     
 ```bash
-git clone https://github.com/pyrotek45/novacore.git
+git clone https://github.com/pyrotek45/Novacore.git
 ```
 
 Change your working directory to the root of the Novacore repository:
