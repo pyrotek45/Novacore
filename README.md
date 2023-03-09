@@ -143,21 +143,13 @@ Try this one out for yourself!
 
 # Scripting with Novacore
 To run a file from Novacore, you have two options:
-
-Call the file directly from the terminal by using the file path after the executable command.
-Use the cargo run -- "filepath" command.
-
-Here are the step-by-step instructions:
-
-    Open your terminal and navigate to the directory where your Novacore project is located.
-
-    Compile your project using the Cargo build system by running the command cargo build in your terminal.
-
-    Once the build process is complete, you can run your file using one of the following commands:
-
-    a. ./target/release/novacore <file_path> where <file_path> is the path to your file.
-
-    b. Alternatively, while still in the project's root folder, you can use the cargo run -- <file_path> command. For example: cargo run -- src/my_file.nc
+```
+cargo run -- "filepath"
+```
+or
+```
+./target/release/novacore "filepath"
+```
 
 That's it! You should now be able to run your Novacore file from the terminal using the methods outlined above
 
