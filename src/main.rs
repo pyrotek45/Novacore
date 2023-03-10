@@ -1,5 +1,5 @@
 mod novacore;
-use std::{io::stdout, time::Instant};
+use std::{io::stdout, time::Instant, rc::Rc};
 
 use clap::{App, Arg};
 use colored::Colorize;
@@ -15,6 +15,8 @@ use novacore::lexer;
 use rustyline::{Cmd, EventHandler, KeyCode, KeyEvent, Modifiers};
 use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
 
+use crate::novacore::core::{Token, Instructions};
+
 #[derive(Completer, Helper, Highlighter, Hinter, Validator)]
 struct InputValidator {
     #[rustyline(Validator)]
@@ -22,6 +24,8 @@ struct InputValidator {
 }
 
 fn main() {
+    // println!("{}", std::mem::size_of::<Token>());
+    // std::process::exit(0);
     // Clap setup
     let matches = App::new("Novacore")
         .version("0.1")

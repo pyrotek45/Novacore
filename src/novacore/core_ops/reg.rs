@@ -2,8 +2,9 @@ use modulo::Mod;
 
 use crate::novacore::{core::Token, evaluator::Evaluator};
 
-pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>) {
-    let mut regi: usize = 0;
+pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>, main: usize) {
+    let mut frame = vec![];
+    let mut regi: usize = main;
     loop {
         if eval.state.execution_stack.is_empty() {
             eval.state.show_error("RegVm cannot use stack size 0");
@@ -208,29 +209,9 @@ pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>) {
 
             // relitive jump back
             22 => regi -= opcodes[regi + 1],
-            23 => {
-                if eval.state.execution_stack[offset - opcodes[regi + 1]]
-                    == eval.state.execution_stack[offset - opcodes[regi + 2]]
-                {
-                    regi -= opcodes[regi + 3]
-                } else {
-                    regi += 4;
-                }
-            }
-            // relitive jump if not equal
-            // index1 index2 target
-            24 => {
-                if eval.state.execution_stack[offset - opcodes[regi + 1]]
-                    != eval.state.execution_stack[offset - opcodes[regi + 2]]
-                {
-                    regi -= opcodes[regi + 3]
-                } else {
-                    regi += 4;
-                }
-            }
 
             // // dcopy index des des
-            25 => {
+            23 => {
                 eval.state.execution_stack[offset - opcodes[regi + 2]] =
                     eval.state.execution_stack[offset - opcodes[regi + 1]].clone();
                 eval.state.execution_stack[offset - opcodes[regi + 3]] =
@@ -238,6 +219,19 @@ pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>) {
                 regi += 4;
             }
 
+            // call index
+            24 => {
+                frame.push(regi + 2);
+                regi = opcodes[regi + 1]
+            },
+
+            // ret
+            25 => {
+                if let Some(ip) = frame.pop() {
+                    regi = ip
+                }
+                // error if not found
+            },
             a => eval
                 .state
                 .show_error(&format!("Incorrect reg operation, got  [{:?}]", a)),

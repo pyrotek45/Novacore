@@ -188,9 +188,6 @@ impl Lexer {
                                 "{}: Char cannot have more than one character",
                                 "LEXING ERROR".red()
                             );
-                            if let Some(top) = self.bindpair.pop() {
-                                print_line(top, &self.filename);
-                            }
                             std::process::exit(1)
                         }
                     }
@@ -456,9 +453,6 @@ impl Lexer {
                                                     "{}: Missing list before -> ",
                                                     "LEXING ERROR".red()
                                                 );
-                                                if let Some(top) = self.stringpair.pop() {
-                                                    print_line(top, &self.filename);
-                                                }
                                                 std::process::exit(1)
                                             }
                                         }
@@ -556,7 +550,7 @@ impl Lexer {
                     self.sqaure.pop();
                     self.check_token();
 
-                    if let Some(list) = self.tokens.pop() {
+                    if let Some(mut  list) = self.tokens.pop() {
                         if let Some(vec_last) = self.tokens.last_mut() {
                             if let Some(Token::Symbol('$')) = vec_last.last() {
                                 vec_last.pop();
@@ -566,9 +560,19 @@ impl Lexer {
                                         if let Some(Token::Block(Block::List(inputs))) =
                                             vec_last.pop()
                                         {
+                                            list.retain(|x| *x != Token::Symbol(' '));
+                                            list.retain(|x| *x != Token::Symbol(','));
+                                            let mut rjuststack = vec![];
+                                            let mut labelindex: Option<usize> = None;
+                                            let mut labels = HashMap::default();
                                             let mut opcodes = vec![];
-                                            for rso in list {
+                                            let mut currentindex = 0;
+                                            'out: for rso in list.into_iter() {
+                                                currentindex = opcodes.len();
                                                 match rso {
+                                                    Token::Symbol('@') => {
+                                                        labelindex = Some(currentindex);
+                                                    }
                                                     Token::Integer(number) => {
                                                         opcodes.push(number as usize)
                                                     }
@@ -577,13 +581,23 @@ impl Lexer {
                                                         for var in inputs.iter() {
                                                             if *var == id {
                                                                 opcodes.push(index - 1);
-                                                                break;
+                                                                continue 'out;
                                                             }
                                                             index -= 1;
                                                         }
                                                         if let Token::Id(id) = id {
                                                             match id.as_str() {
-                                                                "end" => opcodes.push(0),
+                                                                "to" => {
+                                                                    //println!("Pushed: {}", currentindex);
+                                                                    rjuststack.push(currentindex)
+                                                                }
+                                                                "end" => {
+                                                                    if let Some(rplace) = rjuststack.pop() {
+                                                                        //println!("placed: {}", currentindex - rplace);
+                                                                        opcodes.insert(rplace, currentindex - rplace)
+                                                                    }
+                                                                }
+                                                                "exit" => opcodes.push(0),
 
                                                                 "iadd" => opcodes.push(1),
                                                                 "isub" => opcodes.push(2),
@@ -617,39 +631,67 @@ impl Lexer {
 
                                                                 "jmpb" => opcodes.push(22),
 
-                                                                "rjeqb" => opcodes.push(23),
-                                                                "rjnqb" => opcodes.push(24),
+                                                                "dcopy" => opcodes.push(23),
 
-                                                                "dcopy" => opcodes.push(25),
+                                                                "call" => opcodes.push(24),
+                                                                "ret" => opcodes.push(25),
 
-                                                                // this should error if not an id or instruction
-                                                                _ => {}
+                                                                // id must be label
+                                                                v => {
+                                                                    if let Some(index) = labelindex {
+                                                                        labels.insert(v.to_string(), index);
+                                                                        labelindex = None;
+                                                                    } else if let Some(code) = labels.get(v) {
+                                                                        opcodes.push(*code);
+                                                                    } else {
+                                                                        println!();
+                                                                        println!(
+                                                                            "{}: Unkown label: {}",
+                                                                            "LEXING ERROR".red(), v
+                                                                        );
+                                                                        std::process::exit(1)
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
-                                            vec_last.push(Token::Reg(opcodes));
+                                            // for ci in jumpstack {
+                                            //     println!("{}", ci)
+                                            // }
+                                            // print!("opcodes: ");
+                                            // for ci in opcodes.iter() {
+                                            //     print!("{} ", ci)
+                                            // }
+                                            // println!("");
+                                            if let Some(main) = labels.get("main") {
+                                                vec_last.push(Token::Reg(opcodes,*main));
+                                            } else {
+                                                println!();
+                                                println!(
+                                                    "{}: Reg vm has no entry point, include a main label",
+                                                    "LEXING ERROR".red()
+                                                );
+                                                std::process::exit(1)
+                                            }
+                                            
                                         } else {
                                             println!();
                                             println!(
                                                 "{}: Missing list before :",
                                                 "LEXING ERROR".red()
                                             );
-                                            if let Some(top) = self.curly.pop() {
-                                                print_line(top, &self.filename);
-                                            }
                                             std::process::exit(1)
                                         }
                                     }
                                 } else {
-                                    let mut opcodes = vec![];
-                                    for rso in list {
-                                        if let Token::Integer(number) = rso {
-                                            opcodes.push(number as usize)
-                                        }
-                                    }
-                                    vec_last.push(Token::Reg(opcodes));
+                                    println!();
+                                    println!(
+                                        "{}: Reg vm missing register list before $[], note: try []: $[]",
+                                        "LEXING ERROR".red()
+                                    );
+                                    std::process::exit(1)
                                 }
                             } else {
                                 vec_last.push(Token::Block(Block::List(Rc::new(list))));

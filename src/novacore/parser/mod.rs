@@ -86,7 +86,7 @@ impl Parser {
                 Token::Bool(_) => {
                     self.output_stack.push(token);
                 }
-                Token::Reg(_) => {
+                Token::Reg(_,_) => {
                     self.output_stack.push(token);
                 }
                 Token::Block(block) => match &block {

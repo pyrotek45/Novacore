@@ -29,7 +29,7 @@ impl Evaluator {
 
     pub fn eval(&mut self, expr: Token) {
         match expr {
-            Token::Reg(opcodes) => core_ops::reg::register_operation(self, opcodes),
+            Token::Reg(opcodes, main) => core_ops::reg::register_operation(self, opcodes, main),
             Token::Function(index, line) => {
                 self.state.current_function_index.push(index);
                 if self.debug {
