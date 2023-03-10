@@ -63,7 +63,8 @@ checkstack = [x command]: {
 }
 
 compute = {
-    for( b swap() {
+    set(ins)
+    for( b ins {
         current = return(b)
         if( last(ifcondition) == 1 {
             if( buildword {

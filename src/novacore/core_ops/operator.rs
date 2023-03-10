@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use hashbrown::HashMap;
+use fxhash::FxHashMap as HashMap;
 use modulo::Mod;
 
 use crate::novacore::{
@@ -301,7 +301,7 @@ pub fn bind_variables(eval: &mut Evaluator) {
     }
 
     // Tie each Token into the call_stack using the tokens poped
-    let mut newscope = HashMap::new();
+    let mut newscope = HashMap::default();
     for tokens in variable_stack {
         if let Some(tok) = eval.state.get_from_heap_or_pop() {
             newscope.insert(tokens, tok.clone());
@@ -318,7 +318,7 @@ pub fn pop_bindings(eval: &mut Evaluator) {
 
 pub fn get_new(eval: &mut Evaluator) {
     if let Some(scope) = eval.state.call_stack.last_mut() {
-        let mut core_self = HashMap::new();
+        let mut core_self = HashMap::default();
 
         for (ident, token) in scope {
             core_self.insert(ident.clone(), token.clone());

@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use hashbrown::HashMap;
+use fxhash::FxHashMap as HashMap;
 
 use super::evaluator::Evaluator;
 

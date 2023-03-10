@@ -14,10 +14,13 @@ hashbrown = "0.13.2"
 rustyline-derive = "0.8.0"
 crossterm = "0.26.1"
 num-bigint = "0.4.3"
-
+fxhash = "0.2.1"
 
 [profile.release]
 opt-level = 3
 
 [build]
 rustflags = ["-Awarnings"]
+
+[profile.dev]
+debug = true

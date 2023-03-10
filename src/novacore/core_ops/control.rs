@@ -1,4 +1,4 @@
-use hashbrown::HashMap;
+use fxhash::FxHashMap as HashMap;
 
 use crate::novacore::{
     core::{Block, Instructions, Token},
@@ -21,7 +21,7 @@ pub fn block_call(eval: &mut Evaluator) {
                     let mut variable_stack: Vec<String> = Vec::with_capacity(10);
 
                     for toks in idlist.iter().rev() {
-                        if let Token::Id(ident) = &toks {
+                        if let Token::Id(ident) = toks {
                             variable_stack.push(ident.clone())
                         } else {
                             eval.state
@@ -30,7 +30,7 @@ pub fn block_call(eval: &mut Evaluator) {
                     }
 
                     // Tie each Token into the call_stack using the tokens poped
-                    let mut newscope = HashMap::new();
+                    let mut newscope = HashMap::default();
                     for tokens in variable_stack {
                         if let Some(tok) = eval.state.get_from_heap_or_pop() {
                             newscope.insert(tokens, tok.clone());
@@ -98,7 +98,7 @@ pub fn user_block_call(eval: &mut Evaluator, function_name: &str) {
                     }
 
                     // Tie each Token into the call_stack using the tokens poped
-                    let mut newscope = HashMap::new();
+                    let mut newscope = HashMap::default();
                     for tokens in variable_stack {
                         if let Some(tok) = eval.state.get_from_heap_or_pop() {
                             newscope.insert(tokens, tok.clone());
@@ -317,7 +317,7 @@ pub fn times(eval: &mut Evaluator) {
             (Token::Block(logic), Token::Integer(times)) => match logic {
                 Block::Literal(logic) => times_compute(eval, logic, times as usize),
                 Block::Function(_, logic) => {
-                    eval.state.call_stack.push(HashMap::new());
+                    eval.state.call_stack.push(HashMap::default());
                     times_compute(eval, logic, times as usize);
                     eval.state.call_stack.pop();
                 }
@@ -528,7 +528,7 @@ pub fn user_chain_call(eval: &mut Evaluator) {
                     }
 
                     // Tie each Token into the call_stack using the tokens poped
-                    let mut newscope = HashMap::new();
+                    let mut newscope = HashMap::default();
                     for tokens in variable_stack {
                         if let Some(tok) = eval.state.get_from_heap_or_pop() {
                             newscope.insert(tokens, tok.clone());

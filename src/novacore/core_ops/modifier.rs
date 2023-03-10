@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use hashbrown::HashMap;
+use fxhash::FxHashMap as HashMap;
 
 use crate::novacore::{
     core::{Block, Instructions, Operator, Token},
@@ -10,7 +10,7 @@ use crate::novacore::{
 pub fn create_struct(eval: &mut Evaluator) {
     match eval.state.get_from_heap_or_pop() {
         Some(Token::Block(Block::Literal(block))) => {
-            eval.state.call_stack.push(HashMap::new());
+            eval.state.call_stack.push(HashMap::default());
             eval.evaluate(block);
             if let Some(new_struct) = eval.state.call_stack.pop() {
                 eval.state
@@ -93,7 +93,7 @@ pub fn func(eval: &mut Evaluator) {
 //                 let mut core_self = vec![];
 
 //                 for (ident, token) in scope {
-//                     core_self.push(Token::Identifier(ident.clone()));
+//                     core_self.push(Token::Id(ident.clone()));
 //                     core_self.push(token.clone());
 //                     core_self.push(Token::Op(_,Operator::VariableAssign))
 //                 }
@@ -110,36 +110,6 @@ pub fn func(eval: &mut Evaluator) {
 //         a => eval.state.show_error(&format!(
 //             "Incorrect argument for let. Expected Type [Block], but got [{:?}]",
 //             a
-//         )),
-//     }
-// }
-
-// pub fn closure_rec(eval: &mut Evaluator) {
-//     match (
-//         eval.state.get_from_heap_or_pop(),
-//         eval.state.get_from_heap_or_pop(),
-//     ) {
-//         (Some(Token::Block(Block::Literal(block))), Some(Token::Identifier(ident))) => {
-//             if let Some(function_index) = eval.state.current_function_index.last() {
-//                 let mut core_self = vec![
-//                     Token::Identifier(ident.clone()),
-//                     Token::Identifier(ident),
-//                     Token::Block(Block::Literal(block.clone())),
-//                     Token::Function(*function_index),
-//                     Token::Op(Operator::VariableAssign),
-//                 ];
-//                 for t in block.iter() {
-//                     core_self.push(t.clone());
-//                 }
-
-//                 eval.state
-//                     .execution_stack
-//                     .push(Token::Block(Block::Function(Rc::new(core_self))))
-//             }
-//         }
-//         (a, b) => eval.state.show_error(&format!(
-//             "Incorrect argument for rec. Expected Types [Identifier , Block], but got [{:?},{:?}]",
-//             a, b
 //         )),
 //     }
 // }
@@ -210,5 +180,13 @@ pub fn include(eval: &mut Evaluator) {
             "Incorrect argument for include, got [{:?},{:?}]",
             a, b
         )),
+    }
+}
+
+pub fn memo(eval: &mut Evaluator) {
+    if let Some(Token::Block(Block::Literal(block))) = eval.state.get_from_heap_or_pop() {
+        eval.state.memoize = true;
+        eval.evaluate(block);
+        eval.state.memoize = false;
     }
 }

@@ -2,7 +2,7 @@ use crate::novacore::utilities::print_line;
 
 use super::core::Token;
 use colored::Colorize;
-use hashbrown::HashMap;
+use fxhash::FxHashMap as HashMap;
 
 pub fn read_lines<P>(
     filename: P,
@@ -30,6 +30,9 @@ pub struct State {
     pub continue_loop: Vec<bool>,
     pub exit: bool,
     pub repl_mode: bool,
+    pub cache: Option<(String, Token)>,
+    pub memo: HashMap<i128, Token>,
+    pub memoize: bool,
 }
 
 impl State {
@@ -121,19 +124,22 @@ impl State {
 pub fn new() -> Box<State> {
     Box::new(State {
         execution_stack: Vec::with_capacity(1024),
-        call_stack: vec![HashMap::new()],
+        call_stack: vec![HashMap::default()],
         auxiliary: vec![],
         debug: false,
         error_log: vec![],
         current_function_index: vec![],
         traceback: vec![],
         current_file: "".to_string(),
-        function_list: HashMap::new(),
+        function_list: HashMap::default(),
         break_loop: vec![],
         continue_loop: vec![],
         exit: false,
-        bindings: vec![HashMap::new()],
+        bindings: vec![HashMap::default()],
         repl_mode: false,
-        modules: HashMap::new(),
+        modules: HashMap::default(),
+        cache: None,
+        memo: HashMap::default(),
+        memoize: false,
     })
 }

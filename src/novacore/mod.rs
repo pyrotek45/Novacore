@@ -1,11 +1,11 @@
 mod utilities;
 
-mod core;
+pub(crate) mod core;
 use std::rc::Rc;
 
 use self::{core::CallBack, evaluator::Evaluator};
 
-mod core_ops;
+pub mod core_ops;
 mod debugger;
 mod evaluator;
 pub mod lexer;
@@ -154,6 +154,7 @@ impl Vm {
         self.add_function("struct", core_ops::modifier::create_struct);
         self.add_function("block", core_ops::modifier::block);
         self.add_function("include", core_ops::modifier::include);
+        self.add_function("memo", core_ops::modifier::memo);
 
         // //control flow
         self.add_function("if", core_ops::control::if_statement);

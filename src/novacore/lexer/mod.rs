@@ -2,7 +2,7 @@ use std::{rc::Rc, vec};
 
 use crate::novacore::utilities::print_line;
 use colored::Colorize;
-use hashbrown::HashMap;
+use fxhash::FxHashMap as HashMap;
 
 use super::{
     core::{Block, Operator, Token},
@@ -46,7 +46,7 @@ pub fn new() -> Lexer {
         tokens: vec![vec![]],
         is_parsing_comment: false,
         is_skip: false,
-        function_list: HashMap::new(),
+        function_list: HashMap::default(),
         line: 1,
         _col: 1,
         curly: vec![],
@@ -619,6 +619,8 @@ impl Lexer {
 
                                                                 "rjeqb" => opcodes.push(23),
                                                                 "rjnqb" => opcodes.push(24),
+
+                                                                "dcopy" => opcodes.push(25),
 
                                                                 // this should error if not an id or instruction
                                                                 _ => {}

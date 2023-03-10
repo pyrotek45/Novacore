@@ -229,6 +229,15 @@ pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>) {
                 }
             }
 
+            // // dcopy index des des
+            25 => {
+                eval.state.execution_stack[offset - opcodes[regi + 2]] =
+                    eval.state.execution_stack[offset - opcodes[regi + 1]].clone();
+                eval.state.execution_stack[offset - opcodes[regi + 3]] =
+                    eval.state.execution_stack[offset - opcodes[regi + 1]].clone();
+                regi += 4;
+            }
+
             a => eval
                 .state
                 .show_error(&format!("Incorrect reg operation, got  [{:?}]", a)),

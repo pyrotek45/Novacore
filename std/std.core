@@ -111,9 +111,7 @@ min = func([lst] {
 })
 
 replace = func([lst index item] {
-    lst
-        remove(index)  
-        insert(index item)   
+ 
 })
 
 mean = func([l] {
