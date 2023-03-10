@@ -566,12 +566,10 @@ impl Lexer {
                                             let mut labelindex: Option<usize> = None;
                                             let mut labels = HashMap::default();
                                             let mut opcodes = vec![];
-                                            let mut currentindex = 0;
                                             'out: for rso in list.into_iter() {
-                                                currentindex = opcodes.len();
                                                 match rso {
                                                     Token::Symbol('@') => {
-                                                        labelindex = Some(currentindex);
+                                                        labelindex = Some(opcodes.len());
                                                     }
                                                     Token::Integer(number) => {
                                                         opcodes.push(number as usize)
@@ -589,12 +587,12 @@ impl Lexer {
                                                             match id.as_str() {
                                                                 "to" => {
                                                                     //println!("Pushed: {}", currentindex);
-                                                                    rjuststack.push(currentindex)
+                                                                    rjuststack.push(opcodes.len())
                                                                 }
                                                                 "end" => {
                                                                     if let Some(rplace) = rjuststack.pop() {
                                                                         //println!("placed: {}", currentindex - rplace);
-                                                                        opcodes.insert(rplace, currentindex - rplace)
+                                                                        opcodes.insert(rplace, opcodes.len() - rplace)
                                                                     }
                                                                 }
                                                                 "exit" => opcodes.push(0),

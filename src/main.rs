@@ -1,5 +1,5 @@
 mod novacore;
-use std::{io::stdout, time::Instant, rc::Rc};
+use std::{io::stdout, time::Instant};
 
 use clap::{App, Arg};
 use colored::Colorize;
@@ -15,7 +15,7 @@ use novacore::lexer;
 use rustyline::{Cmd, EventHandler, KeyCode, KeyEvent, Modifiers};
 use rustyline_derive::{Completer, Helper, Highlighter, Hinter, Validator};
 
-use crate::novacore::core::{Token, Instructions};
+//use crate::novacore::core::{Token, Instructions};
 
 #[derive(Completer, Helper, Highlighter, Hinter, Validator)]
 struct InputValidator {
