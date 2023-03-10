@@ -152,4 +152,3 @@ or
 ```
 
 That's it! You should now be able to run your Novacore file from the terminal using the methods outlined above
-
