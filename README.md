@@ -8,6 +8,26 @@ While Novacore is still a work in progress and many things still need to be work
 
 Novacore is designed to make programming fun and experimenting with code easy. Whether you're a beginner or an experienced developer, Novacore can help you explore the world of functional programming and have fun doing it. So why not give it a try and see what you can create?
 
+# Hello world
+Writting your first programs!
+```cool
+println("hello world!")
+```
+
+
+How about a recursive Fib function?
+```cool
+recfib = [n]: {
+    if( n < 2 {
+        return(n)
+    } {
+        recfib(n - 1) + recfib(n - 2)
+    }) 
+}
+
+println(recfib(10))
+```
+
 # Getting Started with Cargo and Novacore
 
 Novacore is built in Rust, which means that you'll need to have Rust installed on your computer in order to run it. If you don't already have Rust installed, you can download it from rust-lang.org.
@@ -61,13 +81,13 @@ The Novacore REPL is a command-line interface that allows you to enter Novacore 
 Once you're in the REPL, you can enter any Novacore code you want to test. For example, you can define a function to add two numbers together:
 
 
-```
+```cool
 Nova $ add = [x y]: { x + y }
 ```
 
 You can then call this function with two arguments:
 
-```
+```cool
 Nova $ add(3 5)
 ```
 
@@ -77,7 +97,7 @@ The REPL will immediately print the result of the function call:
 ```
 
 You can also call the function in a few other ways
-```
+```cool
 Nova $ 5 add(5)
 Nova $ 5 5 add()
 ```
@@ -100,7 +120,7 @@ Novacore's use of the shunting yard algorithm also extends to function calls, wi
 
 Here are a few examples to get you started. 
 
-```
+```cool
 when( true { 
   println("this will print!") 
 })
@@ -110,7 +130,7 @@ code that can be stored in variables, passed around, or executed later.
 
 If, is another control flow function, unlike when however, it takes two blocks.
 
-```
+```cool
 if( false { 
   prinlnt("this will not print") 
 } { 
@@ -121,7 +141,7 @@ if( false {
 If will execute the first block if its first argument is true, otherwise, it will execute the second.
 
 Blocks can be stored as data and passed around. 
-```
+```cool
 x = {
   println("im in x") 
 }
@@ -132,7 +152,7 @@ when( true x )
 This will output: `im in x`. 
 
 Creating a for loop is simple, it too is just a function. 
-```
+```cool
 mylist = [ 1 2 3 4 ]
 for( i mylist {
   println(i)
