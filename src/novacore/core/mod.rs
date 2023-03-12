@@ -70,7 +70,7 @@ pub enum Token {
     Block(Block),
 
     // Registor code
-    Reg(Vec<usize>,usize),
+    Reg(Vec<usize>, usize),
 }
 
 impl Token {
@@ -235,7 +235,7 @@ impl Token {
             }
             //Token::FlowFunction(block) => format!("{}", block),
             //Token::FlowUserBlockCall(block) => format!("{:?}", block),
-            Token::Reg(block,_) => format!("R{:?}", block),
+            Token::Reg(block, _) => format!("R{:?}", block),
         }
     }
 
@@ -254,7 +254,7 @@ impl Token {
             Token::Op(_, _) => format!("{:?}", self),
             //Token::FlowFunction(_) => format!("{:?}", self),
             //Token::FlowUserBlockCall(_) => format!("{:?}", self),
-            Token::Reg(_,_) => format!("{:?}", self),
+            Token::Reg(_, _) => format!("{:?}", self),
         }
     }
 }

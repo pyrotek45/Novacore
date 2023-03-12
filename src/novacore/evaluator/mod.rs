@@ -14,14 +14,6 @@ pub struct Evaluator {
 }
 
 impl Evaluator {
-    pub fn new() -> Self {
-        Evaluator {
-            functions: vec![],
-            state: *state::new(),
-            debug: false,
-        }
-    }
-
     pub fn add_function(&mut self, name: String, function: CallBack) -> usize {
         self.functions.push((function, name));
         self.functions.len() - 1
@@ -261,5 +253,13 @@ impl Evaluator {
             self.eval(t.clone());
         }
         self.state.call_stack.pop();
+    }
+}
+
+pub fn new() -> Evaluator {
+    Evaluator {
+        functions: vec![],
+        state: *state::new(),
+        debug: false,
     }
 }

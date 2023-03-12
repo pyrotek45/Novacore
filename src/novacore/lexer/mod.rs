@@ -1,8 +1,8 @@
-use std::{rc::Rc, vec};
-
-use crate::novacore::utilities::print_line;
+use super::{super::novacore};
+use crate::novacore::{utilities::print_line};
 use colored::Colorize;
 use fxhash::FxHashMap as HashMap;
+use std::{rc::Rc, vec};
 
 use super::{
     core::{Block, Operator, Token},
@@ -512,8 +512,10 @@ impl Lexer {
                     match self.last_token() {
                         Some(Token::Op(Operator::VariableAssign, _)) => {}
                         Some(Token::Symbol(':')) => {}
+                        Some(Token::Symbol('$')) => {}
                         _ => self.add_token(Token::Symbol(',')),
                     }
+
                     self.tokens.push(vec![]);
                 }
 
@@ -521,20 +523,36 @@ impl Lexer {
                     self.curly.pop();
                     self.check_token();
                     if let Some(list) = self.tokens.pop() {
-                        if let Some(Token::Symbol(':')) = self.last_token() {
-                            if let Some(vec_last) = self.tokens.last_mut() {
-                                vec_last.pop();
-                                if let Some(Token::Block(Block::List(inputs))) = vec_last.pop() {
-                                    vec_last
-                                        .push(Token::Block(Block::Function(inputs, Rc::new(list))))
-                                } else {
-                                    todo!()
+                        match self.last_token() {
+                            Some(Token::Symbol(':')) => {
+                                if let Some(vec_last) = self.tokens.last_mut() {
+                                    vec_last.pop();
+                                    if let Some(Token::Block(Block::List(inputs))) = vec_last.pop()
+                                    {
+                                        vec_last.push(Token::Block(Block::Function(
+                                            inputs,
+                                            Rc::new(list),
+                                        )))
+                                    } else {
+                                        todo!()
+                                    }
                                 }
-                            } else {
-                                todo!()
                             }
-                        } else {
-                            self.add_token(Token::Block(Block::Literal(Rc::new(list))));
+                            Some(Token::Symbol('$')) => {
+                                //println!("comptime eval:");
+                                let mut vm = novacore::new();
+                                vm.init();
+                                
+                                vm.evaluator.evaluate(Rc::new(vm.parser.parse(list)));
+                                if let Some(vec_last) = self.tokens.last_mut() {
+                                    vec_last.pop();
+                                    for token in vm.evaluator.state.execution_stack.iter() {
+                                        vec_last.push(token.clone())
+                                    }
+                                }
+                            }
+                            Some(_) => {self.add_token(Token::Block(Block::Literal(Rc::new(list))))}
+                            None => self.add_token(Token::Block(Block::Literal(Rc::new(list)))),
                         }
                     }
                 }
@@ -550,7 +568,7 @@ impl Lexer {
                     self.sqaure.pop();
                     self.check_token();
 
-                    if let Some(mut  list) = self.tokens.pop() {
+                    if let Some(mut list) = self.tokens.pop() {
                         if let Some(vec_last) = self.tokens.last_mut() {
                             if let Some(Token::Symbol('$')) = vec_last.last() {
                                 vec_last.pop();
@@ -562,6 +580,7 @@ impl Lexer {
                                         {
                                             list.retain(|x| *x != Token::Symbol(' '));
                                             list.retain(|x| *x != Token::Symbol(','));
+                                            let mut unknown_words: Vec<(String, usize)> = vec![];
                                             let mut rjuststack = vec![];
                                             let mut labelindex: Option<usize> = None;
                                             let mut labels = HashMap::default();
@@ -590,9 +609,14 @@ impl Lexer {
                                                                     rjuststack.push(opcodes.len())
                                                                 }
                                                                 "end" => {
-                                                                    if let Some(rplace) = rjuststack.pop() {
+                                                                    if let Some(rplace) =
+                                                                        rjuststack.pop()
+                                                                    {
                                                                         //println!("placed: {}", currentindex - rplace);
-                                                                        opcodes.insert(rplace, opcodes.len() - rplace)
+                                                                        opcodes.insert(
+                                                                            rplace,
+                                                                            opcodes.len() - rplace,
+                                                                        )
                                                                     }
                                                                 }
                                                                 "exit" => opcodes.push(0),
@@ -636,18 +660,24 @@ impl Lexer {
 
                                                                 // id must be label
                                                                 v => {
-                                                                    if let Some(index) = labelindex {
-                                                                        labels.insert(v.to_string(), index);
+                                                                    if let Some(index) = labelindex
+                                                                    {
+                                                                        labels.insert(
+                                                                            v.to_string(),
+                                                                            index,
+                                                                        );
                                                                         labelindex = None;
-                                                                    } else if let Some(code) = labels.get(v) {
+                                                                    } else if let Some(code) =
+                                                                        labels.get(v)
+                                                                    {
                                                                         opcodes.push(*code);
                                                                     } else {
-                                                                        println!();
-                                                                        println!(
-                                                                            "{}: Unkown label: {}",
-                                                                            "LEXING ERROR".red(), v
-                                                                        );
-                                                                        std::process::exit(1)
+                                                                        // add to unknown word list with index
+                                                                        unknown_words.push((
+                                                                            v.to_string(),
+                                                                            opcodes.len(),
+                                                                        ));
+                                                                        opcodes.push(777)
                                                                     }
                                                                 }
                                                             }
@@ -655,6 +685,23 @@ impl Lexer {
                                                     }
                                                 }
                                             }
+                                            // once done, check all unknown_words
+                                            for words in unknown_words.iter() {
+                                                if let Some(index) = labels.get(&words.0) {
+                                                    opcodes.remove(words.1);
+                                                    opcodes.insert(words.1, *index);
+                                                    continue;
+                                                } else {
+                                                    println!();
+                                                    println!(
+                                                        "{}: Reg vm has no label : {}",
+                                                        "LEXING ERROR".red(),
+                                                        words.0
+                                                    );
+                                                    std::process::exit(1)
+                                                }
+                                            }
+
                                             // for ci in jumpstack {
                                             //     println!("{}", ci)
                                             // }
@@ -662,9 +709,9 @@ impl Lexer {
                                             // for ci in opcodes.iter() {
                                             //     print!("{} ", ci)
                                             // }
-                                            // println!("");
+                                            // println!();
                                             if let Some(main) = labels.get("main") {
-                                                vec_last.push(Token::Reg(opcodes,*main));
+                                                vec_last.push(Token::Reg(opcodes, *main));
                                             } else {
                                                 println!();
                                                 println!(
@@ -673,7 +720,6 @@ impl Lexer {
                                                 );
                                                 std::process::exit(1)
                                             }
-                                            
                                         } else {
                                             println!();
                                             println!(

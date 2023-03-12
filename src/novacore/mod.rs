@@ -3,7 +3,7 @@ mod utilities;
 pub(crate) mod core;
 use std::rc::Rc;
 
-use self::{core::CallBack, evaluator::Evaluator};
+use self::core::CallBack;
 
 pub mod core_ops;
 mod debugger;
@@ -15,7 +15,7 @@ mod state;
 pub struct Vm {
     lexer: lexer::Lexer,
     parser: parser::Parser,
-    pub evaluator: Evaluator,
+    pub evaluator: evaluator::Evaluator,
 }
 
 impl Vm {
@@ -175,7 +175,7 @@ impl Vm {
     pub fn debug_file(&mut self, filename: &str) {
         let mut core = Vm {
             lexer: lexer::new(),
-            evaluator: evaluator::Evaluator::new(),
+            evaluator: evaluator::new(),
             parser: parser::new(),
         };
         core.lexer.add_file(filename);
@@ -199,7 +199,7 @@ impl Vm {
     pub fn debug_string(&mut self, filename: &str) {
         let mut core = Vm {
             lexer: lexer::new(),
-            evaluator: evaluator::Evaluator::new(),
+            evaluator: evaluator::new(),
             parser: parser::new(),
         };
         core.lexer.insert_string(filename);
@@ -224,7 +224,7 @@ impl Vm {
 pub fn new_from_file(filename: &str) -> Vm {
     let mut core = Vm {
         lexer: lexer::new(),
-        evaluator: evaluator::Evaluator::new(),
+        evaluator: evaluator::new(),
         parser: parser::new(),
     };
     core.lexer.add_file(filename);
@@ -237,7 +237,7 @@ pub fn new_from_file(filename: &str) -> Vm {
 pub fn new() -> Vm {
     let mut core = Vm {
         lexer: lexer::new(),
-        evaluator: evaluator::Evaluator::new(),
+        evaluator: evaluator::new(),
         parser: parser::new(),
     };
     core.init();

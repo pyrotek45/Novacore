@@ -223,15 +223,17 @@ pub fn register_operation(eval: &mut Evaluator, opcodes: Vec<usize>, main: usize
             24 => {
                 frame.push(regi + 2);
                 regi = opcodes[regi + 1]
-            },
+            }
 
             // ret
             25 => {
                 if let Some(ip) = frame.pop() {
                     regi = ip
+                } else {
+                    eval.state.show_error("reg vm has no call stack left")
                 }
                 // error if not found
-            },
+            }
             a => eval
                 .state
                 .show_error(&format!("Incorrect reg operation, got  [{:?}]", a)),
